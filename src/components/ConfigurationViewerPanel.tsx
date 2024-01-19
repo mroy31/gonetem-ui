@@ -34,6 +34,7 @@ const getDefaultSelected = (files: ConfigFileT[]): string => {
     for (const f of files) {
       if (f.name == "Network") return "Network";
     }
+    return files[0].name;
   }
   return "";
 }
