@@ -1,7 +1,6 @@
 {
   "name": "gonetem-ui",
-  "productName": "gonetem-ui",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "UI for gonetem network emulator based on electron",
   "main": ".webpack/main",
   "scripts": {

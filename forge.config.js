@@ -1,12 +1,12 @@
 module.exports = {
     packagerConfig: {
-        icon: "data/rh.icns"
+        icon: "icon/gonetem-ui.icns"
     },
     makers: [
         {
             name: "@electron-forge/maker-squirrel",
             config: {
-                name: "sina_rh_app"
+                name: "gonetem-ui"
             }
         },
         {
