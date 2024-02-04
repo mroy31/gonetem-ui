@@ -3,15 +3,23 @@ import CodeMirror from "@uiw/react-codemirror";
 import { linter, lintGutter } from "@codemirror/lint";
 import { StreamLanguage } from "@codemirror/language";
 import * as yamlMode from "@codemirror/legacy-modes/mode/yaml";
+import { IPrjAction, PrjActionKing } from "./ProjectPanel";
+import { useAppContext } from "../context";
 
 const yaml = StreamLanguage.define(yamlMode.yaml);
 
 export default function TopologyEditorPanel({
+  prjId,
   topology,
+  dispatch,
 }: {
+  prjId: string,
   topology: string;
+  dispatch: React.Dispatch<IPrjAction>;
 }): JSX.Element {
+  const { setError } = useAppContext();
   const [content, setContent] = useState(topology);
+  const [ showCheckMsg, setShowCheckMsg ] = useState(false);
   const [height, setHeight] = useState("200px");
   const containerRef = useRef<HTMLDivElement>();
 
@@ -24,6 +32,23 @@ export default function TopologyEditorPanel({
       });
     }
   }, [containerRef]);
+
+  const handleWrite = () => {
+    window.api.writeTopologyFile(prjId, content).then((res) => {
+      res.status 
+        ? dispatch({type: PrjActionKing.TOPOLOGY, topology: content}) 
+        : setError(res.error);
+    });
+  }
+
+  const handleCheck = () => {
+    window.api.checkTopologyFile(prjId).then((res) => {
+      res.status 
+        ? setShowCheckMsg(true)
+        : setError(res.error);
+    });
+  }
+
 
 /*   const yamlLinter = linter((view) => {
     const diagnostics = [];
@@ -60,15 +85,17 @@ export default function TopologyEditorPanel({
 
         <div className="join">
           <button 
+            onClick={handleCheck}
             disabled={content != topology}
             className="btn btn-sm join-item">
             Check
           </button>
           <button
+            onClick={handleWrite}
             disabled={content == topology}
             className="btn btn-sm btn-primary join-item"
           >
-            Save
+            Write
           </button>
         </div>
       </div>
@@ -82,6 +109,21 @@ export default function TopologyEditorPanel({
             onChange={(value) => setContent(value)}
           />
       </div>
+
+
+      { showCheckMsg && (
+        <div className="toast">
+          <div className="alert alert-success flex gap-2 align-middle">
+            <span>Topology OK</span>
+            <button
+                className='btn btn-outline btn-neutral'
+                onClick={() => setShowCheckMsg(false)}
+            >
+                X
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

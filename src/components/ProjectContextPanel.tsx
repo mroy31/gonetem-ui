@@ -2,14 +2,17 @@ import classNames from "classnames";
 import React, { useState, useEffect, useRef } from "react";
 import TopologyEditorPanel from "./TopologyEditorPanel";
 import ConfigurationViewerPanel from "./ConfigurationViewerPanel";
-import { IProjectState } from "../api/project";
+import { IProjectState } from "../api/interface";
+import { IPrjAction } from "./ProjectPanel";
 
 export default function ProjectContextPanel({
   prjStatus,
   topology,
+  dispatch,
 }: {
   prjStatus: IProjectState;
   topology: string;
+  dispatch: React.Dispatch<IPrjAction>;
 }): JSX.Element {
   const [width, setWidth] = useState(350);
   const [selectedTab, setSelectedTab] = useState<"topo" | "config">("config");
@@ -65,8 +68,16 @@ export default function ProjectContextPanel({
         </div>
 
         <div className="flex-1 w-full mt-1 min-h-0">
-          {selectedTab == "config" &&  <ConfigurationViewerPanel prjStatus={prjStatus}/>}
-          {selectedTab == "topo" && <TopologyEditorPanel topology={topology} />}
+          {selectedTab == "config" && (
+            <ConfigurationViewerPanel prjStatus={prjStatus} />
+          )}
+          {selectedTab == "topo" && (
+            <TopologyEditorPanel
+              topology={topology}
+              prjId={prjStatus.id}
+              dispatch={dispatch}
+            />
+          )}
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import classNames from "classnames";
 import React, { useEffect, useMemo, useState } from "react";
-import { IProject } from "../api/project";
+import { IProject } from "../api/interface";
 
 const PrjListTable = ({
   prjList,

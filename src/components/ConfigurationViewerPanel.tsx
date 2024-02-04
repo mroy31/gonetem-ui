@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useReducer, useState } from "react";
+import React, { useCallback, useEffect, useReducer, useState } from "react";
 import YAML from "yaml";
-import { INodeState, IProjectState } from "../api/project";
+import { INodeState, IProjectState } from "../api/interface";
 
 type ConfigFileT = {
   name: string;

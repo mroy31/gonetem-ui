@@ -5,16 +5,31 @@ import { handleConnect, handleIsConnected } from "./api/client";
 import {
   handleCloseProject,
   handleConnectProject,
+  handleCreateProject,
   handleGetProjectState,
   handleListProjects,
   handleOpenProject,
+  handleSaveProject,
 } from "./api/project";
-import { handleCheckTopologyFile, handleReadTopologyFile, handleReloadTopology, handleRunTopology, handleWriteTopologyFile } from "./api/topology";
-import { handleReadNodeConfigFiles } from "./api/node";
+import {
+  handleCheckTopologyFile,
+  handleReadTopologyFile,
+  handleReloadTopology,
+  handleRunTopology,
+  handleWriteTopologyFile,
+} from "./api/topology";
+import {
+  handleNodeCapture,
+  handleNodeRestart,
+  handleNodeStart,
+  handleNodeStop,
+  handleReadNodeConfigFiles,
+  handleRunNodeConsole,
+} from "./api/node";
 declare const MAIN_WINDOW_WEBPACK_ENTRY: any;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: any;
 
-let mainWindow: BrowserWindow;
+export let mainWindow: BrowserWindow;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -72,6 +87,8 @@ app.on("ready", () => {
   ipcMain.handle("client:getOptions", handleGetOptions);
   ipcMain.handle("client:setOptions", handleSetOptions);
   ipcMain.handle("server:openProject", handleOpenProject);
+  ipcMain.handle("server:createProject", handleCreateProject);
+  ipcMain.handle("server:saveProject", handleSaveProject);
   ipcMain.handle("server:connectProject", handleConnectProject);
   ipcMain.handle("server:listProjects", handleListProjects);
   ipcMain.handle("server:getProjectState", handleGetProjectState);
@@ -81,6 +98,11 @@ app.on("ready", () => {
   ipcMain.handle("server:runTopology", handleRunTopology);
   ipcMain.handle("server:reloadTopology", handleReloadTopology);
   ipcMain.handle("server:readNodeConfigFiles", handleReadNodeConfigFiles);
+  ipcMain.handle("server:runNodeConsole", handleRunNodeConsole);
+  ipcMain.handle("server:runNodeStart", handleNodeStart);
+  ipcMain.handle("server:runNodeStop", handleNodeStop);
+  ipcMain.handle("server:runNodeRestart", handleNodeRestart);
+  ipcMain.handle("server:runNodeCapture", handleNodeCapture);
   ipcMain.handle("server:close", handleCloseProject);
 
   createWindow();

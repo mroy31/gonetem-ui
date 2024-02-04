@@ -12,6 +12,7 @@ export interface ITLSOptions {
 export interface IOptions {
     server: string;
     tls: ITLSOptions;
+    consoleExternalCmd: string;
 }
 
 const store = new Store<IOptions>({
@@ -26,19 +27,22 @@ const store = new Store<IOptions>({
             key: {type: "string"},
           }
         },
+        consoleExternalCmd: { type: "string" },
     }, 
     defaults: {
         server: "",
         tls: {
             enabled: false,
-        }
+        },
+        consoleExternalCmd: "xterm -xrm 'XTerm.vt100.allowTitleOps: false' -title '${name}' -e ${cmd}",
     }
 });
 
 export const getOptions = (): IOptions => {
     return {
         server: store.get("server"),
-        tls: store.get("tls")
+        tls: store.get("tls"),
+        consoleExternalCmd: store.get("consoleExternalCmd"),
     };
 }
 

@@ -2,7 +2,7 @@
 import React, { useEffect, useCallback, useReducer } from 'react';
 import ProjectContextPanel from './ProjectContextPanel';
 import ProjectToolbar from './ProjectToolbar';
-import { IProjectState } from '../api/project';
+import { IProjectState } from '../api/interface';
 import ProjectGraph from './ProjectGraph';
 
 export enum PrjActionKing {
@@ -41,6 +41,12 @@ function reducer(state: IPrjState, action: IPrjAction): IPrjState {
                 ...state,
                 error: "",
                 status: action.state,
+            };
+        case PrjActionKing.TOPOLOGY:
+            return {
+                ...state,
+                error: "",
+                topology: action.topology,
             };
         case PrjActionKing.ERROR:
             return {
@@ -127,6 +133,7 @@ export default function ProjectPanel({
 
                     <div className='flex-1 min-h-0 overflow-scroll'>
                         <ProjectGraph 
+                            updateState={updateState}
                             prjStatus={state.status}
                             topology={state.topology}
                         />
@@ -134,6 +141,7 @@ export default function ProjectPanel({
                 </div>
 
                 { <ProjectContextPanel 
+                    dispatch={dispatch}
                     prjStatus={state.status}
                     topology={state.topology}/> }
             </div>

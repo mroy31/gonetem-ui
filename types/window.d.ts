@@ -56,6 +56,8 @@ declare global {
     setOptions: (options: IOptions) => Promise<ApiResponse>,
     getOptions: () => Promise<OptionsApiResponse>,
     openProject: () => Promise<StringApiResponse>,
+    createProject: () => Promise<StringApiResponse>,
+    saveProject: (prjId: string) => Promise<ApiResponse>,
     connectProject: (prjId: string) => Promise<ApiResponse>,
     listProjects: () => Promise<PrjListApiResponse>,
     getProjectState: (prjId: string) => Promise<PrjStateApiResponse>,
@@ -65,6 +67,11 @@ declare global {
     runTopology: (prjId: string) => Promise<ApiResponse>,
     reloadTopology: (prjId: string) => Promise<ApiResponse>,
     readNodeConfigFiles: (prjId: string, nodeId: string) => Promise<ConfigFilesApiResponse>,
+    runNodeConsole: (prjId: string, nodeId: string) => Promise<ApiResponse>,
+    runNodeStart: (prjId: string, nodeId: string) => Promise<ApiResponse>,
+    runNodeStop: (prjId: string, nodeId: string) => Promise<ApiResponse>,
+    runNodeRestart: (prjId: string, nodeId: string) => Promise<ApiResponse>,
+    runNodeCapture: (prjId: string, nodeId: string, ifIndex: number) => Promise<ApiResponse>,
     closeProject: (prjId: string) => Promise<ApiResponse>,
   }
 

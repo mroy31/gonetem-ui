@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import {
   FolderOpenIcon,
   WrenchScrewdriverIcon,
+  PlusIcon,
   BoltIcon,
 } from "@heroicons/react/24/solid";
 import OptionsModal from "./components/OptionsModal";
@@ -17,7 +18,7 @@ function App(): JSX.Element {
   const [optionsModalOpen, setOptionsModalOpen] = useState(false);
   const [prjListModalOpen, setprjListModalOpen] = useState(false);
   const [closeLoading, setCloseLoading] = useState(false);
-  const [options, setOptions] = useState<IOptions>(null);
+  const [options, setOptions] = useState<IOptions | null>(null);
   const [currentPrj, setCurrentPrj] = useState("");
   const [error, setError] = useState("");
 
@@ -49,6 +50,11 @@ function App(): JSX.Element {
     res.status ? setCurrentPrj(res.result) : setError(res.error);
   };
 
+  const handleCreateProject = async () => {
+    const res = await window.api.createProject();
+    res.status ? setCurrentPrj(res.result) : setError(res.error);
+  };
+
   const handleCloseProject = async () => {
     if (currentPrj != "") {
       setCloseLoading(true);
@@ -70,7 +76,7 @@ function App(): JSX.Element {
 
   const connected = version != "";
   return (
-    <AppContext.Provider value={{error, setError}}>
+    <AppContext.Provider value={{error, setError, options}}>
 
     <div className="flex flex-col h-screen">
       <div className="navbar bg-base-200 flex-none">
@@ -113,7 +119,7 @@ function App(): JSX.Element {
       ) : (
         <div className="flex-1 mt-10 flex justify-center align-middle h-full min-h-0">
           <div className="flex gap-2">
-            <div className="join px-2">
+            <div className="join join-vertical px-2">
               <button
                 disabled={!connected || currentPrj != ""}
                 onClick={handleOpenProject}
@@ -121,6 +127,14 @@ function App(): JSX.Element {
               >
                 <FolderOpenIcon className="w-5" />
                 <span>Open a .gnet project</span>
+              </button>
+              <button
+                disabled={!connected || currentPrj != ""}
+                onClick={handleCreateProject}
+                className="btn btn-outline btn-primary btn-sm join-item"
+              >
+                <PlusIcon className="w-5" />
+                <span>Create an empty .gnet project</span>
               </button>
               <button
                 disabled={!connected || currentPrj != ""}

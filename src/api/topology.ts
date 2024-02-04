@@ -46,7 +46,7 @@ function writeTopologyFile(prjId: string, data: string): Promise<ApiResponse> {
   return new Promise<ApiResponse>((resolve) => {
     const request = new WNetworkRequest();
     request.setId(prjId);
-    request.setData(data);
+    request.setData(Buffer.from(data).toString('base64'));
 
     CLIENT.writeNetworkFile(request, (err, res) => {
       if (err) {

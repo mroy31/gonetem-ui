@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from "react";
-import { XMarkIcon, ArrowPathIcon, PlayIcon } from "@heroicons/react/24/solid";
-import { IProjectState } from "../api/project";
+import { XMarkIcon, ArrowPathIcon, PlayIcon, DocumentCheckIcon } from "@heroicons/react/24/solid";
+import { IProjectState } from "../api/interface";
 import { IPrjAction, PrjActionKing } from "./ProjectPanel";
 import { useAppContext } from "../context";
 import classNames from "classnames";
@@ -17,6 +17,7 @@ export default function ProjectToolbar({
   const {setError} = useAppContext();
   const [runLoading, setRunLoading] = useState(false);
   const [reloadLoading, setReloadLoading] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
 
   const updateState = useCallback(() => {
     window.api.getProjectState(prjStatus.id).then((res) => {
@@ -48,6 +49,16 @@ export default function ProjectToolbar({
     });
   }
 
+  const handleSave = () => {
+    setSaveLoading(true);
+    window.api.saveProject(prjStatus.id).then((res) => {
+      setSaveLoading(false);
+      res.status
+        ? updateState()
+        : setError(res.error);
+    });
+  }
+
   const runBtnClasses = useMemo(() => classNames({
     btn: true,
     "btn-outline": true,
@@ -66,7 +77,7 @@ export default function ProjectToolbar({
       <div className="flex-none join">
         <button 
           onClick={handleRun}
-          disabled={prjStatus.running || runLoading || reloadLoading}
+          disabled={prjStatus.running || runLoading || reloadLoading || saveLoading}
           className={runBtnClasses}
         >
           { prjStatus.running ? (
@@ -74,21 +85,30 @@ export default function ProjectToolbar({
           ) : (
             <>
               <PlayIcon className="w-5" />
-              <span>{runLoading ? "Project starting..." : "Run"}</span>
+              <span>{runLoading ? "Running project..." : "Run"}</span>
             </>
           )}
 
         </button>
         <button 
+          onClick={handleSave}
+          disabled={runLoading || reloadLoading || saveLoading}
+          className="btn btn-outline btn-neutral btn-sm join-item"
+        >
+          <DocumentCheckIcon className="w-5" />
+          <span>{saveLoading ? "Saving project..." : "Save"}</span>
+        </button>
+        <button 
           onClick={handleReload}
-          disabled={runLoading || reloadLoading}
+          disabled={runLoading || reloadLoading || saveLoading}
           className="btn btn-outline btn-neutral btn-sm join-item"
         >
           <ArrowPathIcon className="w-5" />
-          <span>{reloadLoading ? "Project reloading..." : "Reload"}</span>
+          <span>{reloadLoading ? "Reloading project..." : "Reload"}</span>
         </button>
         <button
           onClick={onClose}
+          disabled={runLoading || reloadLoading || saveLoading}
           className="btn btn-outline btn-warning btn-sm join-item"
         >
           <XMarkIcon className="w-5" />
