@@ -58,16 +58,32 @@ const getNodeShape = (nodeType: string, nodeState: INodeState) => {
   }
 };
 
+const getNodePosition = (
+  nodeName: string,
+  network: Network,
+) => {
+  if (network == null) return {};
+  try {
+    return network.getPosition(nodeName);
+  } catch (err) {
+    // node is just created and has no defined position
+    return {};  
+  }
+}
+
 const getNodesAndEdges = (
   topology: ITopology,
-  prjState: IProjectState
+  prjState: IProjectState,
+  network: Network,
 ): [Node[], Edge[]] => {
   const nodes: Node[] = topology.nodes ? Object.keys(topology.nodes).map((name) => {
     const nodeAttr = topology.nodes[name];
     return {
       id: name,
       label: name,
+      fixed: false,
       ...getNodeShape(nodeAttr.type, getNodeState(name, prjState)),
+      ...getNodePosition(name, network),
     };
   }) : [];
 
@@ -106,7 +122,7 @@ export default function ProjectGraph({
 
     try {
       const topo = YAML.parse(topology) as ITopology;
-      const [nodes, edges] = getNodesAndEdges(topo, prjStatus);
+      const [nodes, edges] = getNodesAndEdges(topo, prjStatus, network);
 
       if (network == null) {
         const net = new Network(
