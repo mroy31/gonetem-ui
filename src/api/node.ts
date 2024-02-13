@@ -3,6 +3,8 @@ import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import {
   CaptureSrvMsg,
   ConfigFilesResponse,
+  IfState,
+  NodeIfStateRequest,
   NodeInterfaceRequest,
   NodeRequest,
   StatusCode,
@@ -214,6 +216,51 @@ export const handleNodeRestart = async (
     return { status: false, error: "Not connected to the server" };
 
   return await nodeRestart(prjId, nodeId);
+};
+
+function nodeSetIfState(
+  prjId: string,
+  nodeId: string,
+  interfaceId: number,
+  up: boolean,
+): Promise<ApiResponse> {
+  const errorFmt = (err: string) =>
+    `Unable to change state on if '${nodeId}.${interfaceId}': ${err}`;
+  
+  return new Promise<ApiResponse>(async (resolve) => {
+    const request = new NodeIfStateRequest();
+    request.setPrjid(prjId);
+    request.setNode(nodeId);
+    request.setIfindex(interfaceId);
+    request.setState(up ? IfState.UP : IfState.DOWN);
+
+    CLIENT.setIfState(request, (err, res) => {
+      if (err) {
+        resolve({ status: false, error: errorFmt(err) });
+      } else {
+        const code = res.getStatus().getCode();
+        code == StatusCode.ERROR
+          ? resolve({
+              status: false,
+              error: errorFmt(res.getStatus().getError()),
+            })
+          : resolve({ status: true });
+      }
+    });
+  });
+}
+
+export const handleNodeSetIfState = async (
+  _event: IpcMainInvokeEvent,
+  prjId: string,
+  nodeId: string,
+  interfaceId: number,
+  up: boolean,
+): Promise<ApiResponse> => {
+  if (CLIENT == null)
+    return { status: false, error: "Not connected to the server" };
+
+  return await nodeSetIfState(prjId, nodeId, interfaceId, up);
 };
 
 function nodeCapture(

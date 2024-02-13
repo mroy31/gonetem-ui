@@ -24,6 +24,7 @@ const exposedApi: ContextBridgeApi = {
   runNodeStop: (prjId: string, nodeId: string):Promise<ApiResponse> => ipcRenderer.invoke("server:runNodeStop", prjId, nodeId),
   runNodeRestart: (prjId: string, nodeId: string):Promise<ApiResponse> => ipcRenderer.invoke("server:runNodeRestart", prjId, nodeId),
   runNodeCapture: (prjId: string, nodeId: string, ifIndex: number):Promise<ApiResponse> => ipcRenderer.invoke("server:runNodeCapture", prjId, nodeId, ifIndex),
+  runNodeSetIfState: (prjId: string, nodeId: string, ifIndex: number, up: boolean):Promise<ApiResponse> => ipcRenderer.invoke("server:runNodeSetIfState", prjId, nodeId, ifIndex, up),
   closeProject: (prjId: string):Promise<ApiResponse> => ipcRenderer.invoke("server:close", prjId),
 }
 

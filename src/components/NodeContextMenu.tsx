@@ -82,6 +82,25 @@ const NodeContextMenu = ({
             .runNodeCapture(contextMenu.prjId, contextMenu.nodeId, ifIndex)
             .then((res) => {
               setLoading("");
+              res.status ? onHide(false) : setError(res.error);
+            });
+        }
+      }
+    },
+    [contextMenu, state.running]
+  );
+
+  const handleIfState = useCallback(
+    (ifName: string, up: boolean) => {
+      if (state.running && loading == "") {
+        const match = ifName.match(/eth([0-9]+)/);
+
+        if (match.length > 1) {
+          const ifIndex = parseInt(match[1]);
+          window.api
+            .runNodeSetIfState(contextMenu.prjId, contextMenu.nodeId, ifIndex, up)
+            .then((res) => {
+              setLoading("");
               res.status ? onHide(true) : setError(res.error);
             });
         }
@@ -145,6 +164,48 @@ const NodeContextMenu = ({
                 </ul>
               </details>
             </li>
+            {
+              state.interfaces
+                .filter((int) => int.state == IfState.UP).length > 0 && (
+                  <li>
+                    <details>
+                      <summary>Shutdown interface</summary>
+                      <ul>
+                        {state.interfaces
+                          .filter((int) => int.state == IfState.UP)
+                          .map((int) => (
+                            <li key={int.name}>
+                              <a onClick={() => handleIfState(int.name, false)}>
+                                {int.name}
+                              </a>
+                            </li>
+                          ))}
+                      </ul>
+                    </details>
+                  </li>
+              )
+            }
+            {
+              state.interfaces
+                .filter((int) => int.state == IfState.DOWN).length > 0 && (
+                  <li>
+                    <details>
+                      <summary>Enable interface</summary>
+                      <ul>
+                        {state.interfaces
+                          .filter((int) => int.state == IfState.DOWN)
+                          .map((int) => (
+                            <li key={int.name}>
+                              <a onClick={() => handleIfState(int.name, true)}>
+                                {int.name}
+                              </a>
+                            </li>
+                          ))}
+                      </ul>
+                    </details>
+                  </li>
+              )
+            }
           </>
         )}
       </ul>

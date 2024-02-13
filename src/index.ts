@@ -21,6 +21,7 @@ import {
 import {
   handleNodeCapture,
   handleNodeRestart,
+  handleNodeSetIfState,
   handleNodeStart,
   handleNodeStop,
   handleReadNodeConfigFiles,
@@ -103,6 +104,7 @@ app.on("ready", () => {
   ipcMain.handle("server:runNodeStop", handleNodeStop);
   ipcMain.handle("server:runNodeRestart", handleNodeRestart);
   ipcMain.handle("server:runNodeCapture", handleNodeCapture);
+  ipcMain.handle("server:runNodeSetIfState", handleNodeSetIfState);
   ipcMain.handle("server:close", handleCloseProject);
 
   createWindow();

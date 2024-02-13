@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import YAML from "yaml";
 import { Network, type Node, type Edge } from "vis-network";
-import { INodeState, IProjectState } from "../api/interface";
+import { INodeState, IProjectState, IfState } from "../api/interface";
 import NodeContextMenu, { NodeContextMenuT } from "./NodeContextMenu";
 import router from "../../img/router.svg";
 import routerRunning from "../../img/router-running.svg";
@@ -71,6 +71,52 @@ const getNodePosition = (
   }
 }
 
+const getEdgeColor = (
+  peer1: string,
+  peer2: string,
+  prjState: IProjectState,
+) => {
+  const isPeerIfUp = (peer: string): boolean => {
+    const peerId = peer.split(".");
+    const peerState = getNodeState(peerId[0], prjState);
+    if (!peerState.running) return false;
+
+    for (const ifState of peerState.interfaces) {
+      if (ifState.name == peerId[1] || ifState.name == `eth${peerId[1]}`)
+        return ifState.state == IfState.UP;
+    } 
+
+    return false;
+  }
+
+  if (prjState.running) {
+    if (isPeerIfUp(peer1) && isPeerIfUp(peer2))
+      return {
+        color: {
+          color: "#91bf8f",
+          highlight: "#91bf8f",
+          hover: "#91bf8f",
+        }
+      }
+    
+    return {
+      color: {
+        color: "#FF0000",
+        highlight: "#FF0000",
+        hover: "##FF0000",
+      }
+    }
+  }
+
+  return {
+    color: {
+      color: "#696969",
+      highlight: "#696969",
+      hover: "#696969",
+    }
+  }
+}
+
 const getNodesAndEdges = (
   topology: ITopology,
   prjState: IProjectState,
@@ -92,6 +138,7 @@ const getNodesAndEdges = (
       from: getNodeIdFromPeer(link.peer1),
       to: getNodeIdFromPeer(link.peer2),
       smooth: false,
+      ...getEdgeColor(link.peer1, link.peer2, prjState),
     };
   }) : [];
   return [nodes, edges];
