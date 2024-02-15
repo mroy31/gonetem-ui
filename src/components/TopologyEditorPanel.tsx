@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import CodeMirror from "@uiw/react-codemirror";
-import { linter, lintGutter } from "@codemirror/lint";
+import { type Diagnostic, linter, lintGutter } from "@codemirror/lint";
 import { StreamLanguage } from "@codemirror/language";
 import * as yamlMode from "@codemirror/legacy-modes/mode/yaml";
+import parser from 'js-yaml';
 import { IPrjAction, PrjActionKing } from "./ProjectPanel";
 import { useAppContext } from "../context";
 
@@ -49,11 +50,11 @@ export default function TopologyEditorPanel({
   }
 
 
-/*   const yamlLinter = linter((view) => {
-    const diagnostics = [];
+  const yamlLinter = linter((view) => {
+    const diagnostics: Diagnostic[] = [];
   
     try {
-      parser.load(view.state.doc);
+      parser.load(view.state.doc.toString());
     } catch (e) {
       const loc = e.mark;
       const from = loc ? loc.position : 0;
@@ -69,7 +70,7 @@ export default function TopologyEditorPanel({
     }
   
     return diagnostics;
-  }); */
+  });
 
   return (
     <div className="flex flex-col w-full h-full min-h-0">
@@ -104,7 +105,7 @@ export default function TopologyEditorPanel({
             height={height}
             maxHeight={height}
             value={content}
-            extensions={[yaml, lintGutter()]}
+            extensions={[yaml, lintGutter(), yamlLinter]}
             onChange={(value) => setContent(value)}
           />
       </div>
