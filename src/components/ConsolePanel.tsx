@@ -67,9 +67,9 @@ const TermPanel = ({
         fitAddon.current.fit();
 
         resizeObserver.observe(containerRef.current);
-
-        return () => resizeObserver.disconnect();
       });
+
+      return () => resizeObserver.disconnect();
     }
   }, [containerRef]);
 
@@ -95,7 +95,7 @@ export default function ConsolePanel({
     setNodes(newNodes);
   }, [prjStatus.nodes]);
 
-  if (!prjStatus.running) return <div className="p-2">Project not running</div>;
+  if (!prjStatus.running) return <div className="p-2 italic">Project not running</div>;
 
   if (selected == null) {
     return (

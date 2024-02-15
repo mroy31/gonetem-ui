@@ -61,17 +61,17 @@ export default function ProjectContextPanel({
           </a>
           <a
             role="tab"
-            className={tabClasses("console")}
-            onClick={() => setSelectedTab("console")}
-          >
-            Console
-          </a>
-          <a
-            role="tab"
             className={tabClasses("topo")}
             onClick={() => setSelectedTab("topo")}
           >
             Topology
+          </a>
+          <a
+            role="tab"
+            className={tabClasses("console")}
+            onClick={() => setSelectedTab("console")}
+          >
+            Console
           </a>
         </div>
 
@@ -79,15 +79,15 @@ export default function ProjectContextPanel({
           {selectedTab == "config" && (
             <ConfigurationViewerPanel prjStatus={prjStatus} />
           )}
-          {selectedTab == "console" && (
-            <ConsolePanel prjStatus={prjStatus} />
-          )}
           {selectedTab == "topo" && (
             <TopologyEditorPanel
               topology={topology}
               prjId={prjStatus.id}
               dispatch={dispatch}
             />
+          )}
+          {selectedTab == "console" && (
+            <ConsolePanel prjStatus={prjStatus} />
           )}
         </div>
       </div>
