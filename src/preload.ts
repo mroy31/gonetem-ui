@@ -26,6 +26,16 @@ const exposedApi: ContextBridgeApi = {
   runNodeCapture: (prjId: string, nodeId: string, ifIndex: number):Promise<ApiResponse> => ipcRenderer.invoke("server:runNodeCapture", prjId, nodeId, ifIndex),
   runNodeSetIfState: (prjId: string, nodeId: string, ifIndex: number, up: boolean):Promise<ApiResponse> => ipcRenderer.invoke("server:runNodeSetIfState", prjId, nodeId, ifIndex, up),
   closeProject: (prjId: string):Promise<ApiResponse> => ipcRenderer.invoke("server:close", prjId),
+  // internal console
+  consoleRun: (prjId: string, nodeId: string): Promise<ApiResponse> => ipcRenderer.invoke("console:run", prjId, nodeId),
+  consoleWrite: (data: string): Promise<ApiResponse> => ipcRenderer.invoke("console:write", data),
+  consoleResize: (width: number, height: number):Promise<ApiResponse> => ipcRenderer.invoke("console:resize", width, height),
+  consoleOnMsg: (cb: (msgType: string, data: string) => void) => {
+    ipcRenderer.on("console:stdout", (_event, data: string) => cb("stdout", data));
+    ipcRenderer.on("console:stderr", (_event, data: string) => cb("stderr", data));
+    ipcRenderer.on("console:error", (_event, data: string) => cb("error", data));
+    ipcRenderer.on("console:close", (_event) => cb("close", ""));
+  },
 }
 
 contextBridge.exposeInMainWorld('api', exposedApi);

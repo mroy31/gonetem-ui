@@ -27,6 +27,7 @@ import {
   handleReadNodeConfigFiles,
   handleRunNodeConsole,
 } from "./api/node";
+import { handleResizeInternalConsole, handleRunNodeInternalConsole, handleWriteInternalConsole } from "./api/console";
 declare const MAIN_WINDOW_WEBPACK_ENTRY: any;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: any;
 
@@ -106,6 +107,10 @@ app.on("ready", () => {
   ipcMain.handle("server:runNodeCapture", handleNodeCapture);
   ipcMain.handle("server:runNodeSetIfState", handleNodeSetIfState);
   ipcMain.handle("server:close", handleCloseProject);
+  // internal console
+  ipcMain.handle("console:run", handleRunNodeInternalConsole);
+  ipcMain.handle("console:write", handleWriteInternalConsole);
+  ipcMain.handle("console:resize", handleResizeInternalConsole);
 
   createWindow();
   app.on("activate", () => {

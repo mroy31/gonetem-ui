@@ -4,6 +4,7 @@ import TopologyEditorPanel from "./TopologyEditorPanel";
 import ConfigurationViewerPanel from "./ConfigurationViewerPanel";
 import { IProjectState } from "../api/interface";
 import { IPrjAction } from "./ProjectPanel";
+import ConsolePanel from "./ConsolePanel";
 
 export default function ProjectContextPanel({
   prjStatus,
@@ -15,7 +16,7 @@ export default function ProjectContextPanel({
   dispatch: React.Dispatch<IPrjAction>;
 }): JSX.Element {
   const [width, setWidth] = useState(350);
-  const [selectedTab, setSelectedTab] = useState<"topo" | "config">("config");
+  const [selectedTab, setSelectedTab] = useState<"topo" | "config" | "console">("config");
   const isResized = useRef(false);
 
   const tabClasses = (tabId: string) => {
@@ -60,6 +61,13 @@ export default function ProjectContextPanel({
           </a>
           <a
             role="tab"
+            className={tabClasses("console")}
+            onClick={() => setSelectedTab("console")}
+          >
+            Console
+          </a>
+          <a
+            role="tab"
             className={tabClasses("topo")}
             onClick={() => setSelectedTab("topo")}
           >
@@ -70,6 +78,9 @@ export default function ProjectContextPanel({
         <div className="flex-1 w-full mt-1 min-h-0">
           {selectedTab == "config" && (
             <ConfigurationViewerPanel prjStatus={prjStatus} />
+          )}
+          {selectedTab == "console" && (
+            <ConsolePanel prjStatus={prjStatus} />
           )}
           {selectedTab == "topo" && (
             <TopologyEditorPanel

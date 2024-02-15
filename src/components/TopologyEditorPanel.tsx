@@ -28,7 +28,6 @@ export default function TopologyEditorPanel({
       setHeight(`${containerRef.current.offsetHeight}px`);
       window.addEventListener("resize", () => {
         setHeight(`${containerRef.current.offsetHeight}px`);
-        console.log(`${containerRef.current.offsetHeight}px`);
       });
     }
   }, [containerRef]);

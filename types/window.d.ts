@@ -74,6 +74,11 @@ declare global {
     runNodeCapture: (prjId: string, nodeId: string, ifIndex: number) => Promise<ApiResponse>,
     runNodeSetIfState: (prjId: string, nodeId: string, ifIndex: number, up: boolean) => Promise<ApiResponse>,
     closeProject: (prjId: string) => Promise<ApiResponse>,
+    // internal console
+    consoleRun: (prjId: string, nodeId: string) => Promise<ApiResponse>,
+    consoleWrite: (data: string) => Promise<ApiResponse>,
+    consoleResize: (width: number, height: number) => Promise<ApiResponse>,
+    consoleOnMsg: (cb: (msgType: string, data: string) => void) => void,
   }
 
   interface Window {
