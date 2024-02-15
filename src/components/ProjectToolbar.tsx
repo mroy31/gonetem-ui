@@ -14,7 +14,7 @@ export default function ProjectToolbar({
   onClose: () => void;
   dispatch: React.Dispatch<IPrjAction>;
 }): JSX.Element {
-  const {setError} = useAppContext();
+  const {setError, setLoadingMsg} = useAppContext();
   const [runLoading, setRunLoading] = useState(false);
   const [reloadLoading, setReloadLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
@@ -31,8 +31,10 @@ export default function ProjectToolbar({
     if (prjStatus.running) return;
 
     setRunLoading(true);
+    setLoadingMsg("Wait while the project starting");
     window.api.runTopology(prjStatus.id).then((res) => {
       setRunLoading(false);
+      setLoadingMsg("");
       res.status
         ? updateState()
         : setError(res.error);

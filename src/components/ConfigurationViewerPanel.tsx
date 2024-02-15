@@ -8,13 +8,16 @@ type ConfigFileT = {
 };
 
 enum ActionKing {
+  UPDATE_NODE_STATES = "UPDATE_NODE_STATES",
   UPDATE_NODE = "UPDATE_NODE",
+  UPDATE_NODE_FILES = "UPDATE_NODE_FILES",
   UPDATE_SELECTED = "UPDATE_SELECTED",
   ERROR = "ERROR",
 }
 
 interface IAction {
   type: ActionKing;
+  nodes?: INodeState[];
   error?: string;
   node?: string;
   selected?: string;
@@ -24,6 +27,7 @@ interface IAction {
 interface IState {
   error: string;
   loading: boolean;
+  nodes: INodeState[];
   node: string;
   selected: string;
   files: ConfigFileT[];
@@ -37,7 +41,7 @@ const getDefaultSelected = (files: ConfigFileT[]): string => {
     return files[0].name;
   }
   return "";
-}
+};
 
 function reducer(state: IState, action: IAction): IState {
   switch (action.type) {
@@ -47,13 +51,27 @@ function reducer(state: IState, action: IAction): IState {
         error: action.error as string,
         loading: false,
       };
+    case ActionKing.UPDATE_NODE_STATES:
+      return {
+        ...state,
+        error: "",
+        loading: action.node != state.node,
+        nodes: action.nodes,
+        node: action.node,
+      };
     case ActionKing.UPDATE_NODE:
+      return {
+        ...state,
+        error: "",
+        loading: action.node != state.node,
+        node: action.node,
+      };
+    case ActionKing.UPDATE_NODE_FILES:
       const selected = getDefaultSelected(action.files);
       return {
         ...state,
         error: "",
         loading: false,
-        node: action.node,
         files: action.files,
         selected,
       };
@@ -67,7 +85,7 @@ function reducer(state: IState, action: IAction): IState {
 
 const parseNetworkFile = (network: string): string => {
   return YAML.stringify(JSON.parse(network), {});
-}
+};
 
 export default function ConfigurationViewerPanel({
   prjStatus,
@@ -77,11 +95,11 @@ export default function ConfigurationViewerPanel({
   const [state, dispatch] = useReducer(reducer, {
     error: "",
     loading: true,
+    nodes: [],
     node: "",
     files: [],
     selected: "",
   });
-  const [nodes, setNodes] = useState<INodeState[]>([]);
 
   useEffect(() => {
     const newNodes = prjStatus.nodes.sort((a, b) => {
@@ -89,13 +107,30 @@ export default function ConfigurationViewerPanel({
       if (a.name > b.name) return 1;
       return 0;
     });
-    if (newNodes.length > 0) {
-      handleNodeChange(newNodes[0].name);
-    }
-    setNodes(newNodes);
+    const selectedNode = newNodes.length > 0 ? newNodes[0].name : "";
+    dispatch({
+      type: ActionKing.UPDATE_NODE_STATES,
+      nodes: newNodes,
+      node: selectedNode,
+    });
   }, [prjStatus.nodes]);
 
+  useEffect(() => {
+    if (state.node == "") return;
+
+    window.api.readNodeConfigFiles(prjStatus.id, state.node).then((res) => {
+      res.status
+        ? dispatch({
+            type: ActionKing.UPDATE_NODE_FILES,
+            files: res.result.files,
+          })
+        : dispatch({ type: ActionKing.ERROR, error: res.error });
+    });
+  }, [state.node, prjStatus.id]);
+
   const getConfigData = useCallback((): string => {
+    if (state.node != "" && state.loading) return "Loading...";
+
     if (state.selected != "") {
       for (const f of state.files) {
         if (f.name == state.selected) {
@@ -106,19 +141,10 @@ export default function ConfigurationViewerPanel({
       }
     }
     return "No config file";
-  }, [state.selected, state.files]);
+  }, [state]);
 
-  const handleNodeChange = useCallback((nodeId: string) => {
-    window.api.readNodeConfigFiles(prjStatus.id, nodeId).then((res) => {
-      res.status
-        ? dispatch({
-            type: ActionKing.UPDATE_NODE,
-            node: nodeId,
-            files: res.result.files,
-          })
-        : dispatch({ type: ActionKing.ERROR, error: res.error });
-    });
-  }, [prjStatus.id]);
+  const handleNodeChange = (nodeId: string) =>
+    dispatch({ type: ActionKing.UPDATE_NODE, node: nodeId });
 
   const handleSelectedChange = (fileName: string) => {
     dispatch({ type: ActionKing.UPDATE_SELECTED, selected: fileName });
@@ -133,7 +159,7 @@ export default function ConfigurationViewerPanel({
             value={state.node}
             onChange={(e) => handleNodeChange(e.target.value)}
           >
-            {nodes.map((node) => (
+            {state.nodes.map((node) => (
               <option key={node.name} value={node.name}>
                 {node.name}
               </option>

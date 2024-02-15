@@ -17,9 +17,9 @@ function App(): JSX.Element {
   const [version, setVersion] = useState("");
   const [optionsModalOpen, setOptionsModalOpen] = useState(false);
   const [prjListModalOpen, setprjListModalOpen] = useState(false);
-  const [closeLoading, setCloseLoading] = useState(false);
   const [options, setOptions] = useState<IOptions | null>(null);
   const [currentPrj, setCurrentPrj] = useState("");
+  const [loadingMsg, setLoadingMsg] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -57,9 +57,9 @@ function App(): JSX.Element {
 
   const handleCloseProject = async () => {
     if (currentPrj != "") {
-      setCloseLoading(true);
+      setLoadingMsg("Wait for the project to close");
       const res = await window.api.closeProject(currentPrj);
-      setCloseLoading(false);
+      setLoadingMsg("");
 
       if (!res.status) setError(res.error);
       setCurrentPrj("");
@@ -76,7 +76,7 @@ function App(): JSX.Element {
 
   const connected = version != "";
   return (
-    <AppContext.Provider value={{error, setError, options}}>
+    <AppContext.Provider value={{error, setError, options, setLoadingMsg}}>
 
     <div className="flex flex-col h-screen">
       <div className="navbar bg-base-200 flex-none">
@@ -166,11 +166,11 @@ function App(): JSX.Element {
 
       <ErrorToast error={error} clearError={() => setError("")} />
 
-      { closeLoading && (
+      { loadingMsg && (
         <div className="toast toast-center toast-middle">
           <div className="alert alert-info flex gap-2 p-6 align-middle">
             <span className="loading loading-spinner loading-md"></span>
-            <span>Wait for the project to close</span>
+            <span>{loadingMsg}</span>
           </div>
         </div>
       )}
