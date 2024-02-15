@@ -14,9 +14,9 @@ import { getOptions } from "./options";
 import { decodeB64, findExecutable } from "./utils";
 
 
-const consoleCmd = (prjId: string, nodeId: string) => {
+const consoleCmd = (prjId: string, nodeId: string, shell: boolean) => {
   const termCmd = getOptions().consoleExternalCmd
-  const cmd = `gonetem-console console ${prjId}.${nodeId}`;
+  const cmd = `gonetem-console console ${shell ? '--shell ' : ''}${prjId}.${nodeId}`;
   return new Function('name', 'cmd', 'return `' + termCmd + '`;')(nodeId, cmd)
 };
 
@@ -75,13 +75,14 @@ export const handleReadNodeConfigFiles = async (
 
 function runNodeConsole(
   prjId: string,
-  nodeId: string
+  nodeId: string,
+  shell: boolean,
 ): Promise<ApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to run console for node '${prjId}.${nodeId}': ${err}`;
 
   return new Promise<ApiResponse>((resolve) => {
-    const cmd = consoleCmd(prjId, nodeId);
+    const cmd = consoleCmd(prjId, nodeId, shell);
     const process = spawn(cmd, {shell: true});
     process.on('error', (err) => {
       resolve({ status: false, error: errorFmt(err.message) });
@@ -93,12 +94,13 @@ function runNodeConsole(
 export const handleRunNodeConsole = async (
   _event: IpcMainInvokeEvent,
   prjId: string,
-  nodeId: string
+  nodeId: string,
+  shell: boolean,
 ): Promise<ConfigFilesApiResponse> => {
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
-  return await runNodeConsole(prjId, nodeId);
+  return await runNodeConsole(prjId, nodeId, shell);
 };
 
 function nodeStart(

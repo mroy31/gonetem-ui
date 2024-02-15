@@ -67,7 +67,7 @@ declare global {
     runTopology: (prjId: string) => Promise<ApiResponse>,
     reloadTopology: (prjId: string) => Promise<ApiResponse>,
     readNodeConfigFiles: (prjId: string, nodeId: string) => Promise<ConfigFilesApiResponse>,
-    runNodeConsole: (prjId: string, nodeId: string) => Promise<ApiResponse>,
+    runNodeConsole: (prjId: string, nodeId: string, shell: boolean) => Promise<ApiResponse>,
     runNodeStart: (prjId: string, nodeId: string) => Promise<ApiResponse>,
     runNodeStop: (prjId: string, nodeId: string) => Promise<ApiResponse>,
     runNodeRestart: (prjId: string, nodeId: string) => Promise<ApiResponse>,

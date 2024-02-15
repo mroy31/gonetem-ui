@@ -23,10 +23,10 @@ const NodeContextMenu = ({
   const { setError } = useAppContext();
   const [loading, setLoading] = useState("");
 
-  const handleRunConsole = useCallback(() => {
+  const handleRunConsole = useCallback((shell: boolean) => {
     if (state.running && loading == "") {
       window.api
-        .runNodeConsole(contextMenu.prjId, contextMenu.nodeId)
+        .runNodeConsole(contextMenu.prjId, contextMenu.nodeId, shell)
         .then((res) => {
           res.status ? onHide(false) : setError(res.error);
         });
@@ -132,8 +132,13 @@ const NodeContextMenu = ({
         {state.running && (
           <>
             <li>
-              <a className={actionClasses} onClick={handleRunConsole}>
-                Console
+              <a className={actionClasses} onClick={() => handleRunConsole(false)}>
+                External console
+              </a>
+            </li>
+            <li>
+              <a className={actionClasses} onClick={() => handleRunConsole(true)}>
+                Debug shell
               </a>
             </li>
             <li>
