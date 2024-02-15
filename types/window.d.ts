@@ -1,7 +1,6 @@
 
-import { IProject } from 'src/api/project';
+import { IProject, IProjectState } from '../src/api/project';
 import {IOptions} from '../src/api/options';
-import { IProjectState } from 'src/api/project';
 
 
 export {}; // needed to make TypeScript happy

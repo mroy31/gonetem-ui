@@ -6,7 +6,6 @@ import { IpcMainInvokeEvent, dialog } from "electron";
 import { CLIENT } from "./client";
 import { OpenRequest, ProjectRequest, StatusCode } from "../proto/netem_pb";
 import { Empty } from "google-protobuf/google/protobuf/empty_pb";
-import { decodeB64 } from "./utils";
 
 export let CURRENT_PROJECT_ID = "";
 export let CURRENT_PROJECT_FILEPATH = "";

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useReducer, useState } from "react";
+import React, { useCallback, useEffect, useReducer } from "react";
 import YAML from "yaml";
 import { INodeState, IProjectState } from "../api/interface";
 
@@ -67,13 +67,12 @@ function reducer(state: IState, action: IAction): IState {
         node: action.node,
       };
     case ActionKing.UPDATE_NODE_FILES:
-      const selected = getDefaultSelected(action.files);
       return {
         ...state,
         error: "",
         loading: false,
         files: action.files,
-        selected,
+        selected: getDefaultSelected(action.files),
       };
     case ActionKing.UPDATE_SELECTED:
       return {

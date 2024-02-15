@@ -229,7 +229,7 @@ function nodeSetIfState(
   const errorFmt = (err: string) =>
     `Unable to change state on if '${nodeId}.${interfaceId}': ${err}`;
   
-  return new Promise<ApiResponse>(async (resolve) => {
+  return new Promise<ApiResponse>((resolve) => {
     const request = new NodeIfStateRequest();
     request.setPrjid(prjId);
     request.setNode(nodeId);
@@ -273,43 +273,44 @@ function nodeCapture(
   const errorFmt = (err: string) =>
     `Unable to start capture on if '${nodeId}.${interfaceId}': ${err}`;
 
-  return new Promise<ApiResponse>(async (resolve) => {
-    const wiresharkPath = await findExecutable("wireshark");
-    if (wiresharkPath == null) {
-      resolve({status: false, error: errorFmt("Wireshark is not found")});
-      return;
-    }
-
-    const request = new NodeInterfaceRequest();
-    request.setPrjid(prjId);
-    request.setNode(nodeId);
-    request.setIfindex(interfaceId);
-
-    let captureProcess:ChildProcessWithoutNullStreams | null = null;
-
-    const captureStream = CLIENT.capture(request);
-    captureStream.on('data', (msg: CaptureSrvMsg) => {
-      if (captureProcess == null) {
-        const args = ["-o", `gui.window_title:${nodeId}@${interfaceId}`, "-k", "-i", "-"]
-        captureProcess = spawn(wiresharkPath, args);
-        captureProcess.on("spawn", () => resolve({status: true}));
-        captureProcess.on('error', (err) => {
-          resolve({ status: false, error: errorFmt(err.message) });
-        });
-      } else {
-        switch (msg.getCode()) {
-          case CaptureSrvMsg.Code.ERROR:
-            captureProcess.kill();
-            break;
-          case CaptureSrvMsg.Code.STDOUT:
-            captureProcess.stdin.write(msg.getData());
-            break;
-        }
+  return new Promise<ApiResponse>((resolve) => {
+    findExecutable("wireshark").then((wiresharkPath) => {
+      if (wiresharkPath == null) {
+        resolve({status: false, error: errorFmt("Wireshark is not found")});
+        return;
       }
-    });
-    captureStream.on('error', (err: Error) => {
-      if (captureProcess != null) captureProcess.kill();
-      resolve({status: false, error: errorFmt(err.message)})
+
+      const request = new NodeInterfaceRequest();
+      request.setPrjid(prjId);
+      request.setNode(nodeId);
+      request.setIfindex(interfaceId);
+
+      let captureProcess:ChildProcessWithoutNullStreams | null = null;
+
+      const captureStream = CLIENT.capture(request);
+      captureStream.on('data', (msg: CaptureSrvMsg) => {
+        if (captureProcess == null) {
+          const args = ["-o", `gui.window_title:${nodeId}@${interfaceId}`, "-k", "-i", "-"]
+          captureProcess = spawn(wiresharkPath, args);
+          captureProcess.on("spawn", () => resolve({status: true}));
+          captureProcess.on('error', (err) => {
+            resolve({ status: false, error: errorFmt(err.message) });
+          });
+        } else {
+          switch (msg.getCode()) {
+            case CaptureSrvMsg.Code.ERROR:
+              captureProcess.kill();
+              break;
+            case CaptureSrvMsg.Code.STDOUT:
+              captureProcess.stdin.write(msg.getData());
+              break;
+          }
+        }
+      });
+      captureStream.on('error', (err: Error) => {
+        if (captureProcess != null) captureProcess.kill();
+        resolve({status: false, error: errorFmt(err.message)})
+      });
     });
   });
 }

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import { INodeState, IProjectState } from "../api/interface";
@@ -100,7 +100,7 @@ export default function ConsolePanel({
   if (selected == null) {
     return (
       <div className="flex flex-col w-full h-full min-h-0">
-        <div className="join join-vertical px-2 py-4">
+        <div className="join join-vertical px-6 py-4">
           {nodes.map((node) => (
             <button
               key={node.name}
