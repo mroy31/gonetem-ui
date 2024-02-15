@@ -15,7 +15,7 @@ export default function ProjectContextPanel({
   topology: string;
   dispatch: React.Dispatch<IPrjAction>;
 }): JSX.Element {
-  const [width, setWidth] = useState(350);
+  const [width, setWidth] = useState(450);
   const [selectedTab, setSelectedTab] = useState<"topo" | "config" | "console">("config");
   const isResized = useRef(false);
 

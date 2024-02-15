@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, Menu } from "electron";
 import IsDev from "electron-is-dev";
-import { handleGetOptions, handleSetOptions } from "./api/options";
-import { handleConnect, handleIsConnected } from "./api/client";
+import { getOptions, handleGetOptions, handleSetOptions } from "./api/options";
+import { connectToServer, handleConnect, handleIsConnected } from "./api/client";
 import {
   handleCloseProject,
   handleConnectProject,
@@ -42,8 +42,8 @@ if (require("electron-squirrel-startup")) {
 const createWindow = (): void => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    height: 900,
-    width: 1200,
+    height: 1000,
+    width: 1400,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -112,7 +112,17 @@ app.on("ready", () => {
   ipcMain.handle("console:write", handleWriteInternalConsole);
   ipcMain.handle("console:resize", handleResizeInternalConsole);
 
-  createWindow();
+  const options = getOptions();
+  if (options.autoconnect && options.server != "") {
+    connectToServer().then((res) => {
+      if (!res.status)
+        console.log(`Unable to connect to server ${options.server}: ${res.error}`);
+      createWindow();
+    });
+  } else {
+    createWindow();
+  } 
+
   app.on("activate", () => {
     // On OS X it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.

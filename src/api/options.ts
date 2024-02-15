@@ -11,6 +11,7 @@ export interface ITLSOptions {
 
 export interface IOptions {
     server: string;
+    autoconnect: boolean;
     tls: ITLSOptions;
     consoleExternalCmd: string;
 }
@@ -18,6 +19,7 @@ export interface IOptions {
 const store = new Store<IOptions>({
     schema: { 
         server: { type: "string" },
+        autoconnect: { type: "boolean" },
         tls: { 
           type: "object",
           properties: {
@@ -31,6 +33,7 @@ const store = new Store<IOptions>({
     }, 
     defaults: {
         server: "",
+        autoconnect: true,
         tls: {
             enabled: false,
         },
@@ -41,6 +44,7 @@ const store = new Store<IOptions>({
 export const getOptions = (): IOptions => {
     return {
         server: store.get("server"),
+        autoconnect: store.get("autoconnect"),
         tls: store.get("tls"),
         consoleExternalCmd: store.get("consoleExternalCmd"),
     };
@@ -48,6 +52,7 @@ export const getOptions = (): IOptions => {
 
 const setOptions = (options: IOptions): void => {
     store.set("server", options.server);
+    store.set("autoconnect", options.autoconnect);
     store.set("tls", options.tls);
 }
 

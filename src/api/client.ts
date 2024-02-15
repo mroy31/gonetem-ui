@@ -70,9 +70,7 @@ export const handleIsConnected = async (
     : { status: false, error: res.error };
 };
 
-export const handleConnect = async (
-  _event: IpcMainInvokeEvent
-): Promise<StringApiResponse> => {
+export const connectToServer = async (): Promise<StringApiResponse> => {
   if (CLIENT != null) return await getVersion();
 
   const options = getOptions();
@@ -91,4 +89,10 @@ export const handleConnect = async (
   } catch (err) {
     return { status: false, error: err.message };
   }
+}
+
+export const handleConnect = async (
+  _event: IpcMainInvokeEvent
+): Promise<StringApiResponse> => {
+  return await connectToServer();
 };

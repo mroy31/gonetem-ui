@@ -12,6 +12,7 @@ export default function OptionsModal({
   setIsOpen: (isOpen: boolean) => void;
 }): JSX.Element {
   const [server, setServer] = useState(options?.server || "localhost:10110");
+  const [autoconnect, setAutoconnect] = useState<boolean>(options?.autoconnect);
   const [tls, setTls] = useState(options?.tls);
   const [consoleCmd, setConsoleCmd] = useState(options?.consoleExternalCmd);
 
@@ -28,6 +29,7 @@ export default function OptionsModal({
     window.api
       .setOptions({
         server,
+        autoconnect,
         tls,
         consoleExternalCmd: consoleCmd,
       })
@@ -54,6 +56,16 @@ export default function OptionsModal({
               className="input input-bordered w-full max-w-xs"
             />
           </label>
+          <div className="form-control">
+            <label className="label cursor-pointer">
+              <span className="label-text">Connect at startup</span> 
+              <input 
+                type="checkbox"
+                checked={autoconnect}
+                onChange={(e) => setAutoconnect(e.target.checked)}
+                className="checkbox"/>
+            </label>
+          </div>
           <div className="form-control">
             <label className="label cursor-pointer">
               <span className="label-text">TLS enabled</span> 
