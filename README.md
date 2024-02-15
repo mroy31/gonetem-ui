@@ -5,7 +5,7 @@ Description
 -----------
 
 gonetem-ui is a cross-platform graphical interface for the network emulator [gonetem](https://github.com/mroy31/gonetem).
-It if written with [Electron](https://www.electronjs.org/) and [React](https://react.dev/).
+It is written with [Electron](https://www.electronjs.org/) and [React](https://react.dev/).
 
 Usage
 -----
@@ -22,3 +22,5 @@ No release has been available for now. To test gonetem-ui you need to
 - Launch the application
 
     $yarn start
+
+- Finally, open options to configure server URI and connect to server.  
