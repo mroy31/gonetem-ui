@@ -17,7 +17,11 @@ module.exports = {
         },
         {
             name: "@electron-forge/maker-deb",
-            config: {}
+            config: {
+                options: {
+                    icon: 'icon/gonetem-ui_512x512.png'
+                }
+            }
         }
     ],
     plugins: [

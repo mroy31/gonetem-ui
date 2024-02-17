@@ -44,6 +44,7 @@ if (require("electron-squirrel-startup")) {
 const createWindow = (): void => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
+    icon: "../icon/gonetem-ui_512x512.png",
     height: 900,
     width: 1400,
     webPreferences: {
