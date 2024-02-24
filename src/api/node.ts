@@ -1,5 +1,5 @@
 import { IpcMainInvokeEvent } from "electron";
-import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
+import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import {
   CaptureSrvMsg,
   ConfigFilesResponse,
@@ -13,14 +13,27 @@ import { CLIENT } from "./client";
 import { getOptions } from "./options";
 import { decodeB64, findExecutable } from "./utils";
 
+const consoleCmd = async (
+  prjId: string,
+  nodeId: string,
+  shell: boolean
+): Promise<string | null> => {
+  const termCmd = getOptions().consoleExternalCmd;
+  // find term exe
+  const termArgs = termCmd.split(" ");
+  const termExe = await findExecutable(termArgs[0]);
+  if (termExe == null) return null;
 
-const consoleCmd = (prjId: string, nodeId: string, shell: boolean) => {
-  const termCmd = getOptions().consoleExternalCmd
-  const cmd = `gonetem-console console ${shell ? '--shell ' : ''}${prjId}.${nodeId}`;
-  return new Function('name', 'cmd', 'return `' + termCmd + '`;')(nodeId, cmd)
+  const fullTermCmd =
+    termExe + " " + termArgs.slice(1, termArgs.length).join(" ");
+  const cmd = `gonetem-console console ${
+    shell ? "--shell " : ""
+  }${prjId}.${nodeId}`;
+  return new Function("name", "cmd", "return `" + fullTermCmd + "`;")(
+    nodeId,
+    cmd
+  );
 };
-
-
 
 function readNodeConfigFiles(
   prjId: string,
@@ -72,22 +85,30 @@ export const handleReadNodeConfigFiles = async (
   return await readNodeConfigFiles(prjId, nodeId);
 };
 
-
 function runNodeConsole(
   prjId: string,
   nodeId: string,
-  shell: boolean,
+  shell: boolean
 ): Promise<ApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to run console for node '${prjId}.${nodeId}': ${err}`;
 
   return new Promise<ApiResponse>((resolve) => {
-    const cmd = consoleCmd(prjId, nodeId, shell);
-    const process = spawn(cmd, {shell: true});
-    process.on('error', (err) => {
-      resolve({ status: false, error: errorFmt(err.message) });
+    consoleCmd(prjId, nodeId, shell).then((cmd) => {
+      if (cmd == null)
+        resolve({
+          status: false,
+          error: "Term command defined in option not found",
+        });
+
+      const process = spawn(cmd, { shell: true });
+      process.on("error", (err) => {
+        resolve({ status: false, error: errorFmt(err.message) });
+      });
+      process.on("spawn", () => {
+        resolve({ status: true });
+      });
     });
-    process.on('spawn', () => { resolve({ status: true })});
   });
 }
 
@@ -95,7 +116,7 @@ export const handleRunNodeConsole = async (
   _event: IpcMainInvokeEvent,
   prjId: string,
   nodeId: string,
-  shell: boolean,
+  shell: boolean
 ): Promise<ConfigFilesApiResponse> => {
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
@@ -103,10 +124,7 @@ export const handleRunNodeConsole = async (
   return await runNodeConsole(prjId, nodeId, shell);
 };
 
-function nodeStart(
-  prjId: string,
-  nodeId: string
-): Promise<ApiResponse> {
+function nodeStart(prjId: string, nodeId: string): Promise<ApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to start node '${prjId}.${nodeId}': ${err}`;
 
@@ -142,10 +160,7 @@ export const handleNodeStart = async (
   return await nodeStart(prjId, nodeId);
 };
 
-function nodeStop(
-  prjId: string,
-  nodeId: string
-): Promise<ApiResponse> {
+function nodeStop(prjId: string, nodeId: string): Promise<ApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to stop node '${prjId}.${nodeId}': ${err}`;
 
@@ -181,10 +196,7 @@ export const handleNodeStop = async (
   return await nodeStop(prjId, nodeId);
 };
 
-function nodeRestart(
-  prjId: string,
-  nodeId: string
-): Promise<ApiResponse> {
+function nodeRestart(prjId: string, nodeId: string): Promise<ApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to restart node '${prjId}.${nodeId}': ${err}`;
 
@@ -224,11 +236,11 @@ function nodeSetIfState(
   prjId: string,
   nodeId: string,
   interfaceId: number,
-  up: boolean,
+  up: boolean
 ): Promise<ApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to change state on if '${nodeId}.${interfaceId}': ${err}`;
-  
+
   return new Promise<ApiResponse>((resolve) => {
     const request = new NodeIfStateRequest();
     request.setPrjid(prjId);
@@ -257,7 +269,7 @@ export const handleNodeSetIfState = async (
   prjId: string,
   nodeId: string,
   interfaceId: number,
-  up: boolean,
+  up: boolean
 ): Promise<ApiResponse> => {
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
@@ -268,7 +280,7 @@ export const handleNodeSetIfState = async (
 function nodeCapture(
   prjId: string,
   nodeId: string,
-  interfaceId: number,
+  interfaceId: number
 ): Promise<ApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to start capture on if '${nodeId}.${interfaceId}': ${err}`;
@@ -276,7 +288,7 @@ function nodeCapture(
   return new Promise<ApiResponse>((resolve) => {
     findExecutable("wireshark").then((wiresharkPath) => {
       if (wiresharkPath == null) {
-        resolve({status: false, error: errorFmt("Wireshark is not found")});
+        resolve({ status: false, error: errorFmt("Wireshark is not found") });
         return;
       }
 
@@ -285,15 +297,21 @@ function nodeCapture(
       request.setNode(nodeId);
       request.setIfindex(interfaceId);
 
-      let captureProcess:ChildProcessWithoutNullStreams | null = null;
+      let captureProcess: ChildProcessWithoutNullStreams | null = null;
 
       const captureStream = CLIENT.capture(request);
-      captureStream.on('data', (msg: CaptureSrvMsg) => {
+      captureStream.on("data", (msg: CaptureSrvMsg) => {
         if (captureProcess == null) {
-          const args = ["-o", `gui.window_title:${nodeId}@${interfaceId}`, "-k", "-i", "-"]
+          const args = [
+            "-o",
+            `gui.window_title:${nodeId}@${interfaceId}`,
+            "-k",
+            "-i",
+            "-",
+          ];
           captureProcess = spawn(wiresharkPath, args);
-          captureProcess.on("spawn", () => resolve({status: true}));
-          captureProcess.on('error', (err) => {
+          captureProcess.on("spawn", () => resolve({ status: true }));
+          captureProcess.on("error", (err) => {
             resolve({ status: false, error: errorFmt(err.message) });
           });
         } else {
@@ -307,9 +325,9 @@ function nodeCapture(
           }
         }
       });
-      captureStream.on('error', (err: Error) => {
+      captureStream.on("error", (err: Error) => {
         if (captureProcess != null) captureProcess.kill();
-        resolve({status: false, error: errorFmt(err.message)})
+        resolve({ status: false, error: errorFmt(err.message) });
       });
     });
   });
@@ -319,7 +337,7 @@ export const handleNodeCapture = async (
   _event: IpcMainInvokeEvent,
   prjId: string,
   nodeId: string,
-  interfaceId: number,
+  interfaceId: number
 ): Promise<ConfigFilesApiResponse> => {
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
