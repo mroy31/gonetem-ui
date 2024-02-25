@@ -27,9 +27,12 @@ export default function TopologyEditorPanel({
   useEffect(() => {
     if (containerRef.current) {
       setHeight(`${containerRef.current.offsetHeight}px`);
-      window.addEventListener("resize", () => {
+
+      const resizeCb = () => {
         setHeight(`${containerRef.current.offsetHeight}px`);
-      });
+      };
+      window.addEventListener("resize", resizeCb);
+      return () => window.removeEventListener("resize", resizeCb);
     }
   }, [containerRef]);
 
