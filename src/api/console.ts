@@ -12,7 +12,7 @@ import { CURRENT_PROJECT_ID } from "./project";
 let RUNNING_CONSOLES = new Map<string, grpc.ClientDuplexStream<ConsoleCltMsg, ConsoleSrvMsg>>();
 
 export function closeRunningConsoles() {
-  for (const key in RUNNING_CONSOLES.keys()) {
+  for (const key of RUNNING_CONSOLES.keys()) {
     try {
       RUNNING_CONSOLES.get(key).destroy();
     } catch (err) { } finally {
@@ -28,8 +28,24 @@ function runNodeInternalConsole(
     `Unable to run internal console for node ${nodeId}: ${err}`;
 
   return new Promise<ApiResponse>((resolve) => {
-    if (RUNNING_CONSOLES.has(nodeId))
-      resolve({status: true});
+    if (RUNNING_CONSOLES.has(nodeId)) {
+      const msg = new ConsoleCltMsg();
+      msg.setCode(ConsoleCltMsg.Code.DATA);
+      msg.setPrjid(CURRENT_PROJECT_ID);
+      msg.setNode(nodeId);
+      msg.setData(Buffer.from("\n").toString('base64'));
+
+      RUNNING_CONSOLES.get(nodeId).write(msg, (error: Error) => { 
+        if (error) {
+          RUNNING_CONSOLES.delete(nodeId);
+          resolve({status: false, error: errorFmt(error.message)})
+          return;
+        }
+
+        resolve({status: true}) 
+      });
+      return;
+    }
 
     const msg = new ConsoleCltMsg();
     msg.setCode(ConsoleCltMsg.Code.INIT);
@@ -160,4 +176,24 @@ export const handleResizeInternalConsole = async (
 
 
   return await resizeInternalConsole(nodeId, width, height);
+}
+
+const listOpenConsoles = (
+): Promise<StringListApiResponse> => {
+  return new Promise<StringListApiResponse>((resolve) => {
+    const openConsoles: string[] = [];
+    for (let key of RUNNING_CONSOLES.keys())
+      openConsoles.push(key)
+
+    resolve({status: true, result: openConsoles});
+  });
+}
+
+export const handleListOpenConsoles = async (
+  _event: IpcMainInvokeEvent,
+): Promise<StringListApiResponse> => {
+  if (CLIENT == null)
+    return { status: false, error: "Not connected to the server" };
+
+  return await listOpenConsoles();
 }

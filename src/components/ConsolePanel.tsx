@@ -23,6 +23,7 @@ const TermPanel = ({
         case "stderr":
           term.current.write(data);
           break;
+
         case "stdout":
           term.current.write(data);
           break;
@@ -93,6 +94,15 @@ export default function ConsolePanel({
       })
       .filter((n) => n.running);
     setNodes(newNodes);
+
+    window.api.consoleListOpen().then((res) => {
+      if (res.status) {
+        if (res.result.length > 0) {
+          const name = res.result[0];
+          setSelected(newNodes.filter((n) => n.name == name)[0]);
+        }
+      }
+    });
   }, [prjStatus.nodes]);
 
   if (!prjStatus.running) return <div className="p-2 italic">Project not running</div>;

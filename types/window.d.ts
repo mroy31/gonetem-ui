@@ -82,6 +82,7 @@ declare global {
     consoleWrite: (nodeId: string, data: string) => Promise<ApiResponse>,
     consoleResize: (nodeId: string, width: number, height: number) => Promise<ApiResponse>,
     consoleOnMsg: (cb: (msgType: string, nodeId: string, data: string) => void) => void,
+    consoleListOpen: () => Promise<StringListApiResponse>,
   }
 
   interface Window {

@@ -36,6 +36,7 @@ const exposedApi: ContextBridgeApi = {
     ipcRenderer.on("console:error", (_event, nodeId: string, data: string) => cb("error", nodeId, data));
     ipcRenderer.on("console:close", (_event, nodeId: string) => cb("close", nodeId, ""));
   },
+  consoleListOpen: (): Promise<StringListApiResponse> => ipcRenderer.invoke("console:listOpen"),
 }
 
 contextBridge.exposeInMainWorld('api', exposedApi);
