@@ -6,6 +6,7 @@ import { IpcMainInvokeEvent, dialog } from "electron";
 import { CLIENT } from "./client";
 import { OpenRequest, ProjectRequest, StatusCode } from "../proto/netem_pb";
 import { Empty } from "google-protobuf/google/protobuf/empty_pb";
+import { closeRunningConsoles } from "./console";
 
 export let CURRENT_PROJECT_ID = "";
 export let CURRENT_PROJECT_FILEPATH = "";
@@ -293,6 +294,7 @@ function closeProject(prjId: string): Promise<ApiResponse> {
     const request = new ProjectRequest();
     request.setId(prjId);
 
+    closeRunningConsoles();
     CLIENT.closeProject(request, (err, res) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });

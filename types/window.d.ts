@@ -20,23 +20,27 @@ declare global {
   }
 
   export interface StringApiResponse extends ApiResponse {
-      result?: string
+      result?: string;
+  }
+
+  export interface StringListApiResponse extends ApiResponse {
+      result?: string[];
   }
 
   export interface OptionsApiResponse extends ApiResponse {
-      result?: IOptions
+      result?: IOptions;
   }
 
   export interface PrjListApiResponse extends ApiResponse {
-      result?: IProject[]
+      result?: IProject[];
   }
 
   export interface PrjStateApiResponse extends ApiResponse {
-      result?: IProjectState
+      result?: IProjectState;
   }
 
   export interface FileApiResponse extends ApiResponse {
-      result?: string
+      result?: string;
   }
 
   export interface ConfigFilesApiResponse extends ApiResponse {
@@ -45,7 +49,7 @@ declare global {
         files: {
           name: string;
           data: string;
-        }[]
+        }[];
       }
   }
 
@@ -74,10 +78,10 @@ declare global {
     runNodeSetIfState: (prjId: string, nodeId: string, ifIndex: number, up: boolean) => Promise<ApiResponse>,
     closeProject: (prjId: string) => Promise<ApiResponse>,
     // internal console
-    consoleRun: (prjId: string, nodeId: string) => Promise<ApiResponse>,
-    consoleWrite: (data: string) => Promise<ApiResponse>,
-    consoleResize: (width: number, height: number) => Promise<ApiResponse>,
-    consoleOnMsg: (cb: (msgType: string, data: string) => void) => void,
+    consoleRun: (nodeId: string) => Promise<ApiResponse>,
+    consoleWrite: (nodeId: string, data: string) => Promise<ApiResponse>,
+    consoleResize: (nodeId: string, width: number, height: number) => Promise<ApiResponse>,
+    consoleOnMsg: (cb: (msgType: string, nodeId: string, data: string) => void) => void,
   }
 
   interface Window {

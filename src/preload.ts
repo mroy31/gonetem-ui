@@ -27,14 +27,14 @@ const exposedApi: ContextBridgeApi = {
   runNodeSetIfState: (prjId: string, nodeId: string, ifIndex: number, up: boolean):Promise<ApiResponse> => ipcRenderer.invoke("server:runNodeSetIfState", prjId, nodeId, ifIndex, up),
   closeProject: (prjId: string):Promise<ApiResponse> => ipcRenderer.invoke("server:close", prjId),
   // internal console
-  consoleRun: (prjId: string, nodeId: string): Promise<ApiResponse> => ipcRenderer.invoke("console:run", prjId, nodeId),
-  consoleWrite: (data: string): Promise<ApiResponse> => ipcRenderer.invoke("console:write", data),
-  consoleResize: (width: number, height: number):Promise<ApiResponse> => ipcRenderer.invoke("console:resize", width, height),
-  consoleOnMsg: (cb: (msgType: string, data: string) => void) => {
-    ipcRenderer.on("console:stdout", (_event, data: string) => cb("stdout", data));
-    ipcRenderer.on("console:stderr", (_event, data: string) => cb("stderr", data));
-    ipcRenderer.on("console:error", (_event, data: string) => cb("error", data));
-    ipcRenderer.on("console:close", (_event) => cb("close", ""));
+  consoleRun: (nodeId: string): Promise<ApiResponse> => ipcRenderer.invoke("console:run", nodeId),
+  consoleWrite: (nodeId: string, data: string): Promise<ApiResponse> => ipcRenderer.invoke("console:write", nodeId, data),
+  consoleResize: (nodeId: string, width: number, height: number):Promise<ApiResponse> => ipcRenderer.invoke("console:resize", nodeId, width, height),
+  consoleOnMsg: (cb: (msgType: string, nodeId: string, data: string) => void) => {
+    ipcRenderer.on("console:stdout", (_event, nodeId: string, data: string) => cb("stdout", nodeId, data));
+    ipcRenderer.on("console:stderr", (_event, nodeId: string, data: string) => cb("stderr", nodeId, data));
+    ipcRenderer.on("console:error", (_event, nodeId: string, data: string) => cb("error", nodeId, data));
+    ipcRenderer.on("console:close", (_event, nodeId: string) => cb("close", nodeId, ""));
   },
 }
 

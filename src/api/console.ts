@@ -7,85 +7,102 @@ import {
 } from "../proto/netem_pb";
 import { mainWindow } from "..";
 import { CLIENT } from "./client";
+import { CURRENT_PROJECT_ID } from "./project";
 
-let RUNNING_CONSOLE: grpc.ClientDuplexStream<ConsoleCltMsg, ConsoleSrvMsg> = null;
+let RUNNING_CONSOLES = new Map<string, grpc.ClientDuplexStream<ConsoleCltMsg, ConsoleSrvMsg>>();
+
+export function closeRunningConsoles() {
+  for (const key in RUNNING_CONSOLES.keys()) {
+    try {
+      RUNNING_CONSOLES.get(key).destroy();
+    } catch (err) { } finally {
+      RUNNING_CONSOLES.delete(key);
+    }
+  }
+}
 
 function runNodeInternalConsole(
-  prjId: string,
   nodeId: string
 ): Promise<ApiResponse> {
   const errorFmt = (err: string) =>
-    `Unable to run internal console for node '${prjId}.${nodeId}': ${err}`;
+    `Unable to run internal console for node ${nodeId}: ${err}`;
 
   return new Promise<ApiResponse>((resolve) => {
+    if (RUNNING_CONSOLES.has(nodeId))
+      resolve({status: true});
+
     const msg = new ConsoleCltMsg();
     msg.setCode(ConsoleCltMsg.Code.INIT);
-    msg.setPrjid(prjId);
+    msg.setPrjid(CURRENT_PROJECT_ID);
     msg.setNode(nodeId);
     msg.setShell(false);
 
-    RUNNING_CONSOLE = CLIENT.console();
-    RUNNING_CONSOLE.on("data", (data: ConsoleSrvMsg) => {
+    RUNNING_CONSOLES.set(nodeId, CLIENT.console());
+    RUNNING_CONSOLES.get(nodeId).on("data", (data: ConsoleSrvMsg) => {
       switch (data.getCode()) {
         case ConsoleSrvMsg.Code.CLOSE:
-          mainWindow.webContents.send("console:close");
-          RUNNING_CONSOLE = null;
+          mainWindow.webContents.send("console:close", nodeId);
+          RUNNING_CONSOLES.delete(nodeId);
           break;
         case ConsoleSrvMsg.Code.ERROR:
-          mainWindow.webContents.send("console:error", data.getData());
-          RUNNING_CONSOLE = null;
+          mainWindow.webContents.send("console:error", nodeId, data.getData());
+          RUNNING_CONSOLES.delete(nodeId);
           break;
         case ConsoleSrvMsg.Code.STDOUT:
-          mainWindow.webContents.send("console:stdout", Buffer.from(data.getData_asB64(), "base64").toString())
+          mainWindow.webContents.send("console:stdout", nodeId, Buffer.from(data.getData_asB64(), "base64").toString())
           break;
         case ConsoleSrvMsg.Code.STDERR:
-          mainWindow.webContents.send("console:stderr", Buffer.from(data.getData_asB64(), "base64").toString())
+          mainWindow.webContents.send("console:stderr", nodeId, Buffer.from(data.getData_asB64(), "base64").toString())
           break;
 
       }
     });
-    RUNNING_CONSOLE.on('error', function(e) {
+    RUNNING_CONSOLES.get(nodeId).on('error', function(e) {
       mainWindow.webContents.send("console:error", e)
-      RUNNING_CONSOLE.destroy()
-      RUNNING_CONSOLE = null;
+      if (RUNNING_CONSOLES.has(nodeId)) {
+        RUNNING_CONSOLES.get(nodeId).destroy()
+        RUNNING_CONSOLES.delete(nodeId);
+      }
     });
 
-    RUNNING_CONSOLE.write(msg, (error: Error) => { 
-      error
-        ? resolve({status: false, error: errorFmt(error.message)})
-        : resolve({status: true}) 
+    RUNNING_CONSOLES.get(nodeId).write(msg, (error: Error) => { 
+      if (error) {
+        RUNNING_CONSOLES.delete(nodeId);
+        resolve({status: false, error: errorFmt(error.message)})
+        return;
+      }
+
+      resolve({status: true}) 
     });
   });
 }
 
 export const handleRunNodeInternalConsole = async (
   _event: IpcMainInvokeEvent,
-  prjId: string,
   nodeId: string
 ): Promise<ApiResponse> => {
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
-  if (RUNNING_CONSOLE != null) {
-    RUNNING_CONSOLE.destroy();
-    RUNNING_CONSOLE = null;
-  }
+  if (CURRENT_PROJECT_ID == "")
+    return { status: false, error: "Not connected to the server" };
 
-  return await runNodeInternalConsole(prjId, nodeId);
+  return await runNodeInternalConsole(nodeId);
 };
 
 const writeInternalConsole = (
+  nodeId: string,
   data: string,
 ): Promise<ApiResponse> => {
   const errorFmt = (err: string) =>
-    `Unable to write data on console : ${err}`;
+    `Unable to write data on console for node ${nodeId} : ${err}`;
 
   return new Promise<ApiResponse>((resolve) => {
     const msg = new ConsoleCltMsg();
     msg.setCode(ConsoleCltMsg.Code.DATA);
     msg.setData(Buffer.from(data).toString('base64'));
 
-    RUNNING_CONSOLE.write(msg, (error: Error) => { 
+    RUNNING_CONSOLES.get(nodeId).write(msg, (error: Error) => { 
       error
         ? resolve({status: false, error: errorFmt(error.message)})
         : resolve({status: true}) 
@@ -95,23 +112,25 @@ const writeInternalConsole = (
 
 export const handleWriteInternalConsole = async (
   _event: IpcMainInvokeEvent,
+  nodeId: string,
   data: string,
 ): Promise<ApiResponse> => {
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
-  if (RUNNING_CONSOLE == null)
+  if (!RUNNING_CONSOLES.has(nodeId))
     return { status: false, error: "Not connected to the server" };
 
-  return await writeInternalConsole(data);
+  return await writeInternalConsole(nodeId, data);
 }
 
 const resizeInternalConsole = (
+  nodeId: string,
   width: number,
   height: number,
 ): Promise<ApiResponse> => {
   const errorFmt = (err: string) =>
-    `Unable to resize console : ${err}`;
+    `Unable to resize console for node ${nodeId}: ${err}`;
 
   return new Promise<ApiResponse>((resolve) => {
     const msg = new ConsoleCltMsg();
@@ -119,7 +138,7 @@ const resizeInternalConsole = (
     msg.setTtyheight(height);
     msg.setTtywidth(width);
 
-    RUNNING_CONSOLE.write(msg, (error: Error) => { 
+    RUNNING_CONSOLES.get(nodeId).write(msg, (error: Error) => { 
       error
         ? resolve({status: false, error: errorFmt(error.message)})
         : resolve({status: true}) 
@@ -129,14 +148,16 @@ const resizeInternalConsole = (
 
 export const handleResizeInternalConsole = async (
   _event: IpcMainInvokeEvent,
+  nodeId: string,
   width: number,
   height: number,
 ): Promise<ApiResponse> => {
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
-  if (RUNNING_CONSOLE == null)
+  if (!RUNNING_CONSOLES.has(nodeId))
     return { status: false, error: "Not connected to the server" };
 
-  return await resizeInternalConsole(width, height);
+
+  return await resizeInternalConsole(nodeId, width, height);
 }

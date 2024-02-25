@@ -5,11 +5,9 @@ import { INodeState, IProjectState } from "../api/interface";
 import "xterm/css/xterm.css";
 
 const TermPanel = ({
-  prjId,
   node,
   onClose,
 }: {
-  prjId: string;
   node: INodeState;
   onClose: () => void;
 }): JSX.Element => {
@@ -18,7 +16,9 @@ const TermPanel = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    window.api.consoleOnMsg((msgType: string, data: string) => {
+    window.api.consoleOnMsg((msgType: string, nodeId: string, data: string) => {
+      if (nodeId != node.name) return;
+
       switch (msgType) {
         case "stderr":
           term.current.write(data);
@@ -45,7 +45,7 @@ const TermPanel = ({
         fitAddon.current.fit();
       });
 
-      window.api.consoleRun(prjId, node.name).then((res) => {
+      window.api.consoleRun(node.name).then((res) => {
         if (!res.status) {
           console.log(res.error);
           return;
@@ -53,12 +53,12 @@ const TermPanel = ({
 
         term.current.loadAddon(fitAddon.current);
         term.current.onData((data: string) => {
-          window.api.consoleWrite(data).then((res) => {
+          window.api.consoleWrite(node.name, data).then((res) => {
             if (!res.status) console.log(res.error);
           });
         });
         term.current.onResize((size) => {
-          window.api.consoleResize(size.cols, size.rows).then((res) => {
+          window.api.consoleResize(node.name, size.cols, size.rows).then((res) => {
             if (!res.status) console.log(res.error);
           });
         });
@@ -122,7 +122,6 @@ export default function ConsolePanel({
       </div>
 
       <TermPanel
-        prjId={prjStatus.id}
         node={selected}
         onClose={() => setSelected(null)}
       />
