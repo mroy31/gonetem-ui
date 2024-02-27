@@ -78,11 +78,13 @@ declare global {
     runNodeSetIfState: (prjId: string, nodeId: string, ifIndex: number, up: boolean) => Promise<ApiResponse>,
     closeProject: (prjId: string) => Promise<ApiResponse>,
     // internal console
-    consoleRun: (nodeId: string) => Promise<ApiResponse>,
+    consoleRun: (nodeId: string) => Promise<StringApiResponse>,
     consoleWrite: (nodeId: string, data: string) => Promise<ApiResponse>,
     consoleResize: (nodeId: string, width: number, height: number) => Promise<ApiResponse>,
-    consoleOnMsg: (cb: (msgType: string, nodeId: string, data: string) => void) => void,
+    consoleSaveState: (nodeId: string, state: string) => Promise<ApiResponse>,
     consoleListOpen: () => Promise<StringListApiResponse>,
+    consoleAddListener: (nodeId: string, cb: (msgType: string, data: string) => void) => void,
+    consoleRemoveListeners: (nodeId: string) => void,
   }
 
   interface Window {

@@ -27,7 +27,7 @@ import {
   handleReadNodeConfigFiles,
   handleRunNodeConsole,
 } from "./api/node";
-import { handleListOpenConsoles, handleResizeInternalConsole, handleRunNodeInternalConsole, handleWriteInternalConsole } from "./api/console";
+import { handleListOpenConsoles, handleResizeInternalConsole, handleRunNodeInternalConsole, handleSaveConsoleState, handleWriteInternalConsole } from "./api/console";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const MAIN_WINDOW_WEBPACK_ENTRY: any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -115,6 +115,7 @@ app.on("ready", () => {
   ipcMain.handle("console:write", handleWriteInternalConsole);
   ipcMain.handle("console:resize", handleResizeInternalConsole);
   ipcMain.handle("console:listOpen", handleListOpenConsoles);
+  ipcMain.handle("console:saveState", handleSaveConsoleState);
 
   const options = getOptions();
   if (options.autoconnect && options.server != "") {

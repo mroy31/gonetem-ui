@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
+import { SerializeAddon } from "xterm-addon-serialize";
 import { INodeState, IProjectState } from "../api/interface";
 import "xterm/css/xterm.css";
 
@@ -13,19 +14,20 @@ const TermPanel = ({
 }): JSX.Element => {
   const term = useRef(new Terminal());
   const fitAddon = useRef(new FitAddon());
+  const serializeAddon = useRef(new SerializeAddon());
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    window.api.consoleOnMsg((msgType: string, nodeId: string, data: string) => {
-      if (nodeId != node.name) return;
-
+    window.api.consoleAddListener(node.name, (msgType: string, data: string) => {
       switch (msgType) {
         case "stderr":
-          term.current.write(data);
-          break;
-
         case "stdout":
-          term.current.write(data);
+          term.current.write(data, () => {
+            window.api.consoleSaveState(node.name, serializeAddon.current.serialize()).then((res) => {
+              if (!res.status)
+                console.log(`ERROR: unable to save console state for node ${node.name}`);
+            });
+          });
           break;
 
         case "error":
@@ -38,6 +40,8 @@ const TermPanel = ({
           break;
       }
     });
+
+    return () => window.api.consoleRemoveListeners(node.name);
   }, []);
 
   useEffect(() => {
@@ -53,6 +57,7 @@ const TermPanel = ({
         }
 
         term.current.loadAddon(fitAddon.current);
+        term.current.loadAddon(serializeAddon.current);
         term.current.onData((data: string) => {
           window.api.consoleWrite(node.name, data).then((res) => {
             if (!res.status) console.log(res.error);
@@ -64,6 +69,8 @@ const TermPanel = ({
           });
         });
 
+        if (res.result != "")
+          term.current.write(res.result);
         term.current.open(containerRef.current);
         fitAddon.current.fit();
 

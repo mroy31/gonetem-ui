@@ -27,16 +27,22 @@ const exposedApi: ContextBridgeApi = {
   runNodeSetIfState: (prjId: string, nodeId: string, ifIndex: number, up: boolean):Promise<ApiResponse> => ipcRenderer.invoke("server:runNodeSetIfState", prjId, nodeId, ifIndex, up),
   closeProject: (prjId: string):Promise<ApiResponse> => ipcRenderer.invoke("server:close", prjId),
   // internal console
-  consoleRun: (nodeId: string): Promise<ApiResponse> => ipcRenderer.invoke("console:run", nodeId),
+  consoleRun: (nodeId: string): Promise<StringApiResponse> => ipcRenderer.invoke("console:run", nodeId),
   consoleWrite: (nodeId: string, data: string): Promise<ApiResponse> => ipcRenderer.invoke("console:write", nodeId, data),
   consoleResize: (nodeId: string, width: number, height: number):Promise<ApiResponse> => ipcRenderer.invoke("console:resize", nodeId, width, height),
-  consoleOnMsg: (cb: (msgType: string, nodeId: string, data: string) => void) => {
-    ipcRenderer.on("console:stdout", (_event, nodeId: string, data: string) => cb("stdout", nodeId, data));
-    ipcRenderer.on("console:stderr", (_event, nodeId: string, data: string) => cb("stderr", nodeId, data));
-    ipcRenderer.on("console:error", (_event, nodeId: string, data: string) => cb("error", nodeId, data));
-    ipcRenderer.on("console:close", (_event, nodeId: string) => cb("close", nodeId, ""));
-  },
+  consoleSaveState: (nodeId: string, state: string): Promise<ApiResponse> => ipcRenderer.invoke("console:saveState", nodeId, state),
   consoleListOpen: (): Promise<StringListApiResponse> => ipcRenderer.invoke("console:listOpen"),
+  consoleAddListener: (nodeId: string, cb: (msgType: string, data: string) => void) => {
+    ipcRenderer.on(`console:stdout:${nodeId}`, (_event, data: string) => cb("stdout", data));
+    ipcRenderer.on(`console:stderr:${nodeId}`, (_event, data: string) => cb("stderr", data));
+    ipcRenderer.on(`console:error:${nodeId}`, (_event, data: string) => cb("error", data));
+    ipcRenderer.on(`console:close:${nodeId}`, (_event) => cb("close", ""));
+  },
+  consoleRemoveListeners: (nodeId: string) => {
+    for (const k of ["stdout", "stderr", "error", "close"]) {
+      ipcRenderer.removeAllListeners(`console:${k}:${nodeId}`);
+    }
+  },
 }
 
 contextBridge.exposeInMainWorld('api', exposedApi);

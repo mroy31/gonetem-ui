@@ -10,6 +10,7 @@ import { CLIENT } from "./client";
 import { CURRENT_PROJECT_ID } from "./project";
 
 let RUNNING_CONSOLES = new Map<string, grpc.ClientDuplexStream<ConsoleCltMsg, ConsoleSrvMsg>>();
+let CONSOLE_STATES = new Map<string, string>();
 
 export function closeRunningConsoles() {
   for (const key of RUNNING_CONSOLES.keys()) {
@@ -19,31 +20,18 @@ export function closeRunningConsoles() {
       RUNNING_CONSOLES.delete(key);
     }
   }
+  CONSOLE_STATES.clear();
 }
 
 function runNodeInternalConsole(
   nodeId: string
-): Promise<ApiResponse> {
+): Promise<StringApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to run internal console for node ${nodeId}: ${err}`;
 
-  return new Promise<ApiResponse>((resolve) => {
+  return new Promise<StringApiResponse>((resolve) => {
     if (RUNNING_CONSOLES.has(nodeId)) {
-      const msg = new ConsoleCltMsg();
-      msg.setCode(ConsoleCltMsg.Code.DATA);
-      msg.setPrjid(CURRENT_PROJECT_ID);
-      msg.setNode(nodeId);
-      msg.setData(Buffer.from("\n").toString('base64'));
-
-      RUNNING_CONSOLES.get(nodeId).write(msg, (error: Error) => { 
-        if (error) {
-          RUNNING_CONSOLES.delete(nodeId);
-          resolve({status: false, error: errorFmt(error.message)})
-          return;
-        }
-
-        resolve({status: true}) 
-      });
+      resolve({status: true, result: CONSOLE_STATES.has(nodeId) ? CONSOLE_STATES.get(nodeId) : ""}); 
       return;
     }
 
@@ -57,38 +45,42 @@ function runNodeInternalConsole(
     RUNNING_CONSOLES.get(nodeId).on("data", (data: ConsoleSrvMsg) => {
       switch (data.getCode()) {
         case ConsoleSrvMsg.Code.CLOSE:
-          mainWindow.webContents.send("console:close", nodeId);
+          mainWindow.webContents.send(`console:close:${nodeId}`);
           RUNNING_CONSOLES.delete(nodeId);
+          CONSOLE_STATES.delete(nodeId);
           break;
         case ConsoleSrvMsg.Code.ERROR:
-          mainWindow.webContents.send("console:error", nodeId, data.getData());
+          mainWindow.webContents.send(`console:error:${nodeId}`, data.getData());
           RUNNING_CONSOLES.delete(nodeId);
+          CONSOLE_STATES.delete(nodeId);
           break;
         case ConsoleSrvMsg.Code.STDOUT:
-          mainWindow.webContents.send("console:stdout", nodeId, Buffer.from(data.getData_asB64(), "base64").toString())
+          mainWindow.webContents.send(`console:stdout:${nodeId}`, Buffer.from(data.getData_asB64(), "base64").toString())
           break;
         case ConsoleSrvMsg.Code.STDERR:
-          mainWindow.webContents.send("console:stderr", nodeId, Buffer.from(data.getData_asB64(), "base64").toString())
+          mainWindow.webContents.send(`console:stderr:${nodeId}`, Buffer.from(data.getData_asB64(), "base64").toString())
           break;
 
       }
     });
     RUNNING_CONSOLES.get(nodeId).on('error', function(e) {
-      mainWindow.webContents.send("console:error", e)
+      mainWindow.webContents.send(`console:error:${nodeId}`, e)
       if (RUNNING_CONSOLES.has(nodeId)) {
         RUNNING_CONSOLES.get(nodeId).destroy()
         RUNNING_CONSOLES.delete(nodeId);
       }
+      CONSOLE_STATES.delete(nodeId);
     });
 
     RUNNING_CONSOLES.get(nodeId).write(msg, (error: Error) => { 
       if (error) {
         RUNNING_CONSOLES.delete(nodeId);
+        CONSOLE_STATES.delete(nodeId);
         resolve({status: false, error: errorFmt(error.message)})
         return;
       }
 
-      resolve({status: true}) 
+      resolve({status: true, result: ""}) 
     });
   });
 }
@@ -96,12 +88,12 @@ function runNodeInternalConsole(
 export const handleRunNodeInternalConsole = async (
   _event: IpcMainInvokeEvent,
   nodeId: string
-): Promise<ApiResponse> => {
+): Promise<StringApiResponse> => {
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
   if (CURRENT_PROJECT_ID == "")
-    return { status: false, error: "Not connected to the server" };
+    return { status: false, error: "No open project" };
 
   return await runNodeInternalConsole(nodeId);
 };
@@ -176,6 +168,27 @@ export const handleResizeInternalConsole = async (
 
 
   return await resizeInternalConsole(nodeId, width, height);
+}
+
+const saveConsoleState = (
+  nodeId: string,
+  state: string,
+): Promise<ApiResponse> => {
+  return new Promise<ApiResponse>((resolve) => {
+    CONSOLE_STATES.set(nodeId, state);
+    resolve({status: true});
+  });
+}
+
+export const handleSaveConsoleState = async (
+  _event: IpcMainInvokeEvent,
+  nodeId: string,
+  state: string,
+): Promise<StringListApiResponse> => {
+  if (CLIENT == null)
+    return { status: false, error: "Not connected to the server" };
+
+  return await saveConsoleState(nodeId, state);
 }
 
 const listOpenConsoles = (
