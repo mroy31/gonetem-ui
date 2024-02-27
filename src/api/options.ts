@@ -1,5 +1,5 @@
 
-import { IpcMainInvokeEvent } from "electron";
+import { IpcMainInvokeEvent, Rectangle } from "electron";
 import Store from "electron-store";
 
 export interface ITLSOptions {
@@ -16,7 +16,16 @@ export interface IOptions {
     consoleExternalCmd: string;
 }
 
-const store = new Store<IOptions>({
+export interface IAppState {
+    winBounds: {
+        width: number;
+        height: number;
+        x?: number;
+        y?: number;
+    };
+}
+
+const store = new Store<IOptions & IAppState>({
     schema: { 
         server: { type: "string" },
         autoconnect: { type: "boolean" },
@@ -30,6 +39,16 @@ const store = new Store<IOptions>({
           }
         },
         consoleExternalCmd: { type: "string" },
+        winBounds: {
+            type: "object",
+            properties: {
+                x: {type: "number"},
+                y: {type: "number"},
+                width: {type: "number"},
+                height: {type: "number"},
+            },
+            required: ["width", "height"],
+        }
     }, 
     defaults: {
         server: "",
@@ -38,8 +57,22 @@ const store = new Store<IOptions>({
             enabled: false,
         },
         consoleExternalCmd: "xterm -xrm 'XTerm.vt100.allowTitleOps: false' -title '${name}' -e ${cmd}",
+        winBounds: {
+            height: 800,
+            width: 1200,
+        }
     }
 });
+
+export const getAppState = (): IAppState => {
+    return {
+        winBounds: store.get("winBounds"),
+    };
+}
+
+export const setAppWinBounds = (bounds: Rectangle) => {
+    store.set("winBounds", bounds);
+}
 
 export const getOptions = (): IOptions => {
     return {

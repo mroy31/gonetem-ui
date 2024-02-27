@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, Menu } from "electron";
 import IsDev from "electron-is-dev";
-import { getOptions, handleGetOptions, handleSetOptions } from "./api/options";
+import { getAppState, getOptions, handleGetOptions, handleSetOptions, setAppWinBounds } from "./api/options";
 import { connectToServer, handleConnect, handleIsConnected } from "./api/client";
 import {
   handleCloseProject,
@@ -42,17 +42,18 @@ if (require("electron-squirrel-startup")) {
 }
 
 const createWindow = (): void => {
+  const appState = getAppState();
+
   // Create the browser window.
   mainWindow = new BrowserWindow({
     icon: "../icon/gonetem-ui_512x512.png",
-    height: 900,
-    width: 1400,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
   });
+  mainWindow.setBounds(appState.winBounds);
 
   // and load the index.html of the app.
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
@@ -78,6 +79,10 @@ const createWindow = (): void => {
       mainWindow.show();
     });
   }
+
+  mainWindow.on('close', () => {
+    setAppWinBounds(mainWindow.getBounds());
+  });
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools();
