@@ -41,7 +41,7 @@ function runNodeInternalConsole(
     msg.setNode(nodeId);
     msg.setShell(false);
 
-    RUNNING_CONSOLES.set(nodeId, CLIENT.console());
+    RUNNING_CONSOLES.set(nodeId, CLIENT.nodeConsole());
     RUNNING_CONSOLES.get(nodeId).on("data", (data: ConsoleSrvMsg) => {
       switch (data.getCode()) {
         case ConsoleSrvMsg.Code.CLOSE:

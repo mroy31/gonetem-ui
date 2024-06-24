@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { PlusIcon } from "@heroicons/react/24/solid";
-import { IDisposable, Terminal } from "xterm";
-import { FitAddon } from "xterm-addon-fit";
-import { SerializeAddon } from "xterm-addon-serialize";
+import { IDisposable, Terminal } from "@xterm/xterm";
+import { FitAddon } from "@xterm/addon-fit";
+import { SerializeAddon } from "@xterm/addon-serialize";
 import classNames from "classnames";
 import { INodeState, IProjectState } from "../api/interface";
 import "xterm/css/xterm.css";

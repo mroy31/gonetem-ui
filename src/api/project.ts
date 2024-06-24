@@ -4,9 +4,10 @@ import { createGzip } from "zlib";
 import tar from "tar-stream";
 import { IpcMainInvokeEvent, dialog } from "electron";
 import { CLIENT } from "./client";
-import { OpenRequest, ProjectRequest, StatusCode } from "../proto/netem_pb";
+import { OpenRequest, ProjectCloseMsg, ProjectRequest, ProjectSaveMsg, StatusCode } from "../proto/netem_pb";
 import { Empty } from "google-protobuf/google/protobuf/empty_pb";
 import { closeRunningConsoles } from "./console";
+import { mainWindow } from "..";
 
 export let CURRENT_PROJECT_ID = "";
 export let CURRENT_PROJECT_FILEPATH = "";
@@ -23,7 +24,7 @@ function openProject(
     request.setData(data);
     request.setName(filename);
 
-    CLIENT.openProject(request, (err, res) => {
+    CLIENT.projectOpen(request, (err, res) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
@@ -157,7 +158,7 @@ function listProjects(): Promise<PrjListApiResponse> {
   const errorFmt = (err: string) => `Unable to list projects: ${err}`;
 
   return new Promise<PrjListApiResponse>((resolve) => {
-    CLIENT.getProjects(new Empty(), (err, res) => {
+    CLIENT.projectGetMany(new Empty(), (err, res) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
@@ -199,7 +200,7 @@ function getProjectState(prjId: string): Promise<PrjStateApiResponse> {
     const request = new ProjectRequest();
     request.setId(prjId);
 
-    CLIENT.getProjectStatus(request, (err, res) => {
+    CLIENT.projectGetStatus(request, (err, res) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
@@ -253,22 +254,20 @@ function saveProject(prjId: string, filePath: string): Promise<ApiResponse> {
     const request = new ProjectRequest();
     request.setId(prjId);
 
-    CLIENT.saveProject(request, (err, res) => {
-      if (err) {
-        resolve({ status: false, error: errorFmt(err) });
-      } else {
-        const code = res.getStatus().getCode();
-        if (code == StatusCode.ERROR) {
-          resolve({
-              status: false,
-              error: errorFmt(res.getStatus().getError()),
-          });
-          return;
-        }
-
-        fs.writeFileSync(filePath, res.getData());
-        resolve({ status: true });
+    const stub = CLIENT.projectSave(request);
+    stub.on('status', () => { resolve({ status: true }); });
+    stub.on('data', (data: ProjectSaveMsg) => { 
+      if (data.getCode() == ProjectSaveMsg.Code.DATA) {
+        fs.writeFileSync(filePath, data.getData());
+        return;
       }
+      mainWindow.webContents.send("project:save:event", data.toObject()); 
+    });
+    stub.on('error', (e: Error) => {
+      resolve({
+        status: false,
+        error: errorFmt(e.message)
+      })
     });
   });
 }
@@ -295,18 +294,14 @@ function closeProject(prjId: string): Promise<ApiResponse> {
     request.setId(prjId);
 
     closeRunningConsoles();
-    CLIENT.closeProject(request, (err, res) => {
-      if (err) {
-        resolve({ status: false, error: errorFmt(err) });
-      } else {
-        const code = res.getStatus().getCode();
-        code == StatusCode.ERROR
-          ? resolve({
-              status: false,
-              error: errorFmt(res.getStatus().getError()),
-            })
-          : resolve({ status: true });
-      }
+    const stub = CLIENT.projectClose(request);
+    stub.on('status', () => { resolve({ status: true }); });
+    stub.on('data', (data: ProjectCloseMsg) => { mainWindow.webContents.send("project:close:event", data.toObject()); });
+    stub.on('error', (e: Error) => {
+      resolve({
+        status: false,
+        error: errorFmt(e.message)
+      })
     });
   });
 }

@@ -47,7 +47,7 @@ function readNodeConfigFiles(
     request.setPrjid(prjId);
     request.setNode(nodeId);
 
-    CLIENT.readConfigFiles(request, (err, res) => {
+    CLIENT.nodeReadConfigFiles(request, (err, res) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
@@ -133,7 +133,7 @@ function nodeStart(prjId: string, nodeId: string): Promise<ApiResponse> {
     request.setPrjid(prjId);
     request.setNode(nodeId);
 
-    CLIENT.start(request, (err, res) => {
+    CLIENT.nodeStart(request, (err, res) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
@@ -169,7 +169,7 @@ function nodeStop(prjId: string, nodeId: string): Promise<ApiResponse> {
     request.setPrjid(prjId);
     request.setNode(nodeId);
 
-    CLIENT.stop(request, (err, res) => {
+    CLIENT.nodeStop(request, (err, res) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
@@ -205,7 +205,7 @@ function nodeRestart(prjId: string, nodeId: string): Promise<ApiResponse> {
     request.setPrjid(prjId);
     request.setNode(nodeId);
 
-    CLIENT.restart(request, (err, res) => {
+    CLIENT.nodeRestart(request, (err, res) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
@@ -248,7 +248,7 @@ function nodeSetIfState(
     request.setIfindex(interfaceId);
     request.setState(up ? IfState.UP : IfState.DOWN);
 
-    CLIENT.setIfState(request, (err, res) => {
+    CLIENT.nodeSetIfState(request, (err, res) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
@@ -299,7 +299,7 @@ function nodeCapture(
 
       let captureProcess: ChildProcessWithoutNullStreams | null = null;
 
-      const captureStream = CLIENT.capture(request);
+      const captureStream = CLIENT.nodeCapture(request);
       captureStream.on("data", (msg: CaptureSrvMsg) => {
         if (captureProcess == null) {
           const args = [

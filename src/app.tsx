@@ -11,7 +11,10 @@ import { IOptions } from "./api/options";
 import ErrorToast from "./components/ErrorToast";
 import ProjectPanel from "./components/ProjectPanel";
 import ProjectListModal from "./components/ProjectListModal";
-import { AppContext } from "./context";
+import { AppContext, ProgressOperation } from "./context";
+import ProgressTopologyRun from "./components/ProgressTopologyRun";
+import ProgressProjectClose from "./components/ProgressProjectClose";
+import ProgressProjectSave from "./components/ProgressProjectSave";
 
 function App(): JSX.Element {
   const [version, setVersion] = useState("");
@@ -19,7 +22,7 @@ function App(): JSX.Element {
   const [prjListModalOpen, setprjListModalOpen] = useState(false);
   const [options, setOptions] = useState<IOptions | null>(null);
   const [currentPrj, setCurrentPrj] = useState("");
-  const [loadingMsg, setLoadingMsg] = useState("");
+  const [currentPrgOperation, setCurrentPrgOperation] = useState<ProgressOperation>(ProgressOperation.None);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -57,9 +60,9 @@ function App(): JSX.Element {
 
   const handleCloseProject = async () => {
     if (currentPrj != "") {
-      setLoadingMsg("Wait for the project to close");
+      setCurrentPrgOperation(ProgressOperation.ProjectClose);
       const res = await window.api.closeProject(currentPrj);
-      setLoadingMsg("");
+      setCurrentPrgOperation(ProgressOperation.None);
 
       if (!res.status) setError(res.error);
       setCurrentPrj("");
@@ -76,7 +79,11 @@ function App(): JSX.Element {
 
   const connected = version != "";
   return (
-    <AppContext.Provider value={{error, setError, options, setLoadingMsg}}>
+    <AppContext.Provider 
+      value={{
+        error, setError, 
+        options, 
+        currentPrgOperation, setCurrentPrgOperation}}>
 
     <div className="flex flex-col h-screen">
       <div className="navbar bg-base-200 flex-none">
@@ -166,13 +173,15 @@ function App(): JSX.Element {
 
       <ErrorToast error={error} clearError={() => setError("")} />
 
-      { loadingMsg && (
-        <div className="toast toast-center toast-middle">
-          <div className="alert alert-info flex gap-2 p-6 align-middle">
-            <span className="loading loading-spinner loading-md"></span>
-            <span>{loadingMsg}</span>
-          </div>
-        </div>
+      { (currentPrgOperation == ProgressOperation.TopologyRun || 
+         currentPrgOperation == ProgressOperation.TopologyReload) && (
+        <ProgressTopologyRun/>
+      )}
+      { currentPrgOperation == ProgressOperation.ProjectClose && (
+        <ProgressProjectClose/>
+      )}
+      { currentPrgOperation == ProgressOperation.ProjectSave && (
+        <ProgressProjectSave/>
       )}
     </div>
 

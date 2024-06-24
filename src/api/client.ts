@@ -36,7 +36,7 @@ function getVersion(): Promise<StringApiResponse> {
   const errorFmt = (err: string) => `Unable to get server version: ${err}`;
 
   return new Promise<StringApiResponse>((resolve) => {
-    CLIENT.getVersion(new Empty(), (err, version) => {
+    CLIENT.serverGetVersion(new Empty(), (err, version) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
@@ -83,7 +83,7 @@ export const connectToServer = async (): Promise<StringApiResponse> => {
     );
 
     CLIENT = new services.NetemClient(options.server, creds);
-    return CLIENT.getVersion
+    return CLIENT.serverGetVersion
       ? await getVersion()
       : { status: false, error: "Unable to connect to server" };
   } catch (err) {

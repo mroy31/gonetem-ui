@@ -1,6 +1,7 @@
 import { IpcMainInvokeEvent } from "electron";
-import { ProjectRequest, StatusCode, WNetworkRequest } from "../proto/netem_pb";
+import { ProjectRequest, StatusCode, TopologyRunMsg, WNetworkRequest } from "../proto/netem_pb";
 import { CLIENT } from "./client";
+import { mainWindow } from "..";
 
 function readTopologyFile(prjId: string): Promise<FileApiResponse> {
   const errorFmt = (err: string) =>
@@ -85,7 +86,7 @@ function checkTopologyFile(prjId: string): Promise<ApiResponse> {
     const request = new ProjectRequest();
     request.setId(prjId);
 
-    CLIENT.check(request, (err, res) => {
+    CLIENT.topologyCheck(request, (err, res) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
@@ -121,20 +122,14 @@ function runTopology(prjId: string): Promise<ApiResponse> {
     const request = new ProjectRequest();
     request.setId(prjId);
 
-    CLIENT.run(request, (err, res) => {
-      if (err) {
-        resolve({ status: false, error: errorFmt(err) });
-      } else {
-        const code = res.getStatus().getCode();
-        code == StatusCode.ERROR
-          ? resolve({
-              status: false,
-              error: errorFmt(res.getStatus().getError()),
-            })
-          : resolve({ 
-            status: true,
-          });
-      }
+    const stub = CLIENT.topologyRun(request)
+    stub.on('status', () => { resolve({ status: true }); });
+    stub.on('data', (data: TopologyRunMsg) => { mainWindow.webContents.send("topology:run:event", data.toObject()); });
+    stub.on('error', (e: Error) => {
+      resolve({
+        status: false,
+        error: errorFmt(e.message)
+      })
     });
   });
 }
@@ -157,20 +152,14 @@ function reloadTopology(prjId: string): Promise<ApiResponse> {
     const request = new ProjectRequest();
     request.setId(prjId);
 
-    CLIENT.reload(request, (err, res) => {
-      if (err) {
-        resolve({ status: false, error: errorFmt(err) });
-      } else {
-        const code = res.getStatus().getCode();
-        code == StatusCode.ERROR
-          ? resolve({
-              status: false,
-              error: errorFmt(res.getStatus().getError()),
-            })
-          : resolve({ 
-            status: true,
-          });
-      }
+    const stub = CLIENT.topologyReload(request);
+    stub.on('status', () => { resolve({ status: true }); });
+    stub.on('data', (data: TopologyRunMsg) => { mainWindow.webContents.send("topology:run:event", data.toObject()); });
+    stub.on('error', (e: Error) => {
+      resolve({
+        status: false,
+        error: errorFmt(e.message)
+      })
     });
   });
 }

@@ -93,6 +93,17 @@ function deserialize_netem_FileResponse(buffer_arg) {
   return netem_pb.FileResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_netem_LinkRequest(arg) {
+  if (!(arg instanceof netem_pb.LinkRequest)) {
+    throw new Error('Expected argument of type netem.LinkRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_netem_LinkRequest(buffer_arg) {
+  return netem_pb.LinkRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_netem_NodeIfStateRequest(arg) {
   if (!(arg instanceof netem_pb.NodeIfStateRequest)) {
     throw new Error('Expected argument of type netem.NodeIfStateRequest');
@@ -159,6 +170,17 @@ function deserialize_netem_PrjOpenResponse(buffer_arg) {
   return netem_pb.PrjOpenResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_netem_ProjectCloseMsg(arg) {
+  if (!(arg instanceof netem_pb.ProjectCloseMsg)) {
+    throw new Error('Expected argument of type netem.ProjectCloseMsg');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_netem_ProjectCloseMsg(buffer_arg) {
+  return netem_pb.ProjectCloseMsg.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_netem_ProjectRequest(arg) {
   if (!(arg instanceof netem_pb.ProjectRequest)) {
     throw new Error('Expected argument of type netem.ProjectRequest');
@@ -168,6 +190,17 @@ function serialize_netem_ProjectRequest(arg) {
 
 function deserialize_netem_ProjectRequest(buffer_arg) {
   return netem_pb.ProjectRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_netem_ProjectSaveMsg(arg) {
+  if (!(arg instanceof netem_pb.ProjectSaveMsg)) {
+    throw new Error('Expected argument of type netem.ProjectSaveMsg');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_netem_ProjectSaveMsg(buffer_arg) {
+  return netem_pb.ProjectSaveMsg.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_netem_PullSrvMsg(arg) {
@@ -181,17 +214,6 @@ function deserialize_netem_PullSrvMsg(buffer_arg) {
   return netem_pb.PullSrvMsg.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
-function serialize_netem_RunResponse(arg) {
-  if (!(arg instanceof netem_pb.RunResponse)) {
-    throw new Error('Expected argument of type netem.RunResponse');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_netem_RunResponse(buffer_arg) {
-  return netem_pb.RunResponse.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
 function serialize_netem_StatusResponse(arg) {
   if (!(arg instanceof netem_pb.StatusResponse)) {
     throw new Error('Expected argument of type netem.StatusResponse');
@@ -201,6 +223,17 @@ function serialize_netem_StatusResponse(arg) {
 
 function deserialize_netem_StatusResponse(buffer_arg) {
   return netem_pb.StatusResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_netem_TopologyRunMsg(arg) {
+  if (!(arg instanceof netem_pb.TopologyRunMsg)) {
+    throw new Error('Expected argument of type netem.TopologyRunMsg');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_netem_TopologyRunMsg(buffer_arg) {
+  return netem_pb.TopologyRunMsg.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_netem_VersionResponse(arg) {
@@ -227,9 +260,9 @@ function deserialize_netem_WNetworkRequest(buffer_arg) {
 
 
 var NetemService = exports.NetemService = {
-  // general action
-getVersion: {
-    path: '/netem.Netem/GetVersion',
+  // Server actions
+serverGetVersion: {
+    path: '/netem.Netem/ServerGetVersion',
     requestStream: false,
     responseStream: false,
     requestType: google_protobuf_empty_pb.Empty,
@@ -239,8 +272,8 @@ getVersion: {
     responseSerialize: serialize_netem_VersionResponse,
     responseDeserialize: deserialize_netem_VersionResponse,
   },
-  pullImages: {
-    path: '/netem.Netem/PullImages',
+  serverPullImages: {
+    path: '/netem.Netem/ServerPullImages',
     requestStream: false,
     responseStream: true,
     requestType: google_protobuf_empty_pb.Empty,
@@ -250,8 +283,8 @@ getVersion: {
     responseSerialize: serialize_netem_PullSrvMsg,
     responseDeserialize: deserialize_netem_PullSrvMsg,
   },
-  clean: {
-    path: '/netem.Netem/Clean',
+  serverCleanContainers: {
+    path: '/netem.Netem/ServerCleanContainers',
     requestStream: false,
     responseStream: false,
     requestType: google_protobuf_empty_pb.Empty,
@@ -262,8 +295,8 @@ getVersion: {
     responseDeserialize: deserialize_netem_AckResponse,
   },
   // Project actions
-getProjects: {
-    path: '/netem.Netem/GetProjects',
+projectGetMany: {
+    path: '/netem.Netem/ProjectGetMany',
     requestStream: false,
     responseStream: false,
     requestType: google_protobuf_empty_pb.Empty,
@@ -273,8 +306,8 @@ getProjects: {
     responseSerialize: serialize_netem_PrjListResponse,
     responseDeserialize: deserialize_netem_PrjListResponse,
   },
-  openProject: {
-    path: '/netem.Netem/OpenProject',
+  projectOpen: {
+    path: '/netem.Netem/ProjectOpen',
     requestStream: false,
     responseStream: false,
     requestType: netem_pb.OpenRequest,
@@ -284,19 +317,30 @@ getProjects: {
     responseSerialize: serialize_netem_PrjOpenResponse,
     responseDeserialize: deserialize_netem_PrjOpenResponse,
   },
-  closeProject: {
-    path: '/netem.Netem/CloseProject',
+  projectClose: {
+    path: '/netem.Netem/ProjectClose',
     requestStream: false,
-    responseStream: false,
+    responseStream: true,
     requestType: netem_pb.ProjectRequest,
-    responseType: netem_pb.AckResponse,
+    responseType: netem_pb.ProjectCloseMsg,
     requestSerialize: serialize_netem_ProjectRequest,
     requestDeserialize: deserialize_netem_ProjectRequest,
-    responseSerialize: serialize_netem_AckResponse,
-    responseDeserialize: deserialize_netem_AckResponse,
+    responseSerialize: serialize_netem_ProjectCloseMsg,
+    responseDeserialize: deserialize_netem_ProjectCloseMsg,
   },
-  saveProject: {
-    path: '/netem.Netem/SaveProject',
+  projectSave: {
+    path: '/netem.Netem/ProjectSave',
+    requestStream: false,
+    responseStream: true,
+    requestType: netem_pb.ProjectRequest,
+    responseType: netem_pb.ProjectSaveMsg,
+    requestSerialize: serialize_netem_ProjectRequest,
+    requestDeserialize: deserialize_netem_ProjectRequest,
+    responseSerialize: serialize_netem_ProjectSaveMsg,
+    responseDeserialize: deserialize_netem_ProjectSaveMsg,
+  },
+  projectGetNodeConfigs: {
+    path: '/netem.Netem/ProjectGetNodeConfigs',
     requestStream: false,
     responseStream: false,
     requestType: netem_pb.ProjectRequest,
@@ -306,19 +350,8 @@ getProjects: {
     responseSerialize: serialize_netem_FileResponse,
     responseDeserialize: deserialize_netem_FileResponse,
   },
-  getProjectConfigs: {
-    path: '/netem.Netem/GetProjectConfigs',
-    requestStream: false,
-    responseStream: false,
-    requestType: netem_pb.ProjectRequest,
-    responseType: netem_pb.FileResponse,
-    requestSerialize: serialize_netem_ProjectRequest,
-    requestDeserialize: deserialize_netem_ProjectRequest,
-    responseSerialize: serialize_netem_FileResponse,
-    responseDeserialize: deserialize_netem_FileResponse,
-  },
-  getProjectStatus: {
-    path: '/netem.Netem/GetProjectStatus',
+  projectGetStatus: {
+    path: '/netem.Netem/ProjectGetStatus',
     requestStream: false,
     responseStream: false,
     requestType: netem_pb.ProjectRequest,
@@ -352,8 +385,8 @@ readNetworkFile: {
     responseDeserialize: deserialize_netem_AckResponse,
   },
   // topology actions
-check: {
-    path: '/netem.Netem/Check',
+topologyCheck: {
+    path: '/netem.Netem/TopologyCheck',
     requestStream: false,
     responseStream: false,
     requestType: netem_pb.ProjectRequest,
@@ -363,31 +396,53 @@ check: {
     responseSerialize: serialize_netem_AckResponse,
     responseDeserialize: deserialize_netem_AckResponse,
   },
-  reload: {
-    path: '/netem.Netem/Reload',
+  topologyReload: {
+    path: '/netem.Netem/TopologyReload',
     requestStream: false,
-    responseStream: false,
+    responseStream: true,
     requestType: netem_pb.ProjectRequest,
-    responseType: netem_pb.RunResponse,
+    responseType: netem_pb.TopologyRunMsg,
     requestSerialize: serialize_netem_ProjectRequest,
     requestDeserialize: deserialize_netem_ProjectRequest,
-    responseSerialize: serialize_netem_RunResponse,
-    responseDeserialize: deserialize_netem_RunResponse,
+    responseSerialize: serialize_netem_TopologyRunMsg,
+    responseDeserialize: deserialize_netem_TopologyRunMsg,
   },
-  run: {
-    path: '/netem.Netem/Run',
+  topologyRun: {
+    path: '/netem.Netem/TopologyRun',
+    requestStream: false,
+    responseStream: true,
+    requestType: netem_pb.ProjectRequest,
+    responseType: netem_pb.TopologyRunMsg,
+    requestSerialize: serialize_netem_ProjectRequest,
+    requestDeserialize: deserialize_netem_ProjectRequest,
+    responseSerialize: serialize_netem_TopologyRunMsg,
+    responseDeserialize: deserialize_netem_TopologyRunMsg,
+  },
+  topologyStartAll: {
+    path: '/netem.Netem/TopologyStartAll',
     requestStream: false,
     responseStream: false,
     requestType: netem_pb.ProjectRequest,
-    responseType: netem_pb.RunResponse,
+    responseType: netem_pb.AckResponse,
     requestSerialize: serialize_netem_ProjectRequest,
     requestDeserialize: deserialize_netem_ProjectRequest,
-    responseSerialize: serialize_netem_RunResponse,
-    responseDeserialize: deserialize_netem_RunResponse,
+    responseSerialize: serialize_netem_AckResponse,
+    responseDeserialize: deserialize_netem_AckResponse,
+  },
+  topologyStopAll: {
+    path: '/netem.Netem/TopologyStopAll',
+    requestStream: false,
+    responseStream: false,
+    requestType: netem_pb.ProjectRequest,
+    responseType: netem_pb.AckResponse,
+    requestSerialize: serialize_netem_ProjectRequest,
+    requestDeserialize: deserialize_netem_ProjectRequest,
+    responseSerialize: serialize_netem_AckResponse,
+    responseDeserialize: deserialize_netem_AckResponse,
   },
   // Node actions
-readConfigFiles: {
-    path: '/netem.Netem/ReadConfigFiles',
+nodeReadConfigFiles: {
+    path: '/netem.Netem/NodeReadConfigFiles',
     requestStream: false,
     responseStream: false,
     requestType: netem_pb.NodeRequest,
@@ -397,8 +452,8 @@ readConfigFiles: {
     responseSerialize: serialize_netem_ConfigFilesResponse,
     responseDeserialize: deserialize_netem_ConfigFilesResponse,
   },
-  canRunConsole: {
-    path: '/netem.Netem/CanRunConsole',
+  nodeCanRunConsole: {
+    path: '/netem.Netem/NodeCanRunConsole',
     requestStream: false,
     responseStream: false,
     requestType: netem_pb.NodeRequest,
@@ -408,8 +463,8 @@ readConfigFiles: {
     responseSerialize: serialize_netem_AckResponse,
     responseDeserialize: deserialize_netem_AckResponse,
   },
-  console: {
-    path: '/netem.Netem/Console',
+  nodeConsole: {
+    path: '/netem.Netem/NodeConsole',
     requestStream: true,
     responseStream: true,
     requestType: netem_pb.ConsoleCltMsg,
@@ -419,8 +474,8 @@ readConfigFiles: {
     responseSerialize: serialize_netem_ConsoleSrvMsg,
     responseDeserialize: deserialize_netem_ConsoleSrvMsg,
   },
-  start: {
-    path: '/netem.Netem/Start',
+  nodeStart: {
+    path: '/netem.Netem/NodeStart',
     requestStream: false,
     responseStream: false,
     requestType: netem_pb.NodeRequest,
@@ -430,8 +485,8 @@ readConfigFiles: {
     responseSerialize: serialize_netem_AckResponse,
     responseDeserialize: deserialize_netem_AckResponse,
   },
-  stop: {
-    path: '/netem.Netem/Stop',
+  nodeStop: {
+    path: '/netem.Netem/NodeStop',
     requestStream: false,
     responseStream: false,
     requestType: netem_pb.NodeRequest,
@@ -441,8 +496,8 @@ readConfigFiles: {
     responseSerialize: serialize_netem_AckResponse,
     responseDeserialize: deserialize_netem_AckResponse,
   },
-  restart: {
-    path: '/netem.Netem/Restart',
+  nodeRestart: {
+    path: '/netem.Netem/NodeRestart',
     requestStream: false,
     responseStream: false,
     requestType: netem_pb.NodeRequest,
@@ -452,8 +507,8 @@ readConfigFiles: {
     responseSerialize: serialize_netem_AckResponse,
     responseDeserialize: deserialize_netem_AckResponse,
   },
-  setIfState: {
-    path: '/netem.Netem/SetIfState',
+  nodeSetIfState: {
+    path: '/netem.Netem/NodeSetIfState',
     requestStream: false,
     responseStream: false,
     requestType: netem_pb.NodeIfStateRequest,
@@ -463,8 +518,8 @@ readConfigFiles: {
     responseSerialize: serialize_netem_AckResponse,
     responseDeserialize: deserialize_netem_AckResponse,
   },
-  capture: {
-    path: '/netem.Netem/Capture',
+  nodeCapture: {
+    path: '/netem.Netem/NodeCapture',
     requestStream: false,
     responseStream: true,
     requestType: netem_pb.NodeInterfaceRequest,
@@ -474,8 +529,8 @@ readConfigFiles: {
     responseSerialize: serialize_netem_CaptureSrvMsg,
     responseDeserialize: deserialize_netem_CaptureSrvMsg,
   },
-  copyFrom: {
-    path: '/netem.Netem/CopyFrom',
+  nodeCopyFrom: {
+    path: '/netem.Netem/NodeCopyFrom',
     requestStream: false,
     responseStream: true,
     requestType: netem_pb.CopyMsg,
@@ -485,14 +540,26 @@ readConfigFiles: {
     responseSerialize: serialize_netem_CopyMsg,
     responseDeserialize: deserialize_netem_CopyMsg,
   },
-  copyTo: {
-    path: '/netem.Netem/CopyTo',
+  nodeCopyTo: {
+    path: '/netem.Netem/NodeCopyTo',
     requestStream: true,
     responseStream: false,
     requestType: netem_pb.CopyMsg,
     responseType: netem_pb.AckResponse,
     requestSerialize: serialize_netem_CopyMsg,
     requestDeserialize: deserialize_netem_CopyMsg,
+    responseSerialize: serialize_netem_AckResponse,
+    responseDeserialize: deserialize_netem_AckResponse,
+  },
+  // Link actions
+linkUpdate: {
+    path: '/netem.Netem/LinkUpdate',
+    requestStream: false,
+    responseStream: false,
+    requestType: netem_pb.LinkRequest,
+    responseType: netem_pb.AckResponse,
+    requestSerialize: serialize_netem_LinkRequest,
+    requestDeserialize: deserialize_netem_LinkRequest,
     responseSerialize: serialize_netem_AckResponse,
     responseDeserialize: deserialize_netem_AckResponse,
   },

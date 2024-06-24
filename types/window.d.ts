@@ -1,6 +1,11 @@
 
 import { IProject, IProjectState } from '../src/api/project';
 import {IOptions} from '../src/api/options';
+import {
+  ProjectCloseMsg,
+  ProjectSaveMsg,
+  TopologyRunMsg,
+} from "../src/proto/netem_pb";
 
 
 export {}; // needed to make TypeScript happy
@@ -77,6 +82,14 @@ declare global {
     runNodeCapture: (prjId: string, nodeId: string, ifIndex: number) => Promise<ApiResponse>,
     runNodeSetIfState: (prjId: string, nodeId: string, ifIndex: number, up: boolean) => Promise<ApiResponse>,
     closeProject: (prjId: string) => Promise<ApiResponse>,
+    // topology listeners
+    topologyRunAddListener: (cb: (msg: TopologyRunMsg.AsObject) => void) => void,
+    topologyRunRemoveAllListeners: () => void,
+    // Project listeners
+    projectSaveAddListener: (cb: (msg: ProjectSaveMsg.AsObject) => void) => void,
+    projectSaveRemoveAllListeners: () => void,
+    projectCloseAddListener: (cb: (msg: ProjectCloseMsg.AsObject) => void) => void,
+    projectCloseRemoveAllListeners: () => void,
     // internal console
     consoleRun: (nodeId: string) => Promise<StringApiResponse>,
     consoleWrite: (nodeId: string, data: string) => Promise<ApiResponse>,

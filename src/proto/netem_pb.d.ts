@@ -195,6 +195,199 @@ export namespace CaptureSrvMsg {
 
 }
 
+export class TopologyRunMsg extends jspb.Message { 
+    getCode(): TopologyRunMsg.Code;
+    setCode(value: TopologyRunMsg.Code): TopologyRunMsg;
+    getTotal(): number;
+    setTotal(value: number): TopologyRunMsg;
+    clearNodemessagesList(): void;
+    getNodemessagesList(): Array<TopologyRunMsg.NodeMessages>;
+    setNodemessagesList(value: Array<TopologyRunMsg.NodeMessages>): TopologyRunMsg;
+    addNodemessages(value?: TopologyRunMsg.NodeMessages, index?: number): TopologyRunMsg.NodeMessages;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): TopologyRunMsg.AsObject;
+    static toObject(includeInstance: boolean, msg: TopologyRunMsg): TopologyRunMsg.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: TopologyRunMsg, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): TopologyRunMsg;
+    static deserializeBinaryFromReader(message: TopologyRunMsg, reader: jspb.BinaryReader): TopologyRunMsg;
+}
+
+export namespace TopologyRunMsg {
+    export type AsObject = {
+        code: TopologyRunMsg.Code,
+        total: number,
+        nodemessagesList: Array<TopologyRunMsg.NodeMessages.AsObject>,
+    }
+
+
+    export class NodeMessages extends jspb.Message { 
+        getName(): string;
+        setName(value: string): NodeMessages;
+        clearMessagesList(): void;
+        getMessagesList(): Array<string>;
+        setMessagesList(value: Array<string>): NodeMessages;
+        addMessages(value: string, index?: number): string;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): NodeMessages.AsObject;
+        static toObject(includeInstance: boolean, msg: NodeMessages): NodeMessages.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: NodeMessages, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): NodeMessages;
+        static deserializeBinaryFromReader(message: NodeMessages, reader: jspb.BinaryReader): NodeMessages;
+    }
+
+    export namespace NodeMessages {
+        export type AsObject = {
+            name: string,
+            messagesList: Array<string>,
+        }
+    }
+
+
+    export enum Code {
+    NODE_COUNT = 0,
+    BRIDGE_COUNT = 1,
+    LINK_COUNT = 2,
+    NODE_START = 3,
+    LINK_SETUP = 4,
+    BRIDGE_START = 5,
+    NODE_LOADCONFIG = 6,
+    NODE_MESSAGES = 7,
+    NODE_STOP = 8,
+    NODE_RM = 9,
+    }
+
+}
+
+export class ProjectSaveMsg extends jspb.Message { 
+    getCode(): ProjectSaveMsg.Code;
+    setCode(value: ProjectSaveMsg.Code): ProjectSaveMsg;
+    getData(): Uint8Array | string;
+    getData_asU8(): Uint8Array;
+    getData_asB64(): string;
+    setData(value: Uint8Array | string): ProjectSaveMsg;
+    getTotal(): number;
+    setTotal(value: number): ProjectSaveMsg;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): ProjectSaveMsg.AsObject;
+    static toObject(includeInstance: boolean, msg: ProjectSaveMsg): ProjectSaveMsg.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: ProjectSaveMsg, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ProjectSaveMsg;
+    static deserializeBinaryFromReader(message: ProjectSaveMsg, reader: jspb.BinaryReader): ProjectSaveMsg;
+}
+
+export namespace ProjectSaveMsg {
+    export type AsObject = {
+        code: ProjectSaveMsg.Code,
+        data: Uint8Array | string,
+        total: number,
+    }
+
+    export enum Code {
+    NODE_COUNT = 0,
+    NODE_SAVE = 1,
+    DATA = 2,
+    }
+
+}
+
+export class ProjectCloseMsg extends jspb.Message { 
+    getCode(): ProjectCloseMsg.Code;
+    setCode(value: ProjectCloseMsg.Code): ProjectCloseMsg;
+    getTotal(): number;
+    setTotal(value: number): ProjectCloseMsg;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): ProjectCloseMsg.AsObject;
+    static toObject(includeInstance: boolean, msg: ProjectCloseMsg): ProjectCloseMsg.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: ProjectCloseMsg, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ProjectCloseMsg;
+    static deserializeBinaryFromReader(message: ProjectCloseMsg, reader: jspb.BinaryReader): ProjectCloseMsg;
+}
+
+export namespace ProjectCloseMsg {
+    export type AsObject = {
+        code: ProjectCloseMsg.Code,
+        total: number,
+    }
+
+    export enum Code {
+    NODE_COUNT = 0,
+    BRIDGE_COUNT = 1,
+    NODE_CLOSE = 2,
+    BRIDGE_CLOSE = 3,
+    }
+
+}
+
+export class LinkConfig extends jspb.Message { 
+    getPeer1(): string;
+    setPeer1(value: string): LinkConfig;
+    getPeer2(): string;
+    setPeer2(value: string): LinkConfig;
+    getLoss(): number;
+    setLoss(value: number): LinkConfig;
+    getDelay(): number;
+    setDelay(value: number): LinkConfig;
+    getJitter(): number;
+    setJitter(value: number): LinkConfig;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): LinkConfig.AsObject;
+    static toObject(includeInstance: boolean, msg: LinkConfig): LinkConfig.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: LinkConfig, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): LinkConfig;
+    static deserializeBinaryFromReader(message: LinkConfig, reader: jspb.BinaryReader): LinkConfig;
+}
+
+export namespace LinkConfig {
+    export type AsObject = {
+        peer1: string,
+        peer2: string,
+        loss: number,
+        delay: number,
+        jitter: number,
+    }
+}
+
+export class LinkRequest extends jspb.Message { 
+    getPrjid(): string;
+    setPrjid(value: string): LinkRequest;
+
+    hasLink(): boolean;
+    clearLink(): void;
+    getLink(): LinkConfig | undefined;
+    setLink(value?: LinkConfig): LinkRequest;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): LinkRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: LinkRequest): LinkRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: LinkRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): LinkRequest;
+    static deserializeBinaryFromReader(message: LinkRequest, reader: jspb.BinaryReader): LinkRequest;
+}
+
+export namespace LinkRequest {
+    export type AsObject = {
+        prjid: string,
+        link?: LinkConfig.AsObject,
+    }
+}
+
 export class NodeIfStateRequest extends jspb.Message { 
     getPrjid(): string;
     setPrjid(value: string): NodeIfStateRequest;
@@ -387,61 +580,6 @@ export namespace AckResponse {
     export type AsObject = {
         status?: Status.AsObject,
     }
-}
-
-export class RunResponse extends jspb.Message { 
-
-    hasStatus(): boolean;
-    clearStatus(): void;
-    getStatus(): Status | undefined;
-    setStatus(value?: Status): RunResponse;
-    clearNodemessagesList(): void;
-    getNodemessagesList(): Array<RunResponse.NodeMessages>;
-    setNodemessagesList(value: Array<RunResponse.NodeMessages>): RunResponse;
-    addNodemessages(value?: RunResponse.NodeMessages, index?: number): RunResponse.NodeMessages;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): RunResponse.AsObject;
-    static toObject(includeInstance: boolean, msg: RunResponse): RunResponse.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: RunResponse, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): RunResponse;
-    static deserializeBinaryFromReader(message: RunResponse, reader: jspb.BinaryReader): RunResponse;
-}
-
-export namespace RunResponse {
-    export type AsObject = {
-        status?: Status.AsObject,
-        nodemessagesList: Array<RunResponse.NodeMessages.AsObject>,
-    }
-
-
-    export class NodeMessages extends jspb.Message { 
-        getName(): string;
-        setName(value: string): NodeMessages;
-        clearMessagesList(): void;
-        getMessagesList(): Array<string>;
-        setMessagesList(value: Array<string>): NodeMessages;
-        addMessages(value: string, index?: number): string;
-
-        serializeBinary(): Uint8Array;
-        toObject(includeInstance?: boolean): NodeMessages.AsObject;
-        static toObject(includeInstance: boolean, msg: NodeMessages): NodeMessages.AsObject;
-        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-        static serializeBinaryToWriter(message: NodeMessages, writer: jspb.BinaryWriter): void;
-        static deserializeBinary(bytes: Uint8Array): NodeMessages;
-        static deserializeBinaryFromReader(message: NodeMessages, reader: jspb.BinaryReader): NodeMessages;
-    }
-
-    export namespace NodeMessages {
-        export type AsObject = {
-            name: string,
-            messagesList: Array<string>,
-        }
-    }
-
 }
 
 export class FileResponse extends jspb.Message { 

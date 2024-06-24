@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback } from "react";
 import { XMarkIcon, ArrowPathIcon, PlayIcon, DocumentCheckIcon } from "@heroicons/react/24/solid";
 import { IProjectState } from "../api/interface";
 import { IPrjAction, PrjActionKing } from "./ProjectPanel";
-import { useAppContext } from "../context";
+import { ProgressOperation, useAppContext } from "../context";
 import classNames from "classnames";
 
 export default function ProjectToolbar({
@@ -14,10 +14,7 @@ export default function ProjectToolbar({
   onClose: () => void;
   dispatch: React.Dispatch<IPrjAction>;
 }): JSX.Element {
-  const {setError, setLoadingMsg} = useAppContext();
-  const [runLoading, setRunLoading] = useState(false);
-  const [reloadLoading, setReloadLoading] = useState(false);
-  const [saveLoading, setSaveLoading] = useState(false);
+  const {setError, currentPrgOperation, setCurrentPrgOperation} = useAppContext();
 
   const updateState = useCallback(() => {
     window.api.getProjectState(prjStatus.id).then((res) => {
@@ -30,11 +27,9 @@ export default function ProjectToolbar({
   const handleRun = () => {
     if (prjStatus.running) return;
 
-    setRunLoading(true);
-    setLoadingMsg("Wait while the project starting");
+    setCurrentPrgOperation(ProgressOperation.TopologyRun);
     window.api.runTopology(prjStatus.id).then((res) => {
-      setRunLoading(false);
-      setLoadingMsg("");
+      setCurrentPrgOperation(ProgressOperation.None);
       res.status
         ? updateState()
         : setError(res.error);
@@ -42,9 +37,9 @@ export default function ProjectToolbar({
   };
 
   const handleReload = () => {
-    setReloadLoading(true);
+    setCurrentPrgOperation(ProgressOperation.TopologyReload);
     window.api.reloadTopology(prjStatus.id).then((res) => {
-      setReloadLoading(false);
+      setCurrentPrgOperation(ProgressOperation.None);
       res.status
         ? updateState()
         : setError(res.error);
@@ -52,9 +47,9 @@ export default function ProjectToolbar({
   }
 
   const handleSave = () => {
-    setSaveLoading(true);
+    setCurrentPrgOperation(ProgressOperation.ProjectSave);
     window.api.saveProject(prjStatus.id).then((res) => {
-      setSaveLoading(false);
+      setCurrentPrgOperation(ProgressOperation.None);
       res.status
         ? updateState()
         : setError(res.error);
@@ -79,7 +74,7 @@ export default function ProjectToolbar({
       <div className="flex-none join">
         <button 
           onClick={handleRun}
-          disabled={prjStatus.running || runLoading || reloadLoading || saveLoading}
+          disabled={prjStatus.running || currentPrgOperation != ProgressOperation.None}
           className={runBtnClasses}
         >
           { prjStatus.running ? (
@@ -87,30 +82,30 @@ export default function ProjectToolbar({
           ) : (
             <>
               <PlayIcon className="w-5" />
-              <span>{runLoading ? "Running project..." : "Run"}</span>
+              <span>Run</span>
             </>
           )}
 
         </button>
         <button 
           onClick={handleSave}
-          disabled={runLoading || reloadLoading || saveLoading}
+          disabled={currentPrgOperation != ProgressOperation.None}
           className="btn btn-outline btn-neutral btn-sm join-item"
         >
           <DocumentCheckIcon className="w-5" />
-          <span>{saveLoading ? "Saving project..." : "Save"}</span>
+          <span>Save</span>
         </button>
         <button 
           onClick={handleReload}
-          disabled={runLoading || reloadLoading || saveLoading}
+          disabled={currentPrgOperation != ProgressOperation.None}
           className="btn btn-outline btn-neutral btn-sm join-item"
         >
           <ArrowPathIcon className="w-5" />
-          <span>{reloadLoading ? "Reloading project..." : "Reload"}</span>
+          <span>Reload</span>
         </button>
         <button
           onClick={onClose}
-          disabled={runLoading || reloadLoading || saveLoading}
+          disabled={currentPrgOperation != ProgressOperation.None}
           className="btn btn-outline btn-warning btn-sm join-item"
         >
           <XMarkIcon className="w-5" />
