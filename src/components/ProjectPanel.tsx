@@ -4,12 +4,14 @@ import ProjectContextPanel from './ProjectContextPanel';
 import ProjectToolbar from './ProjectToolbar';
 import { IProjectState } from '../api/interface';
 import ProjectGraph from './ProjectGraph';
+import ProjectContextBar from './ProjectContextBar';
 
 export enum PrjActionKing {
     INIT = 'INIT',
     STATE = 'STATE',
     TOPOLOGY = 'TOPOLOGY',
     ERROR = 'ERROR',
+    SELECT_EDGE = 'SELECT_EDGE',
 }
 
 export interface IPrjAction {
@@ -17,6 +19,7 @@ export interface IPrjAction {
     error?: string;
     state?: IProjectState;
     topology?: string;
+    edge?: string;
 }
 
 interface IPrjState {
@@ -24,6 +27,7 @@ interface IPrjState {
     loading: boolean;
     status: IProjectState;
     topology: string;
+    selectedEdge: string;
 }
 
 function reducer(state: IPrjState, action: IPrjAction): IPrjState {
@@ -54,6 +58,11 @@ function reducer(state: IPrjState, action: IPrjAction): IPrjState {
                 error: action.error as string,
                 loading: false,
             };
+        case PrjActionKing.SELECT_EDGE:
+            return {
+                ...state,
+                selectedEdge: action.edge,
+            }
         default:
             return state;
     }
@@ -71,6 +80,7 @@ export default function ProjectPanel({
         loading: true,
         status: null,
         topology: "",
+        selectedEdge: "",
     });
 
     const updateState = useCallback(() => {
@@ -136,8 +146,16 @@ export default function ProjectPanel({
                             updateState={updateState}
                             prjStatus={state.status}
                             topology={state.topology}
+                            onSelectEdge={(edge: string) => dispatch({
+                                type: PrjActionKing.SELECT_EDGE,
+                                edge: edge, 
+                            })}
                         />
                     </div>
+
+                    <ProjectContextBar
+                        selectedEdge={state.selectedEdge}
+                    />                    
                 </div>
 
                 { <ProjectContextPanel 

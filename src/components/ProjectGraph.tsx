@@ -135,6 +135,7 @@ const getNodesAndEdges = (
 
   const edges: Edge[] = topology.links ? topology.links.map((link) => {
     return {
+      id: `${link.peer1} <--> ${link.peer2}`,
       from: getNodeIdFromPeer(link.peer1),
       to: getNodeIdFromPeer(link.peer2),
       smooth: false,
@@ -148,10 +149,12 @@ export default function ProjectGraph({
   prjStatus,
   topology,
   updateState,
+  onSelectEdge,
 }: {
   prjStatus: IProjectState;
   topology: string;
   updateState: () => void;
+  onSelectEdge: (edge: string) => void;
 }): JSX.Element {
   const [error, setError] = useState("");
   const [network, setNetwork] = useState<Network>(null);
@@ -206,6 +209,12 @@ export default function ProjectGraph({
           }
         );
         net.on("click", () => setContextMenu({ ...contextMenu, nodeId: "", x: 0, y: 0 }));
+        net.on('selectEdge', (obj) => {
+          onSelectEdge(obj.edges.join(" | "))  
+        });
+        net.on('deselectEdge', (obj) => {
+          onSelectEdge(obj.edges.join(" | "))  
+        });
 
         setNetwork(net);
       } else {
