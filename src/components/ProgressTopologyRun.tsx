@@ -2,6 +2,7 @@
 import React, { useEffect, useReducer } from 'react';
 import { TopologyRunMsg } from '../proto/netem_pb';
 import { ProgressOperation, useAppContext } from '../context';
+import { INodeMessages } from './NodeMessagesToast';
 
 interface ITopologyRunState {
     nodeCount: number;
@@ -13,6 +14,7 @@ interface ITopologyRunState {
     nodeLoadConfig: number;
     linkSetup: number;
     bridgeStart: number;
+    nodeMessages: INodeMessages[];
 }
 
 const INITIAL_STATE: ITopologyRunState = {
@@ -25,6 +27,7 @@ const INITIAL_STATE: ITopologyRunState = {
     nodeLoadConfig: 0,
     linkSetup: 0,
     bridgeStart: 0,
+    nodeMessages: [],
 }
 
 function reducer(state: ITopologyRunState, msg: TopologyRunMsg.AsObject): ITopologyRunState {
@@ -75,13 +78,20 @@ function reducer(state: ITopologyRunState, msg: TopologyRunMsg.AsObject): ITopol
                 nodeRm: state.nodeRm+1,
             }
         case TopologyRunMsg.Code.NODE_MESSAGES:
-            return state
+            return {
+                ...state,
+                nodeMessages: msg.nodemessagesList
+            }
         default:
             return state
     }
 }
 
-export default function ProgressTopologyRun(): JSX.Element {
+export default function ProgressTopologyRun({
+    setNodeMessages,
+}: {
+    setNodeMessages: (nodeMessages: INodeMessages[]) => void;
+}): JSX.Element {
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
     const {currentPrgOperation} = useAppContext();
 
@@ -91,6 +101,8 @@ export default function ProgressTopologyRun(): JSX.Element {
 
         return () => window.api.topologyRunRemoveAllListeners();
     }, []);
+
+    useEffect(() => setNodeMessages(state.nodeMessages), [state.nodeMessages])
 
     return (
         <div className="toast toast-middle toast-center">

@@ -15,6 +15,8 @@ import { AppContext, ProgressOperation } from "./context";
 import ProgressTopologyRun from "./components/ProgressTopologyRun";
 import ProgressProjectClose from "./components/ProgressProjectClose";
 import ProgressProjectSave from "./components/ProgressProjectSave";
+import NodeMessagesToast, { INodeMessages } from "./components/NodeMessagesToast";
+
 
 function App(): JSX.Element {
   const [version, setVersion] = useState("");
@@ -23,6 +25,7 @@ function App(): JSX.Element {
   const [options, setOptions] = useState<IOptions | null>(null);
   const [currentPrj, setCurrentPrj] = useState("");
   const [currentPrgOperation, setCurrentPrgOperation] = useState<ProgressOperation>(ProgressOperation.None);
+  const [nodeMessages, setNodeMessages] = useState<INodeMessages[]>([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -171,11 +174,22 @@ function App(): JSX.Element {
         />
       )}
 
-      <ErrorToast error={error} clearError={() => setError("")} />
+      {error != "" && (
+        <ErrorToast error={error} clearError={() => setError("")} />
+      )}
+      
+      {nodeMessages.length > 0 && (
+        <NodeMessagesToast
+          nodeMessages={nodeMessages}
+          clearNodeMessages={() => setNodeMessages([])}
+        />
+      )}
 
       { (currentPrgOperation == ProgressOperation.TopologyRun || 
          currentPrgOperation == ProgressOperation.TopologyReload) && (
-        <ProgressTopologyRun/>
+        <ProgressTopologyRun
+          setNodeMessages={setNodeMessages}
+        />
       )}
       { currentPrgOperation == ProgressOperation.ProjectClose && (
         <ProgressProjectClose/>

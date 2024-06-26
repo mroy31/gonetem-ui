@@ -8,7 +8,7 @@ export default function ErrorToast({
     error: string,
     clearError: () => void
 }): JSX.Element {
-    return error ? (
+    return (
         <div className="toast toast-center">
           <div className="alert alert-error flex gap-2 w-5/6 overflow-x-scroll">
             <span>{error}</span>
@@ -20,5 +20,5 @@ export default function ErrorToast({
             </button>
           </div>
         </div>
-    ) : null;
+    );
 }
