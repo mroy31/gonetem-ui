@@ -5,6 +5,7 @@ import {
   WrenchScrewdriverIcon,
   PlusIcon,
   BoltIcon,
+  CloudArrowDownIcon,
 } from "@heroicons/react/24/solid";
 import OptionsModal from "./components/OptionsModal";
 import { IOptions } from "./api/options";
@@ -16,6 +17,7 @@ import ProgressTopologyRun from "./components/ProgressTopologyRun";
 import ProgressProjectClose from "./components/ProgressProjectClose";
 import ProgressProjectSave from "./components/ProgressProjectSave";
 import NodeMessagesToast, { INodeMessages } from "./components/NodeMessagesToast";
+import ProgressServerPull from "./components/ProgressServerPull";
 
 
 function App(): JSX.Element {
@@ -79,6 +81,14 @@ function App(): JSX.Element {
     }
     setprjListModalOpen(false);
   };
+
+  const handleServerPullImages = async () => {
+    setCurrentPrgOperation(ProgressOperation.ServerPullImages);
+    const res = await window.api.pullImages();
+    setCurrentPrgOperation(ProgressOperation.None);
+
+    if (!res.status) setError(res.error);
+  }
 
   const connected = version != "";
   return (
@@ -154,6 +164,14 @@ function App(): JSX.Element {
                 <BoltIcon className="w-5" />
                 <span>Connect to a running project</span>
               </button>
+              <button
+                disabled={!connected || currentPrj != ""}
+                onClick={handleServerPullImages}
+                className="btn btn-outline btn-neutral btn-sm join-item"
+              >
+                <CloudArrowDownIcon className="w-5" />
+                <span>Pull docker images</span>
+              </button>
             </div>
           </div>
         </div>
@@ -196,6 +214,9 @@ function App(): JSX.Element {
       )}
       { currentPrgOperation == ProgressOperation.ProjectSave && (
         <ProgressProjectSave/>
+      )}
+      { currentPrgOperation == ProgressOperation.ServerPullImages && (
+        <ProgressServerPull/>
       )}
     </div>
 

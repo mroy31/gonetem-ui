@@ -7,7 +7,8 @@ export enum ProgressOperation {
   TopologyRun,
   TopologyReload,
   ProjectSave,
-  ProjectClose
+  ProjectClose,
+  ServerPullImages,
 }
 
 export type AppContent = {

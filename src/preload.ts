@@ -1,7 +1,7 @@
 
 import { contextBridge, ipcRenderer } from 'electron';
 import { IOptions } from './api/options';
-import { TopologyRunMsg, ProjectCloseMsg, ProjectSaveMsg } from './proto/netem_pb';
+import { TopologyRunMsg, ProjectCloseMsg, ProjectSaveMsg, PullSrvMsg } from './proto/netem_pb';
 
 const exposedApi: ContextBridgeApi = {
   isConnected: (): Promise<IsConnectedApiResponse> => ipcRenderer.invoke("server:isConnected"),
@@ -27,6 +27,10 @@ const exposedApi: ContextBridgeApi = {
   runNodeCapture: (prjId: string, nodeId: string, ifIndex: number):Promise<ApiResponse> => ipcRenderer.invoke("server:runNodeCapture", prjId, nodeId, ifIndex),
   runNodeSetIfState: (prjId: string, nodeId: string, ifIndex: number, up: boolean):Promise<ApiResponse> => ipcRenderer.invoke("server:runNodeSetIfState", prjId, nodeId, ifIndex, up),
   closeProject: (prjId: string):Promise<ApiResponse> => ipcRenderer.invoke("server:close", prjId),
+  pullImages: ():Promise<ApiResponse> => ipcRenderer.invoke("server:pullImages"),
+  // Server listeners
+  serverPullAddListener: (cb: (msg: PullSrvMsg.AsObject) => void) => { ipcRenderer.on(`server:pull:event`, (_event, msg: PullSrvMsg.AsObject) => cb(msg)); },
+  serverPullRemoveAllListeners: () => { ipcRenderer.removeAllListeners("server:pull:event"); },
   // Topology listeners
   topologyRunAddListener: (cb: (msg: TopologyRunMsg.AsObject) => void) => { ipcRenderer.on(`topology:run:event`, (_event, msg: TopologyRunMsg.AsObject) => cb(msg)); },
   topologyRunRemoveAllListeners: () => { ipcRenderer.removeAllListeners("topology:run:event"); },

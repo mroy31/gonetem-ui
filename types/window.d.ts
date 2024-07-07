@@ -4,6 +4,7 @@ import {IOptions} from '../src/api/options';
 import {
   ProjectCloseMsg,
   ProjectSaveMsg,
+  PullSrvMsg,
   TopologyRunMsg,
 } from "../src/proto/netem_pb";
 
@@ -82,6 +83,10 @@ declare global {
     runNodeCapture: (prjId: string, nodeId: string, ifIndex: number) => Promise<ApiResponse>,
     runNodeSetIfState: (prjId: string, nodeId: string, ifIndex: number, up: boolean) => Promise<ApiResponse>,
     closeProject: (prjId: string) => Promise<ApiResponse>,
+    pullImages: () => Promise<ApiResponse>,
+    // Server listeners
+    serverPullAddListener: (cb: (msg: PullSrvMsg.AsObject) => void) => void,
+    serverPullRemoveAllListeners: () => void,
     // topology listeners
     topologyRunAddListener: (cb: (msg: TopologyRunMsg.AsObject) => void) => void,
     topologyRunRemoveAllListeners: () => void,
