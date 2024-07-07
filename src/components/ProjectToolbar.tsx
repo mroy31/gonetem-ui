@@ -29,10 +29,10 @@ export default function ProjectToolbar({
 
     setCurrentPrgOperation(ProgressOperation.TopologyRun);
     window.api.runTopology(prjStatus.id).then((res) => {
-      setCurrentPrgOperation(ProgressOperation.None);
       res.status
         ? updateState()
         : setError(res.error);
+      setCurrentPrgOperation(ProgressOperation.None);
     });
   };
 

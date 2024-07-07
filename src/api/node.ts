@@ -7,6 +7,7 @@ import {
   NodeIfStateRequest,
   NodeInterfaceRequest,
   NodeRequest,
+  ProjectRequest,
   StatusCode,
 } from "../proto/netem_pb";
 import { CLIENT } from "./client";
@@ -122,6 +123,82 @@ export const handleRunNodeConsole = async (
     return { status: false, error: "Not connected to the server" };
 
   return await runNodeConsole(prjId, nodeId, shell);
+};
+
+function runAllConsoles(
+  prjId: string,
+  shell: boolean
+): Promise<ApiResponse> {
+  const errorFmt = (err: string) =>
+    `Unable to run console: ${err}`;
+  return new Promise<ApiResponse>((resolve) => {
+    const request = new ProjectRequest();
+    request.setId(prjId);
+
+    CLIENT.projectGetStatus(request, (err, res) => {
+      if (err) {
+        resolve({ status: false, error: err });
+        return;
+      }
+
+      const code = res.getStatus().getCode();
+      if (code == StatusCode.ERROR) {
+        resolve({ status: false, error: err });
+        return;
+      }
+      
+      const promiseList: Promise<{error: string, nodeId: string}>[] = [];
+      for (const node of res.getNodesList()) {
+        const request = new NodeRequest();
+        request.setPrjid(prjId);
+        request.setNode(node.getName())
+
+        promiseList.push(new Promise<{error: string, nodeId: string}>((nResolve) => {
+          CLIENT.nodeCanRunConsole(request, (err, res) => {
+            if (err || res.getStatus().getCode() == StatusCode.ERROR)
+              nResolve({error: '', nodeId: node.getName()})
+
+            consoleCmd(prjId, node.getName(), shell).then((cmd) => {
+              if (cmd == null)
+                nResolve({
+                  nodeId: node.getName(),
+                  error: "Term command defined in option not found",
+                });
+
+              const process = spawn(cmd, { shell: true });
+              process.on("error", (err) => {
+                nResolve({ nodeId: node.getName(), error: errorFmt(err.message) });
+              });
+              process.on("spawn", () => {
+                nResolve({ nodeId: node.getName(), error: '' });
+              });
+            });
+          });
+        }))
+      }
+
+      Promise.all(promiseList).then((values) => {
+        for (const v of values) {
+          if (v.error != "") {
+            resolve({ status: false, error: err });
+            return;
+          }
+        }
+        resolve({status: true});
+      });
+    });
+  });
+};
+
+export const handleRunAllConsoles = async (
+  _event: IpcMainInvokeEvent,
+  prjId: string,
+  shell: boolean
+): Promise<ConfigFilesApiResponse> => {
+  if (CLIENT == null)
+    return { status: false, error: "Not connected to the server" };
+
+  return await runAllConsoles(prjId, shell);
 };
 
 function nodeStart(prjId: string, nodeId: string): Promise<ApiResponse> {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { createRoot } from "react-dom/client";
 import {
   FolderOpenIcon,
@@ -18,7 +18,6 @@ import ProgressProjectClose from "./components/ProgressProjectClose";
 import ProgressProjectSave from "./components/ProgressProjectSave";
 import NodeMessagesToast, { INodeMessages } from "./components/NodeMessagesToast";
 import ProgressServerPull from "./components/ProgressServerPull";
-
 
 function App(): JSX.Element {
   const [version, setVersion] = useState("");

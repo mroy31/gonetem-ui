@@ -25,6 +25,7 @@ import {
   handleNodeStart,
   handleNodeStop,
   handleReadNodeConfigFiles,
+  handleRunAllConsoles,
   handleRunNodeConsole,
 } from "./api/node";
 import { handleListOpenConsoles, handleResizeInternalConsole, handleRunNodeInternalConsole, handleSaveConsoleState, handleWriteInternalConsole } from "./api/console";
@@ -108,6 +109,7 @@ app.on("ready", () => {
   ipcMain.handle("server:checkTopology", handleCheckTopologyFile);
   ipcMain.handle("server:runTopology", handleRunTopology);
   ipcMain.handle("server:reloadTopology", handleReloadTopology);
+  ipcMain.handle("server:runAllConsoles", handleRunAllConsoles);
   ipcMain.handle("server:readNodeConfigFiles", handleReadNodeConfigFiles);
   ipcMain.handle("server:runNodeConsole", handleRunNodeConsole);
   ipcMain.handle("server:runNodeStart", handleNodeStart);

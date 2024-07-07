@@ -154,14 +154,15 @@ export default function ProjectPanel({
                     </div>
 
                     <ProjectContextBar
+                        prjStatus={state.status}
                         selectedEdge={state.selectedEdge}
                     />                    
                 </div>
 
-                { <ProjectContextPanel 
+                <ProjectContextPanel 
                     dispatch={dispatch}
                     prjStatus={state.status}
-                    topology={state.topology}/> }
+                    topology={state.topology}/>
             </div>
         )}
     </>
