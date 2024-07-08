@@ -87,6 +87,7 @@ const setOptions = (options: IOptions): void => {
     store.set("server", options.server);
     store.set("autoconnect", options.autoconnect);
     store.set("tls", options.tls);
+    store.set("consoleExternalCmd", options.consoleExternalCmd);
 }
 
 export const handleGetOptions = (_event: IpcMainInvokeEvent): Promise<OptionsApiResponse> => {

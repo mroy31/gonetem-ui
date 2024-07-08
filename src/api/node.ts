@@ -22,7 +22,8 @@ const consoleCmd = async (
   const termCmd = getOptions().consoleExternalCmd;
   // find term exe
   const termArgs = termCmd.split(" ");
-  const termExe = await findExecutable(termArgs[0]);
+  const termExe = termCmd.startsWith("/") ?
+    termArgs[0] : await findExecutable(termArgs[0]);
   if (termExe == null) return null;
 
   const fullTermCmd =
