@@ -7,6 +7,93 @@
 import * as jspb from "google-protobuf";
 import * as google_protobuf_empty_pb from "google-protobuf/google/protobuf/empty_pb";
 
+export class ExecCltMsg extends jspb.Message { 
+    getCode(): ExecCltMsg.Code;
+    setCode(value: ExecCltMsg.Code): ExecCltMsg;
+    getPrjid(): string;
+    setPrjid(value: string): ExecCltMsg;
+    getNode(): string;
+    setNode(value: string): ExecCltMsg;
+    clearCmdList(): void;
+    getCmdList(): Array<string>;
+    setCmdList(value: Array<string>): ExecCltMsg;
+    addCmd(value: string, index?: number): string;
+    getTty(): boolean;
+    setTty(value: boolean): ExecCltMsg;
+    getData(): Uint8Array | string;
+    getData_asU8(): Uint8Array;
+    getData_asB64(): string;
+    setData(value: Uint8Array | string): ExecCltMsg;
+    getTtywidth(): number;
+    setTtywidth(value: number): ExecCltMsg;
+    getTtyheight(): number;
+    setTtyheight(value: number): ExecCltMsg;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): ExecCltMsg.AsObject;
+    static toObject(includeInstance: boolean, msg: ExecCltMsg): ExecCltMsg.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: ExecCltMsg, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ExecCltMsg;
+    static deserializeBinaryFromReader(message: ExecCltMsg, reader: jspb.BinaryReader): ExecCltMsg;
+}
+
+export namespace ExecCltMsg {
+    export type AsObject = {
+        code: ExecCltMsg.Code,
+        prjid: string,
+        node: string,
+        cmdList: Array<string>,
+        tty: boolean,
+        data: Uint8Array | string,
+        ttywidth: number,
+        ttyheight: number,
+    }
+
+    export enum Code {
+    CMD = 0,
+    DATA = 1,
+    RESIZE = 2,
+    ERROR = 3,
+    CLOSE = 4,
+    }
+
+}
+
+export class ExecSrvMsg extends jspb.Message { 
+    getCode(): ExecSrvMsg.Code;
+    setCode(value: ExecSrvMsg.Code): ExecSrvMsg;
+    getData(): Uint8Array | string;
+    getData_asU8(): Uint8Array;
+    getData_asB64(): string;
+    setData(value: Uint8Array | string): ExecSrvMsg;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): ExecSrvMsg.AsObject;
+    static toObject(includeInstance: boolean, msg: ExecSrvMsg): ExecSrvMsg.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: ExecSrvMsg, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ExecSrvMsg;
+    static deserializeBinaryFromReader(message: ExecSrvMsg, reader: jspb.BinaryReader): ExecSrvMsg;
+}
+
+export namespace ExecSrvMsg {
+    export type AsObject = {
+        code: ExecSrvMsg.Code,
+        data: Uint8Array | string,
+    }
+
+    export enum Code {
+    STDOUT = 0,
+    STDERR = 1,
+    ERROR = 2,
+    CLOSE = 3,
+    }
+
+}
+
 export class CopyMsg extends jspb.Message { 
     getCode(): CopyMsg.Code;
     setCode(value: CopyMsg.Code): CopyMsg;
@@ -44,87 +131,6 @@ export namespace CopyMsg {
     INIT = 0,
     DATA = 1,
     ERROR = 3,
-    }
-
-}
-
-export class ConsoleCltMsg extends jspb.Message { 
-    getCode(): ConsoleCltMsg.Code;
-    setCode(value: ConsoleCltMsg.Code): ConsoleCltMsg;
-    getPrjid(): string;
-    setPrjid(value: string): ConsoleCltMsg;
-    getNode(): string;
-    setNode(value: string): ConsoleCltMsg;
-    getShell(): boolean;
-    setShell(value: boolean): ConsoleCltMsg;
-    getTtywidth(): number;
-    setTtywidth(value: number): ConsoleCltMsg;
-    getTtyheight(): number;
-    setTtyheight(value: number): ConsoleCltMsg;
-    getData(): Uint8Array | string;
-    getData_asU8(): Uint8Array;
-    getData_asB64(): string;
-    setData(value: Uint8Array | string): ConsoleCltMsg;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): ConsoleCltMsg.AsObject;
-    static toObject(includeInstance: boolean, msg: ConsoleCltMsg): ConsoleCltMsg.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: ConsoleCltMsg, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): ConsoleCltMsg;
-    static deserializeBinaryFromReader(message: ConsoleCltMsg, reader: jspb.BinaryReader): ConsoleCltMsg;
-}
-
-export namespace ConsoleCltMsg {
-    export type AsObject = {
-        code: ConsoleCltMsg.Code,
-        prjid: string,
-        node: string,
-        shell: boolean,
-        ttywidth: number,
-        ttyheight: number,
-        data: Uint8Array | string,
-    }
-
-    export enum Code {
-    INIT = 0,
-    DATA = 1,
-    RESIZE = 2,
-    CLOSE = 3,
-    }
-
-}
-
-export class ConsoleSrvMsg extends jspb.Message { 
-    getCode(): ConsoleSrvMsg.Code;
-    setCode(value: ConsoleSrvMsg.Code): ConsoleSrvMsg;
-    getData(): Uint8Array | string;
-    getData_asU8(): Uint8Array;
-    getData_asB64(): string;
-    setData(value: Uint8Array | string): ConsoleSrvMsg;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): ConsoleSrvMsg.AsObject;
-    static toObject(includeInstance: boolean, msg: ConsoleSrvMsg): ConsoleSrvMsg.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: ConsoleSrvMsg, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): ConsoleSrvMsg;
-    static deserializeBinaryFromReader(message: ConsoleSrvMsg, reader: jspb.BinaryReader): ConsoleSrvMsg;
-}
-
-export namespace ConsoleSrvMsg {
-    export type AsObject = {
-        code: ConsoleSrvMsg.Code,
-        data: Uint8Array | string,
-    }
-
-    export enum Code {
-    STDOUT = 0,
-    STDERR = 1,
-    ERROR = 2,
-    CLOSE = 3,
     }
 
 }
@@ -370,6 +376,8 @@ export class LinkRequest extends jspb.Message {
     clearLink(): void;
     getLink(): LinkConfig | undefined;
     setLink(value?: LinkConfig): LinkRequest;
+    getSync(): boolean;
+    setSync(value: boolean): LinkRequest;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): LinkRequest.AsObject;
@@ -385,6 +393,7 @@ export namespace LinkRequest {
     export type AsObject = {
         prjid: string,
         link?: LinkConfig.AsObject,
+        sync: boolean,
     }
 }
 
@@ -463,6 +472,32 @@ export namespace NodeRequest {
     export type AsObject = {
         prjid: string,
         node: string,
+    }
+}
+
+export class ConsoleCmdRequest extends jspb.Message { 
+    getPrjid(): string;
+    setPrjid(value: string): ConsoleCmdRequest;
+    getNode(): string;
+    setNode(value: string): ConsoleCmdRequest;
+    getShell(): boolean;
+    setShell(value: boolean): ConsoleCmdRequest;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): ConsoleCmdRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: ConsoleCmdRequest): ConsoleCmdRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: ConsoleCmdRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ConsoleCmdRequest;
+    static deserializeBinaryFromReader(message: ConsoleCmdRequest, reader: jspb.BinaryReader): ConsoleCmdRequest;
+}
+
+export namespace ConsoleCmdRequest {
+    export type AsObject = {
+        prjid: string,
+        node: string,
+        shell: boolean,
     }
 }
 
@@ -633,6 +668,34 @@ export namespace VersionResponse {
     export type AsObject = {
         status?: Status.AsObject,
         version: string,
+    }
+}
+
+export class ConsoleCmdResponse extends jspb.Message { 
+
+    hasStatus(): boolean;
+    clearStatus(): void;
+    getStatus(): Status | undefined;
+    setStatus(value?: Status): ConsoleCmdResponse;
+    clearCmdList(): void;
+    getCmdList(): Array<string>;
+    setCmdList(value: Array<string>): ConsoleCmdResponse;
+    addCmd(value: string, index?: number): string;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): ConsoleCmdResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: ConsoleCmdResponse): ConsoleCmdResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: ConsoleCmdResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ConsoleCmdResponse;
+    static deserializeBinaryFromReader(message: ConsoleCmdResponse, reader: jspb.BinaryReader): ConsoleCmdResponse;
+}
+
+export namespace ConsoleCmdResponse {
+    export type AsObject = {
+        status?: Status.AsObject,
+        cmdList: Array<string>,
     }
 }
 

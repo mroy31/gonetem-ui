@@ -26,8 +26,6 @@ interface INetemService extends grpc.ServiceDefinition<grpc.UntypedServiceImplem
     topologyStartAll: INetemService_ITopologyStartAll;
     topologyStopAll: INetemService_ITopologyStopAll;
     nodeReadConfigFiles: INetemService_INodeReadConfigFiles;
-    nodeCanRunConsole: INetemService_INodeCanRunConsole;
-    nodeConsole: INetemService_INodeConsole;
     nodeStart: INetemService_INodeStart;
     nodeStop: INetemService_INodeStop;
     nodeRestart: INetemService_INodeRestart;
@@ -35,7 +33,11 @@ interface INetemService extends grpc.ServiceDefinition<grpc.UntypedServiceImplem
     nodeCapture: INetemService_INodeCapture;
     nodeCopyFrom: INetemService_INodeCopyFrom;
     nodeCopyTo: INetemService_INodeCopyTo;
+    nodeGetConsoleCmd: INetemService_INodeGetConsoleCmd;
+    nodeExec: INetemService_INodeExec;
     linkUpdate: INetemService_ILinkUpdate;
+    linkAdd: INetemService_ILinkAdd;
+    linkDel: INetemService_ILinkDel;
 }
 
 interface INetemService_IServerGetVersion extends grpc.MethodDefinition<google_protobuf_empty_pb.Empty, netem_pb.VersionResponse> {
@@ -191,24 +193,6 @@ interface INetemService_INodeReadConfigFiles extends grpc.MethodDefinition<netem
     responseSerialize: grpc.serialize<netem_pb.ConfigFilesResponse>;
     responseDeserialize: grpc.deserialize<netem_pb.ConfigFilesResponse>;
 }
-interface INetemService_INodeCanRunConsole extends grpc.MethodDefinition<netem_pb.NodeRequest, netem_pb.AckResponse> {
-    path: "/netem.Netem/NodeCanRunConsole";
-    requestStream: false;
-    responseStream: false;
-    requestSerialize: grpc.serialize<netem_pb.NodeRequest>;
-    requestDeserialize: grpc.deserialize<netem_pb.NodeRequest>;
-    responseSerialize: grpc.serialize<netem_pb.AckResponse>;
-    responseDeserialize: grpc.deserialize<netem_pb.AckResponse>;
-}
-interface INetemService_INodeConsole extends grpc.MethodDefinition<netem_pb.ConsoleCltMsg, netem_pb.ConsoleSrvMsg> {
-    path: "/netem.Netem/NodeConsole";
-    requestStream: true;
-    responseStream: true;
-    requestSerialize: grpc.serialize<netem_pb.ConsoleCltMsg>;
-    requestDeserialize: grpc.deserialize<netem_pb.ConsoleCltMsg>;
-    responseSerialize: grpc.serialize<netem_pb.ConsoleSrvMsg>;
-    responseDeserialize: grpc.deserialize<netem_pb.ConsoleSrvMsg>;
-}
 interface INetemService_INodeStart extends grpc.MethodDefinition<netem_pb.NodeRequest, netem_pb.AckResponse> {
     path: "/netem.Netem/NodeStart";
     requestStream: false;
@@ -272,8 +256,44 @@ interface INetemService_INodeCopyTo extends grpc.MethodDefinition<netem_pb.CopyM
     responseSerialize: grpc.serialize<netem_pb.AckResponse>;
     responseDeserialize: grpc.deserialize<netem_pb.AckResponse>;
 }
+interface INetemService_INodeGetConsoleCmd extends grpc.MethodDefinition<netem_pb.ConsoleCmdRequest, netem_pb.ConsoleCmdResponse> {
+    path: "/netem.Netem/NodeGetConsoleCmd";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<netem_pb.ConsoleCmdRequest>;
+    requestDeserialize: grpc.deserialize<netem_pb.ConsoleCmdRequest>;
+    responseSerialize: grpc.serialize<netem_pb.ConsoleCmdResponse>;
+    responseDeserialize: grpc.deserialize<netem_pb.ConsoleCmdResponse>;
+}
+interface INetemService_INodeExec extends grpc.MethodDefinition<netem_pb.ExecCltMsg, netem_pb.ExecSrvMsg> {
+    path: "/netem.Netem/NodeExec";
+    requestStream: true;
+    responseStream: true;
+    requestSerialize: grpc.serialize<netem_pb.ExecCltMsg>;
+    requestDeserialize: grpc.deserialize<netem_pb.ExecCltMsg>;
+    responseSerialize: grpc.serialize<netem_pb.ExecSrvMsg>;
+    responseDeserialize: grpc.deserialize<netem_pb.ExecSrvMsg>;
+}
 interface INetemService_ILinkUpdate extends grpc.MethodDefinition<netem_pb.LinkRequest, netem_pb.AckResponse> {
     path: "/netem.Netem/LinkUpdate";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<netem_pb.LinkRequest>;
+    requestDeserialize: grpc.deserialize<netem_pb.LinkRequest>;
+    responseSerialize: grpc.serialize<netem_pb.AckResponse>;
+    responseDeserialize: grpc.deserialize<netem_pb.AckResponse>;
+}
+interface INetemService_ILinkAdd extends grpc.MethodDefinition<netem_pb.LinkRequest, netem_pb.AckResponse> {
+    path: "/netem.Netem/LinkAdd";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<netem_pb.LinkRequest>;
+    requestDeserialize: grpc.deserialize<netem_pb.LinkRequest>;
+    responseSerialize: grpc.serialize<netem_pb.AckResponse>;
+    responseDeserialize: grpc.deserialize<netem_pb.AckResponse>;
+}
+interface INetemService_ILinkDel extends grpc.MethodDefinition<netem_pb.LinkRequest, netem_pb.AckResponse> {
+    path: "/netem.Netem/LinkDel";
     requestStream: false;
     responseStream: false;
     requestSerialize: grpc.serialize<netem_pb.LinkRequest>;
@@ -302,8 +322,6 @@ export interface INetemServer {
     topologyStartAll: grpc.handleUnaryCall<netem_pb.ProjectRequest, netem_pb.AckResponse>;
     topologyStopAll: grpc.handleUnaryCall<netem_pb.ProjectRequest, netem_pb.AckResponse>;
     nodeReadConfigFiles: grpc.handleUnaryCall<netem_pb.NodeRequest, netem_pb.ConfigFilesResponse>;
-    nodeCanRunConsole: grpc.handleUnaryCall<netem_pb.NodeRequest, netem_pb.AckResponse>;
-    nodeConsole: grpc.handleBidiStreamingCall<netem_pb.ConsoleCltMsg, netem_pb.ConsoleSrvMsg>;
     nodeStart: grpc.handleUnaryCall<netem_pb.NodeRequest, netem_pb.AckResponse>;
     nodeStop: grpc.handleUnaryCall<netem_pb.NodeRequest, netem_pb.AckResponse>;
     nodeRestart: grpc.handleUnaryCall<netem_pb.NodeRequest, netem_pb.AckResponse>;
@@ -311,7 +329,11 @@ export interface INetemServer {
     nodeCapture: grpc.handleServerStreamingCall<netem_pb.NodeInterfaceRequest, netem_pb.CaptureSrvMsg>;
     nodeCopyFrom: grpc.handleServerStreamingCall<netem_pb.CopyMsg, netem_pb.CopyMsg>;
     nodeCopyTo: grpc.handleClientStreamingCall<netem_pb.CopyMsg, netem_pb.AckResponse>;
+    nodeGetConsoleCmd: grpc.handleUnaryCall<netem_pb.ConsoleCmdRequest, netem_pb.ConsoleCmdResponse>;
+    nodeExec: grpc.handleBidiStreamingCall<netem_pb.ExecCltMsg, netem_pb.ExecSrvMsg>;
     linkUpdate: grpc.handleUnaryCall<netem_pb.LinkRequest, netem_pb.AckResponse>;
+    linkAdd: grpc.handleUnaryCall<netem_pb.LinkRequest, netem_pb.AckResponse>;
+    linkDel: grpc.handleUnaryCall<netem_pb.LinkRequest, netem_pb.AckResponse>;
 }
 
 export interface INetemClient {
@@ -361,12 +383,6 @@ export interface INetemClient {
     nodeReadConfigFiles(request: netem_pb.NodeRequest, callback: (error: grpc.ServiceError | null, response: netem_pb.ConfigFilesResponse) => void): grpc.ClientUnaryCall;
     nodeReadConfigFiles(request: netem_pb.NodeRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: netem_pb.ConfigFilesResponse) => void): grpc.ClientUnaryCall;
     nodeReadConfigFiles(request: netem_pb.NodeRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.ConfigFilesResponse) => void): grpc.ClientUnaryCall;
-    nodeCanRunConsole(request: netem_pb.NodeRequest, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
-    nodeCanRunConsole(request: netem_pb.NodeRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
-    nodeCanRunConsole(request: netem_pb.NodeRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
-    nodeConsole(): grpc.ClientDuplexStream<netem_pb.ConsoleCltMsg, netem_pb.ConsoleSrvMsg>;
-    nodeConsole(options: Partial<grpc.CallOptions>): grpc.ClientDuplexStream<netem_pb.ConsoleCltMsg, netem_pb.ConsoleSrvMsg>;
-    nodeConsole(metadata: grpc.Metadata, options?: Partial<grpc.CallOptions>): grpc.ClientDuplexStream<netem_pb.ConsoleCltMsg, netem_pb.ConsoleSrvMsg>;
     nodeStart(request: netem_pb.NodeRequest, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
     nodeStart(request: netem_pb.NodeRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
     nodeStart(request: netem_pb.NodeRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
@@ -387,9 +403,21 @@ export interface INetemClient {
     nodeCopyTo(metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientWritableStream<netem_pb.CopyMsg>;
     nodeCopyTo(options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientWritableStream<netem_pb.CopyMsg>;
     nodeCopyTo(metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientWritableStream<netem_pb.CopyMsg>;
+    nodeGetConsoleCmd(request: netem_pb.ConsoleCmdRequest, callback: (error: grpc.ServiceError | null, response: netem_pb.ConsoleCmdResponse) => void): grpc.ClientUnaryCall;
+    nodeGetConsoleCmd(request: netem_pb.ConsoleCmdRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: netem_pb.ConsoleCmdResponse) => void): grpc.ClientUnaryCall;
+    nodeGetConsoleCmd(request: netem_pb.ConsoleCmdRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.ConsoleCmdResponse) => void): grpc.ClientUnaryCall;
+    nodeExec(): grpc.ClientDuplexStream<netem_pb.ExecCltMsg, netem_pb.ExecSrvMsg>;
+    nodeExec(options: Partial<grpc.CallOptions>): grpc.ClientDuplexStream<netem_pb.ExecCltMsg, netem_pb.ExecSrvMsg>;
+    nodeExec(metadata: grpc.Metadata, options?: Partial<grpc.CallOptions>): grpc.ClientDuplexStream<netem_pb.ExecCltMsg, netem_pb.ExecSrvMsg>;
     linkUpdate(request: netem_pb.LinkRequest, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
     linkUpdate(request: netem_pb.LinkRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
     linkUpdate(request: netem_pb.LinkRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
+    linkAdd(request: netem_pb.LinkRequest, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
+    linkAdd(request: netem_pb.LinkRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
+    linkAdd(request: netem_pb.LinkRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
+    linkDel(request: netem_pb.LinkRequest, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
+    linkDel(request: netem_pb.LinkRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
+    linkDel(request: netem_pb.LinkRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
 }
 
 export class NetemClient extends grpc.Client implements INetemClient {
@@ -440,11 +468,6 @@ export class NetemClient extends grpc.Client implements INetemClient {
     public nodeReadConfigFiles(request: netem_pb.NodeRequest, callback: (error: grpc.ServiceError | null, response: netem_pb.ConfigFilesResponse) => void): grpc.ClientUnaryCall;
     public nodeReadConfigFiles(request: netem_pb.NodeRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: netem_pb.ConfigFilesResponse) => void): grpc.ClientUnaryCall;
     public nodeReadConfigFiles(request: netem_pb.NodeRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.ConfigFilesResponse) => void): grpc.ClientUnaryCall;
-    public nodeCanRunConsole(request: netem_pb.NodeRequest, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
-    public nodeCanRunConsole(request: netem_pb.NodeRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
-    public nodeCanRunConsole(request: netem_pb.NodeRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
-    public nodeConsole(options?: Partial<grpc.CallOptions>): grpc.ClientDuplexStream<netem_pb.ConsoleCltMsg, netem_pb.ConsoleSrvMsg>;
-    public nodeConsole(metadata?: grpc.Metadata, options?: Partial<grpc.CallOptions>): grpc.ClientDuplexStream<netem_pb.ConsoleCltMsg, netem_pb.ConsoleSrvMsg>;
     public nodeStart(request: netem_pb.NodeRequest, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
     public nodeStart(request: netem_pb.NodeRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
     public nodeStart(request: netem_pb.NodeRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
@@ -465,7 +488,18 @@ export class NetemClient extends grpc.Client implements INetemClient {
     public nodeCopyTo(metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientWritableStream<netem_pb.CopyMsg>;
     public nodeCopyTo(options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientWritableStream<netem_pb.CopyMsg>;
     public nodeCopyTo(metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientWritableStream<netem_pb.CopyMsg>;
+    public nodeGetConsoleCmd(request: netem_pb.ConsoleCmdRequest, callback: (error: grpc.ServiceError | null, response: netem_pb.ConsoleCmdResponse) => void): grpc.ClientUnaryCall;
+    public nodeGetConsoleCmd(request: netem_pb.ConsoleCmdRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: netem_pb.ConsoleCmdResponse) => void): grpc.ClientUnaryCall;
+    public nodeGetConsoleCmd(request: netem_pb.ConsoleCmdRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.ConsoleCmdResponse) => void): grpc.ClientUnaryCall;
+    public nodeExec(options?: Partial<grpc.CallOptions>): grpc.ClientDuplexStream<netem_pb.ExecCltMsg, netem_pb.ExecSrvMsg>;
+    public nodeExec(metadata?: grpc.Metadata, options?: Partial<grpc.CallOptions>): grpc.ClientDuplexStream<netem_pb.ExecCltMsg, netem_pb.ExecSrvMsg>;
     public linkUpdate(request: netem_pb.LinkRequest, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
     public linkUpdate(request: netem_pb.LinkRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
     public linkUpdate(request: netem_pb.LinkRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
+    public linkAdd(request: netem_pb.LinkRequest, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
+    public linkAdd(request: netem_pb.LinkRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
+    public linkAdd(request: netem_pb.LinkRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
+    public linkDel(request: netem_pb.LinkRequest, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
+    public linkDel(request: netem_pb.LinkRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
+    public linkDel(request: netem_pb.LinkRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
 }

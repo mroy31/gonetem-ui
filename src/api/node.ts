@@ -22,8 +22,9 @@ const consoleCmd = async (
   const termCmd = getOptions().consoleExternalCmd;
   // find term exe
   const termArgs = termCmd.split(" ");
-  const termExe = termCmd.startsWith("/") ?
-    termArgs[0] : await findExecutable(termArgs[0]);
+  const termExe = termCmd.startsWith("/")
+    ? termArgs[0]
+    : await findExecutable(termArgs[0]);
   if (termExe == null) return null;
 
   const fullTermCmd =
@@ -126,12 +127,8 @@ export const handleRunNodeConsole = async (
   return await runNodeConsole(prjId, nodeId, shell);
 };
 
-function runAllConsoles(
-  prjId: string,
-  shell: boolean
-): Promise<ApiResponse> {
-  const errorFmt = (err: string) =>
-    `Unable to run console: ${err}`;
+function runAllConsoles(prjId: string, shell: boolean): Promise<ApiResponse> {
+  const errorFmt = (err: string) => `Unable to run console: ${err}`;
   return new Promise<ApiResponse>((resolve) => {
     const request = new ProjectRequest();
     request.setId(prjId);
@@ -147,18 +144,13 @@ function runAllConsoles(
         resolve({ status: false, error: err });
         return;
       }
-      
-      const promiseList: Promise<{error: string, nodeId: string}>[] = [];
+
+      const promiseList: Promise<{ error: string; nodeId: string }>[] = [];
       for (const node of res.getNodesList()) {
-        const request = new NodeRequest();
-        request.setPrjid(prjId);
-        request.setNode(node.getName())
+        if (!node.getRunning()) continue;
 
-        promiseList.push(new Promise<{error: string, nodeId: string}>((nResolve) => {
-          CLIENT.nodeCanRunConsole(request, (err, res) => {
-            if (err || res.getStatus().getCode() == StatusCode.ERROR)
-              nResolve({error: '', nodeId: node.getName()})
-
+        promiseList.push(
+          new Promise<{ error: string; nodeId: string }>((nResolve) => {
             consoleCmd(prjId, node.getName(), shell).then((cmd) => {
               if (cmd == null)
                 nResolve({
@@ -168,14 +160,17 @@ function runAllConsoles(
 
               const process = spawn(cmd, { shell: true });
               process.on("error", (err) => {
-                nResolve({ nodeId: node.getName(), error: errorFmt(err.message) });
+                nResolve({
+                  nodeId: node.getName(),
+                  error: errorFmt(err.message),
+                });
               });
               process.on("spawn", () => {
-                nResolve({ nodeId: node.getName(), error: '' });
+                nResolve({ nodeId: node.getName(), error: "" });
               });
             });
-          });
-        }))
+          })
+        );
       }
 
       Promise.all(promiseList).then((values) => {
@@ -185,11 +180,11 @@ function runAllConsoles(
             return;
           }
         }
-        resolve({status: true});
+        resolve({ status: true });
       });
     });
   });
-};
+}
 
 export const handleRunAllConsoles = async (
   _event: IpcMainInvokeEvent,

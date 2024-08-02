@@ -49,26 +49,26 @@ function deserialize_netem_ConfigFilesResponse(buffer_arg) {
   return netem_pb.ConfigFilesResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
-function serialize_netem_ConsoleCltMsg(arg) {
-  if (!(arg instanceof netem_pb.ConsoleCltMsg)) {
-    throw new Error('Expected argument of type netem.ConsoleCltMsg');
+function serialize_netem_ConsoleCmdRequest(arg) {
+  if (!(arg instanceof netem_pb.ConsoleCmdRequest)) {
+    throw new Error('Expected argument of type netem.ConsoleCmdRequest');
   }
   return Buffer.from(arg.serializeBinary());
 }
 
-function deserialize_netem_ConsoleCltMsg(buffer_arg) {
-  return netem_pb.ConsoleCltMsg.deserializeBinary(new Uint8Array(buffer_arg));
+function deserialize_netem_ConsoleCmdRequest(buffer_arg) {
+  return netem_pb.ConsoleCmdRequest.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
-function serialize_netem_ConsoleSrvMsg(arg) {
-  if (!(arg instanceof netem_pb.ConsoleSrvMsg)) {
-    throw new Error('Expected argument of type netem.ConsoleSrvMsg');
+function serialize_netem_ConsoleCmdResponse(arg) {
+  if (!(arg instanceof netem_pb.ConsoleCmdResponse)) {
+    throw new Error('Expected argument of type netem.ConsoleCmdResponse');
   }
   return Buffer.from(arg.serializeBinary());
 }
 
-function deserialize_netem_ConsoleSrvMsg(buffer_arg) {
-  return netem_pb.ConsoleSrvMsg.deserializeBinary(new Uint8Array(buffer_arg));
+function deserialize_netem_ConsoleCmdResponse(buffer_arg) {
+  return netem_pb.ConsoleCmdResponse.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_netem_CopyMsg(arg) {
@@ -80,6 +80,28 @@ function serialize_netem_CopyMsg(arg) {
 
 function deserialize_netem_CopyMsg(buffer_arg) {
   return netem_pb.CopyMsg.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_netem_ExecCltMsg(arg) {
+  if (!(arg instanceof netem_pb.ExecCltMsg)) {
+    throw new Error('Expected argument of type netem.ExecCltMsg');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_netem_ExecCltMsg(buffer_arg) {
+  return netem_pb.ExecCltMsg.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_netem_ExecSrvMsg(arg) {
+  if (!(arg instanceof netem_pb.ExecSrvMsg)) {
+    throw new Error('Expected argument of type netem.ExecSrvMsg');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_netem_ExecSrvMsg(buffer_arg) {
+  return netem_pb.ExecSrvMsg.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_netem_FileResponse(arg) {
@@ -452,28 +474,6 @@ nodeReadConfigFiles: {
     responseSerialize: serialize_netem_ConfigFilesResponse,
     responseDeserialize: deserialize_netem_ConfigFilesResponse,
   },
-  nodeCanRunConsole: {
-    path: '/netem.Netem/NodeCanRunConsole',
-    requestStream: false,
-    responseStream: false,
-    requestType: netem_pb.NodeRequest,
-    responseType: netem_pb.AckResponse,
-    requestSerialize: serialize_netem_NodeRequest,
-    requestDeserialize: deserialize_netem_NodeRequest,
-    responseSerialize: serialize_netem_AckResponse,
-    responseDeserialize: deserialize_netem_AckResponse,
-  },
-  nodeConsole: {
-    path: '/netem.Netem/NodeConsole',
-    requestStream: true,
-    responseStream: true,
-    requestType: netem_pb.ConsoleCltMsg,
-    responseType: netem_pb.ConsoleSrvMsg,
-    requestSerialize: serialize_netem_ConsoleCltMsg,
-    requestDeserialize: deserialize_netem_ConsoleCltMsg,
-    responseSerialize: serialize_netem_ConsoleSrvMsg,
-    responseDeserialize: deserialize_netem_ConsoleSrvMsg,
-  },
   nodeStart: {
     path: '/netem.Netem/NodeStart',
     requestStream: false,
@@ -551,9 +551,53 @@ nodeReadConfigFiles: {
     responseSerialize: serialize_netem_AckResponse,
     responseDeserialize: deserialize_netem_AckResponse,
   },
+  nodeGetConsoleCmd: {
+    path: '/netem.Netem/NodeGetConsoleCmd',
+    requestStream: false,
+    responseStream: false,
+    requestType: netem_pb.ConsoleCmdRequest,
+    responseType: netem_pb.ConsoleCmdResponse,
+    requestSerialize: serialize_netem_ConsoleCmdRequest,
+    requestDeserialize: deserialize_netem_ConsoleCmdRequest,
+    responseSerialize: serialize_netem_ConsoleCmdResponse,
+    responseDeserialize: deserialize_netem_ConsoleCmdResponse,
+  },
+  nodeExec: {
+    path: '/netem.Netem/NodeExec',
+    requestStream: true,
+    responseStream: true,
+    requestType: netem_pb.ExecCltMsg,
+    responseType: netem_pb.ExecSrvMsg,
+    requestSerialize: serialize_netem_ExecCltMsg,
+    requestDeserialize: deserialize_netem_ExecCltMsg,
+    responseSerialize: serialize_netem_ExecSrvMsg,
+    responseDeserialize: deserialize_netem_ExecSrvMsg,
+  },
   // Link actions
 linkUpdate: {
     path: '/netem.Netem/LinkUpdate',
+    requestStream: false,
+    responseStream: false,
+    requestType: netem_pb.LinkRequest,
+    responseType: netem_pb.AckResponse,
+    requestSerialize: serialize_netem_LinkRequest,
+    requestDeserialize: deserialize_netem_LinkRequest,
+    responseSerialize: serialize_netem_AckResponse,
+    responseDeserialize: deserialize_netem_AckResponse,
+  },
+  linkAdd: {
+    path: '/netem.Netem/LinkAdd',
+    requestStream: false,
+    responseStream: false,
+    requestType: netem_pb.LinkRequest,
+    responseType: netem_pb.AckResponse,
+    requestSerialize: serialize_netem_LinkRequest,
+    requestDeserialize: deserialize_netem_LinkRequest,
+    responseSerialize: serialize_netem_AckResponse,
+    responseDeserialize: deserialize_netem_AckResponse,
+  },
+  linkDel: {
+    path: '/netem.Netem/LinkDel',
     requestStream: false,
     responseStream: false,
     requestType: netem_pb.LinkRequest,

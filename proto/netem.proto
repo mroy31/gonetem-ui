@@ -32,8 +32,6 @@ service Netem {
 
     // Node actions
     rpc NodeReadConfigFiles(NodeRequest) returns (ConfigFilesResponse) {}
-    rpc NodeCanRunConsole(NodeRequest) returns (AckResponse) {}
-    rpc NodeConsole(stream ConsoleCltMsg) returns (stream ConsoleSrvMsg) {}
     rpc NodeStart(NodeRequest) returns (AckResponse) {}
     rpc NodeStop(NodeRequest) returns (AckResponse) {}
     rpc NodeRestart(NodeRequest) returns (AckResponse) {}
@@ -41,9 +39,13 @@ service Netem {
     rpc NodeCapture(NodeInterfaceRequest) returns (stream CaptureSrvMsg) {}
     rpc NodeCopyFrom(CopyMsg) returns (stream CopyMsg) {}
     rpc NodeCopyTo(stream CopyMsg) returns (AckResponse) {}
+    rpc NodeGetConsoleCmd(ConsoleCmdRequest) returns (ConsoleCmdResponse) {}
+    rpc NodeExec(stream ExecCltMsg) returns (stream ExecSrvMsg) {}
 
     // Link actions
     rpc LinkUpdate(LinkRequest) returns (AckResponse) {}
+    rpc LinkAdd(LinkRequest) returns (AckResponse) {}
+    rpc LinkDel(LinkRequest) returns (AckResponse) {}
 
 }
 
@@ -63,6 +65,37 @@ enum IfState {
 
 // Stream messages
 
+message ExecCltMsg {
+    enum Code {
+        CMD = 0;
+        DATA = 1;
+        RESIZE = 2;
+        ERROR = 3;
+        CLOSE = 4;
+    }
+
+    Code code = 1;
+    string prjId = 2;
+    string node = 3;
+    repeated string cmd = 4;
+    bool tty = 5;
+    bytes data = 6;
+    int32 ttyWidth = 7;
+    int32 ttyHeight = 8;
+}
+
+message ExecSrvMsg {
+    enum Code {
+        STDOUT = 0;
+        STDERR = 1;
+        ERROR = 2;
+        CLOSE = 3;
+    }
+
+    Code code = 1;
+    bytes data = 3;
+}
+
 message CopyMsg {
     enum Code {
         INIT = 0;
@@ -75,35 +108,6 @@ message CopyMsg {
     string node = 3;
     string nodePath = 4;
     bytes data = 5;
-}
-
-message ConsoleCltMsg {
-    enum Code {
-        INIT = 0;
-        DATA = 1;
-        RESIZE = 2;
-        CLOSE = 3;
-    }
-
-    Code code = 1;
-    string prjId = 2;
-    string node = 3;
-    bool shell = 4;
-    int32 ttyWidth = 5;
-    int32 ttyHeight = 6;
-    bytes data = 7;
-}
-
-message ConsoleSrvMsg {
-    enum Code {
-        STDOUT = 0;
-        STDERR = 1;
-        ERROR = 2;
-        CLOSE = 3;
-    }
-
-    Code code = 1;
-    bytes data = 3;
 }
 
 message PullSrvMsg {
@@ -190,6 +194,7 @@ message LinkConfig {
 message LinkRequest {
     string prjId = 1;
     LinkConfig link = 2;
+    bool sync = 3;
 }
 
 message NodeIfStateRequest {
@@ -208,6 +213,12 @@ message NodeInterfaceRequest {
 message NodeRequest {
     string prjId = 1;
     string node = 2;
+}
+
+message ConsoleCmdRequest {
+    string prjId = 1;
+    string node = 2;
+    bool shell = 3;
 }
 
 message ProjectRequest {
@@ -243,6 +254,11 @@ message FileResponse {
 message VersionResponse {
     Status status = 1;
     string version = 2;
+}
+
+message ConsoleCmdResponse {
+    Status status = 1;
+    repeated string cmd = 2;
 }
 
 message StatusResponse {
