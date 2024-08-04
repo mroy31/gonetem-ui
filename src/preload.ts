@@ -19,6 +19,7 @@ const exposedApi: ContextBridgeApi = {
   checkTopologyFile: (prjId: string):Promise<ApiResponse> => ipcRenderer.invoke("server:checkTopology", prjId),
   runTopology: (prjId: string):Promise<ApiResponse> => ipcRenderer.invoke("server:runTopology", prjId),
   reloadTopology: (prjId: string):Promise<ApiResponse> => ipcRenderer.invoke("server:reloadTopology", prjId),
+  recordTopologyImg: (data: Buffer): Promise<ApiResponse> => ipcRenderer.invoke("server:recordTopologyImg", data),
   runAllConsoles: (prjId: string, shell: boolean):Promise<ApiResponse> => ipcRenderer.invoke("server:runAllConsoles", prjId, shell),
   readNodeConfigFiles: (prjId: string, nodeId: string):Promise<ConfigFilesApiResponse> => ipcRenderer.invoke("server:readNodeConfigFiles", prjId, nodeId),
   runNodeConsole: (prjId: string, nodeId: string, shell: boolean):Promise<ApiResponse> => ipcRenderer.invoke("server:runNodeConsole", prjId, nodeId, shell),

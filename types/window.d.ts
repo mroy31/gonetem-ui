@@ -75,6 +75,7 @@ declare global {
     checkTopologyFile: (prjId: string) => Promise<ApiResponse>,
     runTopology: (prjId: string) => Promise<ApiResponse>,
     reloadTopology: (prjId: string) => Promise<ApiResponse>,
+    recordTopologyImg: (data: Buffer) => Promise<ApiResponse>,
     runAllConsoles: (prjId: string, shell: boolean) => Promise<ApiResponse>,
     readNodeConfigFiles: (prjId: string, nodeId: string) => Promise<ConfigFilesApiResponse>,
     runNodeConsole: (prjId: string, nodeId: string, shell: boolean) => Promise<ApiResponse>,

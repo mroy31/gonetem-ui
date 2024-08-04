@@ -5,9 +5,11 @@ import { IProjectState } from "../api/interface";
 export default function ProjectContextBar({
   prjStatus,
   selectedEdge,
+  dwImgHandle,
 }: {
   prjStatus: IProjectState;
   selectedEdge: string;
+  dwImgHandle: () => void;
 }): JSX.Element {
   const { setError } = useAppContext();
 
@@ -25,11 +27,17 @@ export default function ProjectContextBar({
 
       <div className="flex-none join p-1">
         <button 
-            className="btn btn-outline btn-sm" 
+            className="btn btn-outline btn-sm join-item" 
+            onClick={dwImgHandle}
+        >
+          Topo image
+        </button>
+        <button 
+            className="btn btn-outline btn-sm join-item" 
             disabled={!prjStatus.running}
             onClick={runAllConsoles}
         >
-          Open all consoles
+          All consoles
         </button>
       </div>
     </div>

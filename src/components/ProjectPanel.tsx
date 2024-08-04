@@ -1,10 +1,11 @@
 
-import React, { useEffect, useCallback, useReducer } from 'react';
+import React, { useEffect, useCallback, useReducer, useRef,useContext } from 'react';
 import ProjectContextPanel from './ProjectContextPanel';
 import ProjectToolbar from './ProjectToolbar';
 import { IProjectState } from '../api/interface';
-import ProjectGraph from './ProjectGraph';
+import ProjectGraph, {ProjectGrahHandle} from './ProjectGraph';
 import ProjectContextBar from './ProjectContextBar';
+import { useAppContext } from '../context';
 
 export enum PrjActionKing {
     INIT = 'INIT',
@@ -75,6 +76,8 @@ export default function ProjectPanel({
     prjId: string;
     onClose: () => void;
 }): JSX.Element {
+    const { setError } = useAppContext();
+    const graphRef = useRef<ProjectGrahHandle>(null);
     const [state, dispatch] = useReducer(reducer, {
         error: "",
         loading: true,
@@ -90,6 +93,16 @@ export default function ProjectPanel({
                 : dispatch({type: PrjActionKing.ERROR, error: res.error});
         });
     }, [prjId]);
+
+    const dwImgHandle = useCallback(() => {
+        if (graphRef.current == null) return;
+
+        graphRef.current.exportImage().then((data) => {
+            window.api.recordTopologyImg(data).then((res) => {
+                if (res.error) setError(res.error);
+            });
+        });
+    }, [graphRef]);
 
     useEffect(() => {
         if (prjId == "") return;
@@ -143,6 +156,7 @@ export default function ProjectPanel({
 
                     <div className='flex-1 min-h-0 overflow-scroll'>
                         <ProjectGraph 
+                            ref={graphRef}
                             updateState={updateState}
                             prjStatus={state.status}
                             topology={state.topology}
@@ -154,6 +168,7 @@ export default function ProjectPanel({
                     </div>
 
                     <ProjectContextBar
+                        dwImgHandle={dwImgHandle}
                         prjStatus={state.status}
                         selectedEdge={state.selectedEdge}
                     />                    

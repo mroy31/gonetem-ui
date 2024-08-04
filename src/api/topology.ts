@@ -1,4 +1,5 @@
-import { IpcMainInvokeEvent } from "electron";
+import { dialog, IpcMainInvokeEvent } from "electron";
+import { writeFile } from 'fs/promises';
 import { ProjectRequest, StatusCode, TopologyRunMsg, WNetworkRequest } from "../proto/netem_pb";
 import { CLIENT } from "./client";
 import { mainWindow } from "..";
@@ -173,3 +174,27 @@ export const handleReloadTopology = async (
 
   return await reloadTopology(prjId);
 };
+
+export const handleRecordTopologyImg= async (_event: IpcMainInvokeEvent, data: Buffer): Promise<ApiResponse> => {
+  const { canceled, filePath } = await dialog.showSaveDialog({
+    title: "Record topology image",
+    message: "Set folder/name to save image",
+    defaultPath: "topology.png",
+    properties: ['createDirectory'], 
+    filters: [
+      { name: "PNG files", extensions: ["png"] },
+      { name: "All files", extensions: ["*"] }
+    ]
+  });
+
+  if (canceled) {
+    return {status: false};
+  }
+
+  try {
+    await writeFile(filePath, data, 'binary');
+    return {status: true};
+  } catch (err) {
+    return {status: false, error: err.message};
+  }
+}

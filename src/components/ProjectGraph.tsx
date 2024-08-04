@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import YAML from "yaml";
 import { Network, type Node, type Edge } from "vis-network";
+import { Buffer } from 'buffer';
 import { INodeState, IProjectState, IfState } from "../api/interface";
 import NodeContextMenu, { NodeContextMenuT } from "./NodeContextMenu";
 import router from "../../img/router.svg";
@@ -145,17 +146,24 @@ const getNodesAndEdges = (
   return [nodes, edges];
 };
 
-export default function ProjectGraph({
-  prjStatus,
-  topology,
-  updateState,
-  onSelectEdge,
-}: {
+
+type PropsT = {
   prjStatus: IProjectState;
   topology: string;
   updateState: () => void;
   onSelectEdge: (edge: string) => void;
-}): JSX.Element {
+}
+
+export type ProjectGrahHandle = {
+  exportImage: () => Promise<Buffer>;
+}
+
+export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
+  prjStatus,
+  topology,
+  updateState,
+  onSelectEdge,
+}: PropsT, ref): JSX.Element {
   const [error, setError] = useState("");
   const [network, setNetwork] = useState<Network>(null);
   const [contextMenu, setContextMenu] = useState<NodeContextMenuT>({
@@ -165,6 +173,24 @@ export default function ProjectGraph({
     y: 0,
   });
   const visJsRef = useRef<HTMLDivElement>(null);
+
+  useImperativeHandle(ref, () => {
+    return {
+      exportImage: (): Promise<Buffer> => {
+        return new Promise<Buffer>((resolve) => {
+          if (visJsRef.current == null || network == null) {
+            resolve(null);
+            return;
+          }
+
+          const canvas = visJsRef.current.getElementsByTagName("canvas").item(0) as HTMLCanvasElement;
+          canvas.toBlob((blob) => {
+            blob.arrayBuffer().then((aBuf) => resolve(Buffer.from(aBuf)));
+          });
+        });
+      }
+    }
+  });
 
   useEffect(() => {
     if (!visJsRef.current) return;
@@ -215,6 +241,9 @@ export default function ProjectGraph({
         net.on('deselectEdge', (obj) => {
           onSelectEdge(obj.edges.join(" | "))  
         });
+        net.on('controlNodeDragEnd', () => {
+          net.storePositions();
+        });
 
         setNetwork(net);
       } else {
@@ -261,4 +290,4 @@ export default function ProjectGraph({
       )}
     </>
   );
-}
+});

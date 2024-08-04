@@ -14,6 +14,7 @@ import {
 import {
   handleCheckTopologyFile,
   handleReadTopologyFile,
+  handleRecordTopologyImg,
   handleReloadTopology,
   handleRunTopology,
   handleWriteTopologyFile,
@@ -109,6 +110,7 @@ app.on("ready", () => {
   ipcMain.handle("server:checkTopology", handleCheckTopologyFile);
   ipcMain.handle("server:runTopology", handleRunTopology);
   ipcMain.handle("server:reloadTopology", handleReloadTopology);
+  ipcMain.handle("server:recordTopologyImg", handleRecordTopologyImg);
   ipcMain.handle("server:runAllConsoles", handleRunAllConsoles);
   ipcMain.handle("server:readNodeConfigFiles", handleReadNodeConfigFiles);
   ipcMain.handle("server:runNodeConsole", handleRunNodeConsole);

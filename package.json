@@ -66,6 +66,10 @@
     "@grpc/proto-loader": "~0.7.13",
     "@heroicons/react": "~2.1.4",
     "@uiw/react-codemirror": "~4.22.2",
+    "@xterm/addon-fit": "~0.10.0",
+    "@xterm/addon-serialize": "~0.13.0",
+    "@xterm/xterm": "~5.5.0",
+    "buffer": "~6.0.3",
     "classnames": "~2.5.1",
     "electron-is-dev": "~3.0.1",
     "electron-squirrel-startup": "~1.0.1",
@@ -77,9 +81,6 @@
     "vis-data": "~7.1.9",
     "vis-network": "~9.1.9",
     "vis-util": "~5.0.7",
-    "@xterm/xterm": "~5.5.0",
-    "@xterm/addon-fit": "~0.10.0",
-    "@xterm/addon-serialize": "~0.13.0",
     "yaml": "~2.4.5"
   }
 }
