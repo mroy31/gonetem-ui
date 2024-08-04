@@ -1,5 +1,5 @@
 
-import React, { useEffect, useCallback, useReducer, useRef,useContext } from 'react';
+import React, { useEffect, useCallback, useReducer, useRef } from 'react';
 import ProjectContextPanel from './ProjectContextPanel';
 import ProjectToolbar from './ProjectToolbar';
 import { IProjectState } from '../api/interface';

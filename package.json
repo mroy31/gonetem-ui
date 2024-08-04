@@ -79,7 +79,7 @@
     "react-dom": "~18.3.1",
     "tar-stream": "~3.1.7",
     "vis-data": "~7.1.9",
-    "vis-network": "~9.1.9",
+    "vis-network": "link:./../vis-network-9.1.9",
     "vis-util": "~5.0.7",
     "yaml": "~2.4.5"
   }

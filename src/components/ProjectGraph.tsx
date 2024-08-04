@@ -27,6 +27,10 @@ const getNodeIdFromPeer = (peer: string) => {
   return peer.split(".")[0];
 };
 
+const getNodeIdxFromPeer = (peer: string) => {
+  return peer.split(".")[1];
+};
+
 const getNodeState = (nodeName: string, state: IProjectState): INodeState => {
   for (const node of state.nodes) {
     if (node.name == nodeName) return node;
@@ -39,7 +43,7 @@ const getNodeShape = (nodeType: string, nodeState: INodeState) => {
   switch (nodeType) {
     case "docker.router":
       return {
-        shape: "image",
+        shape: "circularImage",
         image: nodeState?.running ? routerRunning : router,
       };
     case "docker.host":
@@ -139,8 +143,15 @@ const getNodesAndEdges = (
       id: `${link.peer1} <--> ${link.peer2}`,
       from: getNodeIdFromPeer(link.peer1),
       to: getNodeIdFromPeer(link.peer2),
+      labelFrom: getNodeIdxFromPeer(link.peer1),
+      labelTo: getNodeIdxFromPeer(link.peer1),
       smooth: false,
       ...getEdgeColor(link.peer1, link.peer2, prjState),
+      font: {
+        size: 12,
+        color: "#00F",
+        align: "top",
+      }
     };
   }) : [];
   return [nodes, edges];
@@ -250,7 +261,7 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
         network.setData({ nodes, edges });
       }
     } catch (err) {
-      setError(`Unable to parse topology file: ${err}`);
+      setError(`Unable to create network graph: ${err}`);
       return;
     }
   }, [visJsRef, prjStatus, topology]);
