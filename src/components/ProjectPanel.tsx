@@ -169,6 +169,7 @@ export default function ProjectPanel({
 
                     <ProjectContextBar
                         dwImgHandle={dwImgHandle}
+                        fitHandle={() => graphRef.current?.fit()}
                         prjStatus={state.status}
                         selectedEdge={state.selectedEdge}
                     />                    

@@ -140,7 +140,7 @@ const getNodesAndEdges = (
 
   const edges: Edge[] = topology.links ? topology.links.map((link) => {
     return {
-      id: `${link.peer1} <--> ${link.peer2}`,
+      id: `${link.peer1} -- ${link.peer2}`,
       from: getNodeIdFromPeer(link.peer1),
       to: getNodeIdFromPeer(link.peer2),
       labelFrom: getNodeIdxFromPeer(link.peer1),
@@ -167,6 +167,7 @@ type PropsT = {
 
 export type ProjectGrahHandle = {
   exportImage: () => Promise<Buffer>;
+  fit: () => void;
 }
 
 export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
@@ -199,6 +200,11 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
             blob.arrayBuffer().then((aBuf) => resolve(Buffer.from(aBuf)));
           });
         });
+      },
+      fit: () => {
+        if (network != null) {
+          network.fit();
+        }
       }
     }
   });
@@ -247,10 +253,10 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
         );
         net.on("click", () => setContextMenu({ ...contextMenu, nodeId: "", x: 0, y: 0 }));
         net.on('selectEdge', (obj) => {
-          onSelectEdge(obj.edges.join(" | "))  
+          onSelectEdge(obj.edges.join(" || "))  
         });
         net.on('deselectEdge', (obj) => {
-          onSelectEdge(obj.edges.join(" | "))  
+          onSelectEdge(obj.edges.join(" || "))  
         });
         net.on('controlNodeDragEnd', () => {
           net.storePositions();

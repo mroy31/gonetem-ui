@@ -6,10 +6,12 @@ export default function ProjectContextBar({
   prjStatus,
   selectedEdge,
   dwImgHandle,
+  fitHandle,
 }: {
   prjStatus: IProjectState;
   selectedEdge: string;
   dwImgHandle: () => void;
+  fitHandle: () => void;
 }): JSX.Element {
   const { setError } = useAppContext();
 
@@ -27,7 +29,13 @@ export default function ProjectContextBar({
 
       <div className="flex-none join p-1">
         <button 
-            className="btn btn-outline btn-sm join-item" 
+            className="btn btn-outline btn-sm join-item btn-primary" 
+            onClick={fitHandle}
+        >
+          Fit
+        </button>
+        <button 
+            className="btn btn-outline btn-sm join-item btn-primary" 
             onClick={dwImgHandle}
         >
           Topo image
