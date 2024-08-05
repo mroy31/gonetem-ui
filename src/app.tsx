@@ -100,7 +100,7 @@ function App(): JSX.Element {
     <div className="flex flex-col h-screen">
       <div className="navbar bg-base-200 flex-none">
         <div className="flex-1">
-          <span className="btn btn-ghost text-xl">GONETEM</span>
+          <span className="btn btn-ghost text-xl">GONETEM UI</span>
         </div>
 
         <div className="flex-none">
