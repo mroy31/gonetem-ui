@@ -175,7 +175,7 @@ export const handleReloadTopology = async (
   return await reloadTopology(prjId);
 };
 
-export const handleRecordTopologyImg= async (_event: IpcMainInvokeEvent, data: Buffer): Promise<ApiResponse> => {
+export const handleRecordTopologyImg = async (_event: IpcMainInvokeEvent, data: Buffer): Promise<ApiResponse> => {
   const { canceled, filePath } = await dialog.showSaveDialog({
     title: "Record topology image",
     message: "Set folder/name to save image",

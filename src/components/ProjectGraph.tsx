@@ -1,6 +1,6 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import YAML from "yaml";
-import { Network, type Node, type Edge } from "vis-network";
+import { Network, type Node, type Edge, Position } from "vis-network";
 import { Buffer } from 'buffer';
 import { INodeState, IProjectState, IfState } from "../api/interface";
 import NodeContextMenu, { NodeContextMenuT } from "./NodeContextMenu";
@@ -11,11 +11,16 @@ import hostRunning from "../../img/host-running.svg";
 import sw from "../../img/switch.svg";
 import swRunning from "../../img/switch-running.svg";
 
+interface ITopologyNode {
+  type: string;
+  ui?: {
+    position: Position;
+  }
+}
+
 interface ITopology {
   nodes: {
-    [key: string]: {
-      type: string;
-    } | null;
+    [key: string]: ITopologyNode | null;
   };
   links: {
     peer1: string;
@@ -64,15 +69,18 @@ const getNodeShape = (nodeType: string, nodeState: INodeState) => {
 };
 
 const getNodePosition = (
+  topology: ITopology,
   nodeName: string,
   network: Network,
 ) => {
-  if (network == null) return {};
+  if (network == null)
+    return topology.nodes[nodeName].ui?.position || {};
+
   try {
     return network.getPosition(nodeName);
   } catch (err) {
     // node is just created and has no defined position
-    return {};  
+    return topology.nodes[nodeName].ui?.position || {};
   }
 }
 
@@ -134,7 +142,7 @@ const getNodesAndEdges = (
       label: name,
       fixed: false,
       ...getNodeShape(nodeAttr.type, getNodeState(name, prjState)),
-      ...getNodePosition(name, network),
+      ...getNodePosition(topology, name, network),
     };
   }) : [];
 
@@ -168,6 +176,7 @@ type PropsT = {
 export type ProjectGrahHandle = {
   exportImage: () => Promise<Buffer>;
   fit: () => void;
+  saveNodePositions: () => Promise<ApiResponse>;
 }
 
 export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
@@ -205,6 +214,25 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
         if (network != null) {
           network.fit();
         }
+      },
+      saveNodePositions: (): Promise<ApiResponse> => {
+        if (network == null) return;
+
+        const positions = network.getPositions();
+        const topo = YAML.parse(topology) as ITopology;
+
+        const nodes: {[key: string]: ITopologyNode | null;}  = {}
+        Object.keys(topo.nodes).forEach((nId) => {
+          nodes[nId] = {
+            ...topo.nodes[nId],
+            ui: {
+              position: positions[nId]
+            }
+          };
+        });
+        topo.nodes = nodes;
+
+        return window.api.writeTopologyFile(prjStatus.id, YAML.stringify(topo))
       }
     }
   });

@@ -4,7 +4,7 @@ import ProjectContextPanel from './ProjectContextPanel';
 import ProjectToolbar from './ProjectToolbar';
 import { IProjectState } from '../api/interface';
 import ProjectGraph, {ProjectGrahHandle} from './ProjectGraph';
-import ProjectContextBar from './ProjectContextBar';
+import ProjectGraphToolbar from './ProjectGraphToolbar';
 import { useAppContext } from '../context';
 
 export enum PrjActionKing {
@@ -76,7 +76,7 @@ export default function ProjectPanel({
     prjId: string;
     onClose: () => void;
 }): JSX.Element {
-    const { setError } = useAppContext();
+    const { setError, setInfoMsg } = useAppContext();
     const graphRef = useRef<ProjectGrahHandle>(null);
     const [state, dispatch] = useReducer(reducer, {
         error: "",
@@ -103,6 +103,28 @@ export default function ProjectPanel({
             });
         });
     }, [graphRef]);
+
+    const saveTopologyHandle = useCallback(() => {
+        if (prjId == "") return;
+        if (graphRef.current == null) return;
+
+        graphRef.current.saveNodePositions().then((res) => {
+            if (!res.status) {
+                dispatch({type: PrjActionKing.ERROR, error: res.error});
+                return;
+            }
+
+            window.api.readTopologyFile(prjId).then((res) => {
+                if (!res.status) {
+                    dispatch({type: PrjActionKing.ERROR, error: res.error});
+                    return;
+                }
+                
+                dispatch({type: PrjActionKing.TOPOLOGY, topology: res.result})
+                setInfoMsg("Node positions saved in the topology file, do not forget to save the project");
+            })
+        });
+    }, [graphRef, prjId]);
 
     useEffect(() => {
         if (prjId == "") return;
@@ -167,10 +189,10 @@ export default function ProjectPanel({
                         />
                     </div>
 
-                    <ProjectContextBar
+                    <ProjectGraphToolbar
+                        saveTopologyHandle={saveTopologyHandle}
                         dwImgHandle={dwImgHandle}
                         fitHandle={() => graphRef.current?.fit()}
-                        prjStatus={state.status}
                         selectedEdge={state.selectedEdge}
                     />                    
                 </div>

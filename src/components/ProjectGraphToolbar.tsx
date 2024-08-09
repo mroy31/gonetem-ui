@@ -1,26 +1,18 @@
-import React, { useCallback } from "react";
-import { useAppContext } from "../context";
-import { IProjectState } from "../api/interface";
+import React from "react";
+import { PhotoIcon, ArrowsPointingInIcon, DocumentCheckIcon } from "@heroicons/react/24/solid";
 
-export default function ProjectContextBar({
-  prjStatus,
+
+export default function ProjectGraphToolbar({
   selectedEdge,
   dwImgHandle,
   fitHandle,
+  saveTopologyHandle,
 }: {
-  prjStatus: IProjectState;
   selectedEdge: string;
   dwImgHandle: () => void;
   fitHandle: () => void;
+  saveTopologyHandle: () => void;
 }): JSX.Element {
-  const { setError } = useAppContext();
-
-  const runAllConsoles = useCallback(() => {
-    window.api.runAllConsoles(prjStatus.id, false).then((res) => {
-      if (!res.status) setError(res.error);
-    });
-  }, [prjStatus.id]);
-
   return (
     <div className="flex-none flex bg-base-200">
       <div className="flex-1 p-2 ml-2">
@@ -32,20 +24,22 @@ export default function ProjectContextBar({
             className="btn btn-outline btn-sm join-item btn-primary" 
             onClick={fitHandle}
         >
-          Fit
+          <ArrowsPointingInIcon className="w-5" />
+          <span>Fit</span>
         </button>
         <button 
             className="btn btn-outline btn-sm join-item btn-primary" 
             onClick={dwImgHandle}
         >
-          Topo image
+          <PhotoIcon className="w-5" />
+          <span>Image</span>
         </button>
         <button 
-            className="btn btn-outline btn-sm join-item" 
-            disabled={!prjStatus.running}
-            onClick={runAllConsoles}
+            className="btn btn-outline btn-sm join-item btn-primary" 
+            onClick={saveTopologyHandle}
         >
-          All consoles
+          <DocumentCheckIcon className="w-5" />
+          <span>Save</span>
         </button>
       </div>
     </div>

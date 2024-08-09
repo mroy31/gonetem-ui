@@ -9,7 +9,7 @@ import {
 } from "@heroicons/react/24/solid";
 import OptionsModal from "./components/OptionsModal";
 import { IOptions } from "./api/options";
-import ErrorToast from "./components/ErrorToast";
+import MsgToast from "./components/MsgToast";
 import ProjectPanel from "./components/ProjectPanel";
 import ProjectListModal from "./components/ProjectListModal";
 import { AppContext, ProgressOperation } from "./context";
@@ -28,6 +28,7 @@ function App(): JSX.Element {
   const [currentPrgOperation, setCurrentPrgOperation] = useState<ProgressOperation>(ProgressOperation.None);
   const [nodeMessages, setNodeMessages] = useState<INodeMessages[]>([]);
   const [error, setError] = useState("");
+  const [infoMsg, setInfoMsg] = useState("");
 
   useEffect(() => {
     window.api.isConnected().then((res): void => {
@@ -94,7 +95,7 @@ function App(): JSX.Element {
     <AppContext.Provider 
       value={{
         error, setError, 
-        options, 
+        options, setInfoMsg,
         currentPrgOperation, setCurrentPrgOperation}}>
 
     <div className="flex flex-col h-screen">
@@ -150,7 +151,7 @@ function App(): JSX.Element {
               <button
                 disabled={!connected || currentPrj != ""}
                 onClick={handleCreateProject}
-                className="btn btn-outline btn-primary btn-sm join-item"
+                className="btn btn-outline btn-sm join-item"
               >
                 <PlusIcon className="w-5" />
                 <span>Create an empty .gnet project</span>
@@ -192,9 +193,13 @@ function App(): JSX.Element {
       )}
 
       {error != "" && (
-        <ErrorToast error={error} clearError={() => setError("")} />
+        <MsgToast type="error" msg={error} clearMsg={() => setError("")} />
       )}
       
+      {infoMsg != "" && (
+        <MsgToast type="success" msg={infoMsg} clearMsg={() => setInfoMsg("")} />
+      )}
+
       {nodeMessages.length > 0 && (
         <NodeMessagesToast
           nodeMessages={nodeMessages}
