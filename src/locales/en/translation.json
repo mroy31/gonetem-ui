@@ -1,0 +1,10 @@
+{
+    "Options": "Options",
+    "ConnectedHeader": "Connected: {{version}}",
+    "ConnectServerHeader": "Connect to server",
+    "OpenProjectLabel": "Open a .gnet project",
+    "CreateProjectLabel": "Create an empty .gnet project",
+    "ConnectToProjectLabel": "Connect to a running project",
+    "PullDockerImgLabel": "Pull docker images",
+    "PullDockerImgProgress": "Pull docker image {{image}}" 
+}

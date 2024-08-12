@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { createRoot } from "react-dom/client";
+import { I18nextProvider, useTranslation } from 'react-i18next';
 import {
   FolderOpenIcon,
   WrenchScrewdriverIcon,
@@ -7,6 +8,7 @@ import {
   BoltIcon,
   CloudArrowDownIcon,
 } from "@heroicons/react/24/solid";
+import i18n from './i18n/renderer';
 import OptionsModal from "./components/OptionsModal";
 import { IOptions } from "./api/options";
 import MsgToast from "./components/MsgToast";
@@ -20,6 +22,7 @@ import NodeMessagesToast, { INodeMessages } from "./components/NodeMessagesToast
 import ProgressServerPull from "./components/ProgressServerPull";
 
 function App(): JSX.Element {
+  const { t } = useTranslation();
   const [version, setVersion] = useState("");
   const [optionsModalOpen, setOptionsModalOpen] = useState(false);
   const [prjListModalOpen, setprjListModalOpen] = useState(false);
@@ -112,7 +115,7 @@ function App(): JSX.Element {
                 className="btn btn-outline btn-neutral btn-sm join-item"
               >
                 <WrenchScrewdriverIcon className="w-5" />
-                <span>Options</span>
+                <span>{ t("Options") }</span>
               </button>
             </div>
           </div>
@@ -121,13 +124,13 @@ function App(): JSX.Element {
 
           <div>
             {version ? (
-              <span className="italic">Connected: {version}</span>
+              <span className="italic">{t("ConnectedHeader", {version})}</span>
             ) : (
               <button
                 className="btn btn-ghost btn-primary btn-sm"
                 onClick={handleConnect}
               >
-                Connect to server
+                {t("ConnnectServerHeader")}
               </button>
             )}
           </div>
@@ -146,7 +149,7 @@ function App(): JSX.Element {
                 className="btn btn-outline btn-accent btn-sm join-item"
               >
                 <FolderOpenIcon className="w-5" />
-                <span>Open a .gnet project</span>
+                <span>{t("OpenProjectLabel")}</span>
               </button>
               <button
                 disabled={!connected || currentPrj != ""}
@@ -154,7 +157,7 @@ function App(): JSX.Element {
                 className="btn btn-outline btn-sm join-item"
               >
                 <PlusIcon className="w-5" />
-                <span>Create an empty .gnet project</span>
+                <span>{t("CreateProjectLabel")}</span>
               </button>
               <button
                 disabled={!connected || currentPrj != ""}
@@ -162,7 +165,7 @@ function App(): JSX.Element {
                 className="btn btn-outline btn-neutral btn-sm join-item"
               >
                 <BoltIcon className="w-5" />
-                <span>Connect to a running project</span>
+                <span>{t("ConnectToProjectLabel")}</span>
               </button>
               <button
                 disabled={!connected || currentPrj != ""}
@@ -170,7 +173,7 @@ function App(): JSX.Element {
                 className="btn btn-outline btn-neutral btn-sm join-item"
               >
                 <CloudArrowDownIcon className="w-5" />
-                <span>Pull docker images</span>
+                <span>{t("PullDockerImgLabel")}</span>
               </button>
             </div>
           </div>
@@ -231,5 +234,9 @@ function App(): JSX.Element {
 const container = document.getElementById("app-container");
 if (container != null) {
   const root = createRoot(container);
-  root.render(<App />);
+  root.render(
+    <I18nextProvider i18n={i18n}>
+      <App />
+    </I18nextProvider>
+  );
 }
