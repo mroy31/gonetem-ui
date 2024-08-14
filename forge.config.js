@@ -1,6 +1,9 @@
 module.exports = {
     packagerConfig: {
-        icon: "icon/gonetem-ui.icns"
+        icon: "icon/gonetem-ui.icns",
+        extraResource: [
+            "./app",
+        ]
     },
     makers: [
         {

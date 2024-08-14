@@ -31,6 +31,7 @@ import {
 } from "./api/node";
 import { handleListOpenConsoles, handleResizeInternalConsole, handleRunNodeInternalConsole, handleSaveConsoleState, handleWriteInternalConsole } from "./api/console";
 import { handlePullImages } from "./api/server";
+import { handleI18nRead, handleI18nCreate } from "./api/i18n";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const MAIN_WINDOW_WEBPACK_ENTRY: any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -127,6 +128,9 @@ app.on("ready", () => {
   ipcMain.handle("console:resize", handleResizeInternalConsole);
   ipcMain.handle("console:listOpen", handleListOpenConsoles);
   ipcMain.handle("console:saveState", handleSaveConsoleState);
+  // i18n
+  ipcMain.handle("i18n:read", handleI18nRead);
+  ipcMain.handle("i18n:write", handleI18nCreate);
 
   const options = getOptions();
   if (options.autoconnect && options.server != "") {

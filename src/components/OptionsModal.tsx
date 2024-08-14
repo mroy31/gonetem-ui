@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import classNames from "classnames";
 import { IOptions } from "../api/options";
 
@@ -11,6 +12,7 @@ export default function OptionsModal({
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
 }): JSX.Element {
+  const {t} = useTranslation();
   const [server, setServer] = useState(options?.server || "localhost:10110");
   const [autoconnect, setAutoconnect] = useState<boolean>(options?.autoconnect);
   const [tls, setTls] = useState(options?.tls);
@@ -41,13 +43,13 @@ export default function OptionsModal({
   return (
     <dialog className={modalClass}>
       <div className="modal-box">
-        <h2 className="text-2xl font-bold">Options</h2>
+        <h2 className="text-2xl font-bold">{t("Options")}</h2>
 
         <div className="flex flex-col gap-2 w-full">
-          <div className="divider">Server connection</div>
+          <div className="divider">{t("ServerConnectionHeader")}</div>
           <label className="form-control w-full max-w-xs">
             <div className="label">
-              <span className="label-text">Server URI</span>
+              <span className="label-text">{t("ServerURILabel")}</span>
             </div>
             <input
               type="text"
@@ -58,7 +60,7 @@ export default function OptionsModal({
           </label>
           <div className="form-control">
             <label className="label cursor-pointer">
-              <span className="label-text">Connect at startup</span> 
+              <span className="label-text">{t("ConnectAtStartupLabel")}</span> 
               <input 
                 type="checkbox"
                 checked={autoconnect}
@@ -68,7 +70,7 @@ export default function OptionsModal({
           </div>
           <div className="form-control">
             <label className="label cursor-pointer">
-              <span className="label-text">TLS enabled</span> 
+              <span className="label-text">{t("TLSEnabledLabel")}</span> 
               <input 
                 type="checkbox"
                 checked={tls.enabled}
@@ -78,7 +80,7 @@ export default function OptionsModal({
           </div>
           <label className="form-control w-full max-w-xs">
             <div className="label">
-              <span className="label-text">CA Certificate</span>
+              <span className="label-text">{t("CACertificateLabel")}</span>
             </div>
             <input
               type="text"
@@ -89,7 +91,7 @@ export default function OptionsModal({
           </label>
           <label className="form-control w-full max-w-xs">
             <div className="label">
-              <span className="label-text">Client Certificate</span>
+              <span className="label-text">{t("ClientCertificateLabel")}</span>
             </div>
             <input
               type="text"
@@ -100,7 +102,7 @@ export default function OptionsModal({
           </label>
           <label className="form-control w-full max-w-xs">
             <div className="label">
-              <span className="label-text">Client Private Key</span>
+              <span className="label-text">{t("ClientPrivateKeyLabel")}</span>
             </div>
             <input
               type="text"
@@ -113,7 +115,7 @@ export default function OptionsModal({
           <div className="divider">Console</div>
           <label className="form-control w-full max-w-xs">
             <div className="label">
-              <span className="label-text">External console command</span>
+              <span className="label-text">{t("ExternalConsoleCommandLabel")}</span>
             </div>
             <input
               type="text"
@@ -126,10 +128,10 @@ export default function OptionsModal({
 
         <div className="modal-action">
           <button onClick={() => setIsOpen(false)} className="btn">
-            Close
+            {t("Close")}
           </button>
           <button onClick={setOptions} className="btn btn-primary">
-            Save
+            {t("Save")}
           </button>
         </div>
       </div>

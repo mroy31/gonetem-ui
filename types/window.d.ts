@@ -59,6 +59,12 @@ declare global {
       }
   }
 
+  export interface I18nApiResponse extends ApiResponse {
+    result?: {
+      [key: string]: string;
+    }
+  }
+
   export type ContextBridgeApi = {
     isConnected: () => Promise<IsConnectedApiResponse>,
     connect: () => Promise<StringApiResponse>,
@@ -105,6 +111,9 @@ declare global {
     consoleListOpen: () => Promise<StringListApiResponse>,
     consoleAddListener: (nodeId: string, cb: (msgType: string, data: string) => void) => void,
     consoleRemoveListeners: (nodeId: string) => void,
+    // i18n commands
+    i18nRead: (language: string, namespace: string) => Promise<I18nApiResponse>,
+    i18nCreate: (languages: string[], namespace: string, key: string, fallbackValue: string) => Promise<ApiResponse>,
   }
 
   interface Window {

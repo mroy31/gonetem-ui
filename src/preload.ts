@@ -58,6 +58,9 @@ const exposedApi: ContextBridgeApi = {
       ipcRenderer.removeAllListeners(`console:${k}:${nodeId}`);
     }
   },
+  // i18n commands
+  i18nRead: (language: string, namespace: string): Promise<I18nApiResponse> => ipcRenderer.invoke("i18n:read", language, namespace),
+  i18nCreate: (languages: string[], namespace: string, key: string, fallbackValue: string): Promise<ApiResponse> => ipcRenderer.invoke("i18n:write", languages, namespace, key, fallbackValue),
 }
 
 contextBridge.exposeInMainWorld('api', exposedApi);

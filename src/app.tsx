@@ -130,7 +130,7 @@ function App(): JSX.Element {
                 className="btn btn-ghost btn-primary btn-sm"
                 onClick={handleConnect}
               >
-                {t("ConnnectServerHeader")}
+                {t("ConnectServerHeader")}
               </button>
             )}
           </div>
