@@ -1,4 +1,5 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import YAML from "yaml";
 import { Network, type Node, type Edge, Position } from "vis-network";
 import { Buffer } from 'buffer';
@@ -185,6 +186,7 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
   updateState,
   onSelectEdge,
 }: PropsT, ref): JSX.Element {
+  const {t} = useTranslation();
   const [error, setError] = useState("");
   const [network, setNetwork] = useState<Network>(null);
   const [contextMenu, setContextMenu] = useState<NodeContextMenuT>({
@@ -295,7 +297,7 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
         network.setData({ nodes, edges });
       }
     } catch (err) {
-      setError(`Unable to create network graph: ${err}`);
+      setError(t("ProjectGraphErrMsg", {error: err}));
       return;
     }
   }, [visJsRef, prjStatus, topology]);

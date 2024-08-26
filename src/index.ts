@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain, Menu } from "electron";
 import IsDev from "electron-is-dev";
+import {initMainI18n} from "./i18n/main";
 import { getAppState, getOptions, handleGetOptions, handleSetOptions, setAppWinBounds } from "./api/options";
 import { connectToServer, handleConnect, handleIsConnected } from "./api/client";
 import {
@@ -32,6 +33,7 @@ import {
 import { handleListOpenConsoles, handleResizeInternalConsole, handleRunNodeInternalConsole, handleSaveConsoleState, handleWriteInternalConsole } from "./api/console";
 import { handlePullImages } from "./api/server";
 import { handleI18nRead, handleI18nCreate } from "./api/i18n";
+import { t } from "i18next";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const MAIN_WINDOW_WEBPACK_ENTRY: any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -46,50 +48,52 @@ if (require("electron-squirrel-startup")) {
 }
 
 const createWindow = (): void => {
-  const appState = getAppState();
+  initMainI18n().then(() => {
+    const appState = getAppState();
 
-  // Create the browser window.
-  mainWindow = new BrowserWindow({
-    icon: "../icon/gonetem-ui_512x512.png",
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
-    },
-  });
-  mainWindow.setBounds(appState.winBounds);
-
-  // and load the index.html of the app.
-  mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
-
-  // set prod menu
-  if (!IsDev) {
-    const template = [
-      {
-        label: "Fichier",
-        submenu: [
-          {
-            label: "Quitter",
-            click: () => {
-              app.quit();
-            },
-          },
-        ],
+    // Create the browser window.
+    mainWindow = new BrowserWindow({
+      icon: "../icon/gonetem-ui_512x512.png",
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+        preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
       },
-    ];
-    mainWindow.once("ready-to-show", () => {
-      const menu = Menu.buildFromTemplate(template);
-      Menu.setApplicationMenu(menu);
-      mainWindow.show();
     });
-  }
+    mainWindow.setBounds(appState.winBounds);
 
-  mainWindow.on('close', () => {
-    setAppWinBounds(mainWindow.getBounds());
+    // and load the index.html of the app.
+    mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
+
+    // set prod menu
+    if (!IsDev) {
+      const template = [
+        {
+          label: t("File"),
+          submenu: [
+            {
+              label: t("Quit"),
+              click: () => {
+                app.quit();
+              },
+            },
+          ],
+        },
+      ];
+      mainWindow.once("ready-to-show", () => {
+        const menu = Menu.buildFromTemplate(template);
+        Menu.setApplicationMenu(menu);
+        mainWindow.show();
+      });
+    }
+
+    mainWindow.on('close', () => {
+      setAppWinBounds(mainWindow.getBounds());
+    });
+
+    // Open the DevTools.
+    //mainWindow.webContents.openDevTools();
   });
-
-  // Open the DevTools.
-  // mainWindow.webContents.openDevTools();
 };
 
 // This method will be called when Electron has finished

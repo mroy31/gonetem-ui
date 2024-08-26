@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import CodeMirror from "@uiw/react-codemirror";
 import { type Diagnostic, linter, lintGutter } from "@codemirror/lint";
 import { StreamLanguage } from "@codemirror/language";
@@ -18,6 +19,7 @@ export default function TopologyEditorPanel({
   topology: string;
   dispatch: React.Dispatch<IPrjAction>;
 }): JSX.Element {
+  const {t} = useTranslation();
   const { setError } = useAppContext();
   const [content, setContent] = useState(topology);
   const [ showCheckMsg, setShowCheckMsg ] = useState(false);
@@ -80,9 +82,9 @@ export default function TopologyEditorPanel({
       <div className="bg-base-200 flex-none flex justify-between align-middle p-2">
         <div>
           { content != topology ? (
-            <span className="font-semibold">Modified</span>
+            <span className="font-semibold">{t("Modified")}</span>
           ) : (
-            <span className="italic">Not modified</span>
+            <span className="italic">{t("NotModified")}</span>
           )}
         </div>
 
@@ -91,14 +93,14 @@ export default function TopologyEditorPanel({
             onClick={handleCheck}
             disabled={content != topology}
             className="btn btn-sm join-item">
-            Check
+            {t("Check")}
           </button>
           <button
             onClick={handleWrite}
             disabled={content == topology}
             className="btn btn-sm btn-primary join-item"
           >
-            Write
+            {t("Write")}
           </button>
         </div>
       </div>
@@ -117,7 +119,7 @@ export default function TopologyEditorPanel({
       { showCheckMsg && (
         <div className="toast">
           <div className="alert alert-success flex gap-2 align-middle">
-            <span>Topology OK</span>
+            <span>{t("TopologyOK")}</span>
             <button
                 className='btn btn-outline btn-neutral'
                 onClick={() => setShowCheckMsg(false)}

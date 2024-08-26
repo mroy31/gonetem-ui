@@ -1,5 +1,6 @@
 
 import React, { useEffect, useCallback, useReducer, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import ProjectContextPanel from './ProjectContextPanel';
 import ProjectToolbar from './ProjectToolbar';
 import { IProjectState } from '../api/interface';
@@ -76,6 +77,7 @@ export default function ProjectPanel({
     prjId: string;
     onClose: () => void;
 }): JSX.Element {
+    const {t} = useTranslation();
     const { setError, setInfoMsg } = useAppContext();
     const graphRef = useRef<ProjectGrahHandle>(null);
     const [state, dispatch] = useReducer(reducer, {
@@ -121,7 +123,7 @@ export default function ProjectPanel({
                 }
                 
                 dispatch({type: PrjActionKing.TOPOLOGY, topology: res.result})
-                setInfoMsg("Node positions saved in the topology file, do not forget to save the project");
+                setInfoMsg(t("TopoPositionSavedMsg"));
             })
         });
     }, [graphRef, prjId]);
@@ -144,7 +146,8 @@ export default function ProjectPanel({
             } catch (err) {
                 return {
                     type: PrjActionKing.ERROR,
-                    error: `Unable to init panel ${err.message}`}
+                    error: t("ProjectPanelErrMsg", {error: err.message})
+                }
             }
         };
 

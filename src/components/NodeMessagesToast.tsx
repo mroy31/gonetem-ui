@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 
 export interface INodeMessages {
   name: string;
@@ -12,6 +13,7 @@ export default function NodeMessagesToast({
   nodeMessages: INodeMessages[];
   clearNodeMessages: () => void;
 }): JSX.Element {
+  const {t} = useTranslation();
   const hasNodeMessages = React.useCallback((): boolean => {
     for (const nMessages of nodeMessages) {
       if (nMessages.messagesList.length > 0) return true;
@@ -41,7 +43,7 @@ export default function NodeMessagesToast({
             className="btn btn-neutral btn-sm"
             onClick={clearNodeMessages}
           >
-            Close
+            { t("Close") }
           </button>
         </div>
       </div>

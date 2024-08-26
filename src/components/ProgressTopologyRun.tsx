@@ -3,6 +3,7 @@ import React, { useEffect, useReducer } from 'react';
 import { TopologyRunMsg } from '../proto/netem_pb';
 import { ProgressOperation, useAppContext } from '../context';
 import { INodeMessages } from './NodeMessagesToast';
+import { useTranslation } from 'react-i18next';
 
 interface ITopologyRunState {
     nodeCount: number;
@@ -92,6 +93,7 @@ export default function ProgressTopologyRun({
 }: {
     setNodeMessages: (nodeMessages: INodeMessages[]) => void;
 }): JSX.Element {
+    const {t} = useTranslation();
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
     const {currentPrgOperation} = useAppContext();
 
@@ -108,7 +110,7 @@ export default function ProgressTopologyRun({
         <div className="toast toast-middle toast-center">
             { currentPrgOperation == ProgressOperation.TopologyReload && (
                 <div className="alert">
-                    Project reloading...
+                    { t("ProjectReloadProgressMsg") }
                     <progress className="progress progress-info w-56">
                     </progress>
                 </div>
@@ -117,7 +119,7 @@ export default function ProgressTopologyRun({
             { state.nodeCount > 0 && state.nodeStart < state.nodeCount && (
                 <div className="alert">
                         <span>
-                            Node starting... ({state.nodeStart}/{state.nodeCount})
+                            {t("StartNodesProgressMsg")} ({state.nodeStart}/{state.nodeCount})
                             <progress 
                                 className="progress progress-info w-56" 
                                 value={state.nodeStart} max={state.nodeCount}>
@@ -129,7 +131,7 @@ export default function ProgressTopologyRun({
             { state.bridgeCount > 0 && state.bridgeStart < state.bridgeCount && (
                 <div className="alert">
                         <span>
-                            Bridge starting... ({state.bridgeStart}/{state.bridgeCount})
+                            {t("StartBridgesProgressMsg")} ({state.bridgeStart}/{state.bridgeCount})
                             <progress 
                                 className="progress progress-info w-56" 
                                 value={state.bridgeStart} max={state.bridgeCount}>
@@ -141,7 +143,7 @@ export default function ProgressTopologyRun({
             { state.linkCount > 0 && state.linkSetup < state.linkCount && (
                 <div className="alert">
                         <span>
-                            Link setup... ({state.linkSetup}/{state.linkCount})
+                            {t("LinkSetupProgressMsg")} ({state.linkSetup}/{state.linkCount})
                             <progress 
                                 className="progress progress-info w-56" 
                                 value={state.linkSetup} max={state.linkCount}>
@@ -153,7 +155,7 @@ export default function ProgressTopologyRun({
             { state.nodeCount > 0 && (
                 <div className="alert">
                         <span>
-                            Node load config... ({state.nodeLoadConfig}/{state.nodeCount})
+                            {t("LoadConfigProgressMsg")} ({state.nodeLoadConfig}/{state.nodeCount})
                             <progress 
                                 className="progress progress-info w-56" 
                                 value={state.nodeLoadConfig} max={state.nodeCount}>

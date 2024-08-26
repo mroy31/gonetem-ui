@@ -1,5 +1,6 @@
 import classNames from "classnames";
 import React, { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import TopologyEditorPanel from "./TopologyEditorPanel";
 import ConfigurationViewerPanel from "./ConfigurationViewerPanel";
 import { IProjectState } from "../api/interface";
@@ -15,6 +16,7 @@ export default function ProjectContextPanel({
   topology: string;
   dispatch: React.Dispatch<IPrjAction>;
 }): JSX.Element {
+  const {t} = useTranslation();
   const [width, setWidth] = useState(450);
   const [selectedTab, setSelectedTab] = useState<"topo" | "config" | "console">("config");
   const isResized = useRef(false);
@@ -57,21 +59,21 @@ export default function ProjectContextPanel({
             className={tabClasses("config")}
             onClick={() => setSelectedTab("config")}
           >
-            Configuration
+            {t("Configuration")}
           </a>
           <a
             role="tab"
             className={tabClasses("topo")}
             onClick={() => setSelectedTab("topo")}
           >
-            Topology
+            {t("Topology")}
           </a>
           <a
             role="tab"
             className={tabClasses("console")}
             onClick={() => setSelectedTab("console")}
           >
-            Console
+            {t("Console")}
           </a>
         </div>
 

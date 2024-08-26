@@ -1,5 +1,6 @@
 import classNames from "classnames";
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { IProject } from "../api/interface";
 
 const PrjListTable = ({
@@ -9,13 +10,15 @@ const PrjListTable = ({
   prjList: IProject[];
   onSelect: (prjId: string) => void;
 }): JSX.Element => {
+  const {t} = useTranslation();
+
   if (prjList.length > 0)
     return (
             <table className="table table-zebra p-1">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Open At</th>
+                  <th>{t("Name")}</th>
+                  <th>{t("OpenAt")}</th>
                   <th></th>
                 </tr>
               </thead>
@@ -29,7 +32,7 @@ const PrjListTable = ({
                       <button
                         onClick={() => onSelect(prj.id)} 
                         className="btn btn-outline btn-primary btn-sm">
-                        Select
+                        {t("Select")}
                       </button>
                     </td>
                   </tr>
@@ -38,7 +41,7 @@ const PrjListTable = ({
             </table>
     );
 
-  return <p className="italic p-3">No project is open on the server</p>
+  return <p className="italic p-3">{t("NoProjectOpenMsg")}</p>
 }
 
 
@@ -49,6 +52,7 @@ export default function ProjectListModal({
   isOpen: boolean;
   onClose: (selectedPrj: string) => void;
 }): JSX.Element {
+  const {t} = useTranslation();
   const [prjList, setPrjList] = useState<IProject[]>([]);
   const [error, setError] = useState("");
   const modalClass = useMemo(
@@ -63,7 +67,7 @@ export default function ProjectListModal({
   useEffect(() => {
     window.api.listProjects().then((res) => {
       if (!res.status) {
-        setError(`An error is occured: ${error}`);
+        setError(error);
         return;
       }
 
@@ -75,7 +79,7 @@ export default function ProjectListModal({
   return (
     <dialog className={modalClass}>
       <div className="modal-box">
-        <h3>Select a project open on the server</h3>
+        <h3>{t("SelectProjectHeader")}</h3>
 
         {
           error ? (
@@ -92,7 +96,7 @@ export default function ProjectListModal({
 
         <div className="modal-action">
           <button onClick={() => onClose("")} className="btn">
-            Close
+            {t("Close")}
           </button>
         </div>
       </div>

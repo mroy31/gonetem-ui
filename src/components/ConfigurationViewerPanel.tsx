@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useReducer } from "react";
+import { useTranslation } from "react-i18next";
 import YAML from "yaml";
 import { INodeState, IProjectState } from "../api/interface";
 
@@ -91,6 +92,7 @@ export default function ConfigurationViewerPanel({
 }: {
   prjStatus: IProjectState;
 }): JSX.Element {
+  const {t} = useTranslation();
   const [state, dispatch] = useReducer(reducer, {
     error: "",
     loading: true,
@@ -128,18 +130,18 @@ export default function ConfigurationViewerPanel({
   }, [state.node, prjStatus.id]);
 
   const getConfigData = useCallback((): string => {
-    if (state.node != "" && state.loading) return "Loading...";
+    if (state.node != "" && state.loading) return t("LoadingMsg");
 
     if (state.selected != "") {
       for (const f of state.files) {
         if (f.name == state.selected) {
-          if (f.data == "") return "Config file empty";
+          if (f.data == "") return t("ConfigFileEmptyMsg");
           if (f.name == "Network") return parseNetworkFile(f.data);
           return f.data;
         }
       }
     }
-    return "No config file";
+    return t("NoConfigFileMsg");
   }, [state]);
 
   const handleNodeChange = (nodeId: string) =>

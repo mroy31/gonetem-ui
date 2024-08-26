@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 import classNames from "classnames";
 import { INodeState, IfState } from "../api/interface";
 import { useCallback, useState } from "react";
@@ -20,6 +21,7 @@ const NodeContextMenu = ({
   state: INodeState;
   onHide: (state: boolean) => void;
 }): JSX.Element => {
+  const {t} = useTranslation();
   const { setError } = useAppContext();
   const [loading, setLoading] = useState("");
 
@@ -120,12 +122,12 @@ const NodeContextMenu = ({
     >
       <ul className="menu p-1">
         <li className="menu-title">
-          {contextMenu.nodeId} ({state.running ? "running" : "not running"})
+          {contextMenu.nodeId} ({state.running ? t("Running") : t("NotRunning")})
         </li>
         {!state.running && (
           <li>
             <a className={actionClasses} onClick={handleStart}>
-              {loading == "start" ? "Starting..." : "Start"}
+              {loading == "start" ? t("StartProgressMsg") : t("Start")}
             </a>
           </li>
         )}
@@ -133,28 +135,28 @@ const NodeContextMenu = ({
           <>
             <li>
               <a className={actionClasses} onClick={() => handleRunConsole(false)}>
-                External console
+                { t("ExternalConsole") }
               </a>
             </li>
             <li>
               <a className={actionClasses} onClick={() => handleRunConsole(true)}>
-                Debug shell
+                { t("DebugShell") }
               </a>
             </li>
             <li>
               <a className={actionClasses} onClick={handleStop}>
-                {loading == "stop" ? "Stoping..." : "Stop"}
+                {loading == "stop" ? t("StopProgressMsg") : t("Stop")}
               </a>
             </li>
             <li>
               <a className={actionClasses} onClick={handleRestart}>
-                {loading == "restart" ? "Restarting..." : "Restart"}
+                {loading == "restart" ? t("RestartProgressMsg") : t("Restart")}
               </a>
             </li>
             <li>
               <details>
                 <summary>
-                  {loading == "capture" ? "Capturing..." : "Capture"}
+                  {loading == "capture" ? t("CaptureProgressMsg") : t("Capture")}
                 </summary>
                 <ul>
                   {state.interfaces
@@ -174,7 +176,7 @@ const NodeContextMenu = ({
                 .filter((int) => int.state == IfState.UP).length > 0 && (
                   <li>
                     <details>
-                      <summary>Shutdown interface</summary>
+                      <summary>{ t("ShutdownInterface") }</summary>
                       <ul>
                         {state.interfaces
                           .filter((int) => int.state == IfState.UP)
@@ -195,7 +197,7 @@ const NodeContextMenu = ({
                 .filter((int) => int.state == IfState.DOWN).length > 0 && (
                   <li>
                     <details>
-                      <summary>Enable interface</summary>
+                      <summary>{ t("EnableInterface") }</summary>
                       <ul>
                         {state.interfaces
                           .filter((int) => int.state == IfState.DOWN)

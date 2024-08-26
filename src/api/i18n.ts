@@ -33,7 +33,7 @@ const mergeJSONData = async (filename: string, values: {key: string; text: strin
     try {
         const jsonData = await fs.readFile(path.resolve(filename));
         const sData = jsonData.toString().replace(/^\uFEFF/, "");
-        const data = JSON.parse(jsonData.toString());
+        const data = JSON.parse(sData.toString());
         values.forEach((v) => data[v["key"]] = v["text"]);
 
         return data;

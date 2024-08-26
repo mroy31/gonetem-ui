@@ -1,5 +1,6 @@
 
 import React, { useEffect, useReducer } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ProjectCloseMsg } from '../proto/netem_pb';
 
 interface IProjectCloseState {
@@ -42,6 +43,7 @@ function reducer(state: IProjectCloseState, msg: ProjectCloseMsg.AsObject): IPro
 }
 
 export default function ProgressProjectClose(): JSX.Element {
+    const {t} = useTranslation();
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
 
 
@@ -55,7 +57,7 @@ export default function ProgressProjectClose(): JSX.Element {
         <div className="toast toast-middle toast-center">
             <div className="alert">
                 <span>
-                    Project closing...
+                    { t("ProjectCloseProgressMsg") }
                     <progress className="progress progress-info w-56">
                     </progress>
                 </span>
@@ -63,7 +65,7 @@ export default function ProgressProjectClose(): JSX.Element {
             { state.nodeCount > 0 && state.nodeClose < state.nodeCount && (
                 <div className="alert">
                         <span>
-                            Close nodes... ({state.nodeClose}/{state.nodeCount})
+                            {t("CloseNodesProgressMsg")} ({state.nodeClose}/{state.nodeCount})
                             <progress 
                                 className="progress progress-info w-56" 
                                 value={state.nodeClose} max={state.nodeCount}>
@@ -75,7 +77,7 @@ export default function ProgressProjectClose(): JSX.Element {
             { state.bridgeCount > 0 && state.bridgeClose < state.bridgeCount && (
                 <div className="alert">
                         <span>
-                            Close bridges... ({state.bridgeClose}/{state.bridgeCount})
+                            {t("CloseBridgesProgressMsg")} ({state.bridgeClose}/{state.bridgeCount})
                             <progress 
                                 className="progress progress-info w-56" 
                                 value={state.bridgeClose} max={state.bridgeCount}>

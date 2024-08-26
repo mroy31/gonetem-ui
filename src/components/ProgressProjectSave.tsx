@@ -1,5 +1,6 @@
 
 import React, { useEffect, useReducer } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ProjectSaveMsg } from '../proto/netem_pb';
 
 interface IProjectSaveState {
@@ -28,6 +29,7 @@ function reducer(state: IProjectSaveState, msg: ProjectSaveMsg.AsObject): IProje
 }
 
 export default function ProgressProjectSave(): JSX.Element {
+    const {t} = useTranslation();
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
 
 
@@ -42,7 +44,7 @@ export default function ProgressProjectSave(): JSX.Element {
             { state.nodeCount > 0 && state.nodeSave < state.nodeCount && (
                 <div className="alert">
                         <span>
-                            Save nodes... ({state.nodeSave}/{state.nodeCount})
+                            {t("SaveNodesProgressMsg")} ({state.nodeSave}/{state.nodeCount})
                             <progress 
                                 className="progress progress-info w-56" 
                                 value={state.nodeSave} max={state.nodeCount}>

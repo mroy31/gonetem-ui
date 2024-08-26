@@ -6,6 +6,7 @@ import { SerializeAddon } from "@xterm/addon-serialize";
 import classNames from "classnames";
 import { INodeState, IProjectState } from "../api/interface";
 import "xterm/css/xterm.css";
+import { useTranslation } from "react-i18next";
 
 function usePrevious<T>(value: T): T {
   const ref: any = useRef<T>();
@@ -24,6 +25,7 @@ const TermPanel = ({
   nodeName: string;
   onClose: () => void;
 }): JSX.Element => {
+  const {t} = useTranslation();
   const previousNodeName = usePrevious(nodeName);
   const [isTermInit, setTermInit] = useState<boolean>(false);
   const [resizeListener, setResizeListener] = useState<IDisposable>(null);
@@ -72,9 +74,7 @@ const TermPanel = ({
               .consoleSaveState(nodeName, serializeAddon.current.serialize())
               .then((res) => {
                 if (!res.status)
-                  console.log(
-                    `ERROR: unable to save console state for node ${nodeName}`
-                  );
+                  console.log(t("ConsoleSaveStateErrorMsg", {name: nodeName}));
               });
           });
           break;
@@ -130,6 +130,7 @@ export default function ConsolePanel({
 }: {
   prjStatus: IProjectState;
 }): JSX.Element {
+  const {t} = useTranslation();
   const [nodes, setNodes] = useState<INodeState[]>([]);
   const [selectedConsole, setSelectedConsole] = useState<string>(null);
   const [runningConsoles, setRunningConsoles] = useState<string[]>([]);
@@ -176,7 +177,7 @@ export default function ConsolePanel({
   };
 
   if (!prjStatus.running)
-    return <div className="p-2 italic">Project not running</div>;
+    return <div className="p-2 italic">{t("ProjectNotRunningMsg")}</div>;
 
   if (selectedConsole == null) {
     return (

@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { PhotoIcon, ArrowsPointingInIcon, DocumentCheckIcon } from "@heroicons/react/24/solid";
 
 
@@ -13,10 +14,12 @@ export default function ProjectGraphToolbar({
   fitHandle: () => void;
   saveTopologyHandle: () => void;
 }): JSX.Element {
+  const {t} = useTranslation();
+
   return (
     <div className="flex-none flex bg-base-200">
       <div className="flex-1 p-2 ml-2">
-        {selectedEdge != "" && <span>Selected edge(s): {selectedEdge}</span>}
+        {selectedEdge != "" && <span>{t("SelectedEdgesLabel", {edges: selectedEdge})}</span>}
       </div>
 
       <div className="flex-none join p-1">
@@ -25,21 +28,21 @@ export default function ProjectGraphToolbar({
             onClick={fitHandle}
         >
           <ArrowsPointingInIcon className="w-5" />
-          <span>Fit</span>
+          <span>{t("Fit")}</span>
         </button>
         <button 
             className="btn btn-outline btn-sm join-item btn-primary" 
             onClick={dwImgHandle}
         >
           <PhotoIcon className="w-5" />
-          <span>Image</span>
+          <span>{t("Image")}</span>
         </button>
         <button 
             className="btn btn-outline btn-sm join-item btn-primary" 
             onClick={saveTopologyHandle}
         >
           <DocumentCheckIcon className="w-5" />
-          <span>Save</span>
+          <span>{t("Save")}</span>
         </button>
       </div>
     </div>

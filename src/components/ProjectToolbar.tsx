@@ -4,6 +4,7 @@ import { IProjectState } from "../api/interface";
 import { IPrjAction, PrjActionKing } from "./ProjectPanel";
 import { ProgressOperation, useAppContext } from "../context";
 import classNames from "classnames";
+import { useTranslation } from "react-i18next";
 
 export default function ProjectToolbar({
   prjStatus,
@@ -14,6 +15,7 @@ export default function ProjectToolbar({
   onClose: () => void;
   dispatch: React.Dispatch<IPrjAction>;
 }): JSX.Element {
+  const {t} = useTranslation();
   const {setError, currentPrgOperation, setCurrentPrgOperation} = useAppContext();
 
   const runAllConsoles = useCallback(() => {
@@ -84,11 +86,11 @@ export default function ProjectToolbar({
           className={runBtnClasses}
         >
           { prjStatus.running ? (
-            <span>Running</span>
+            <span>{t("Running")}</span>
           ) : (
             <>
               <PlayIcon className="w-5" />
-              <span>Run</span>
+              <span>{t("Run")}</span>
             </>
           )}
 
@@ -99,7 +101,7 @@ export default function ProjectToolbar({
           className="btn btn-outline btn-neutral btn-sm join-item"
         >
           <DocumentCheckIcon className="w-5" />
-          <span>Save</span>
+          <span>{t("Save")}</span>
         </button>
         <button 
           onClick={handleReload}
@@ -107,7 +109,7 @@ export default function ProjectToolbar({
           className="btn btn-outline btn-neutral btn-sm join-item"
         >
           <ArrowPathIcon className="w-5" />
-          <span>Reload</span>
+          <span>{t("Reload")}</span>
         </button>
         <button 
             className="btn btn-outline btn-sm join-item" 
@@ -115,7 +117,7 @@ export default function ProjectToolbar({
             onClick={runAllConsoles}
         >
           <ComputerDesktopIcon className="w-5" />
-          <span>Consoles</span>
+          <span>{t("Consoles")}</span>
         </button>
         <button
           onClick={onClose}
@@ -123,7 +125,7 @@ export default function ProjectToolbar({
           className="btn btn-outline btn-warning btn-sm join-item"
         >
           <XMarkIcon className="w-5" />
-          <span>Close</span>
+          <span>{t("Close")}</span>
         </button>
       </div>
     </div>
