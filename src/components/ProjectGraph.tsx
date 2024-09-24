@@ -15,6 +15,7 @@ import swRunning from "../../img/switch-running.svg";
 interface ITopologyNode {
   type: string;
   ui?: {
+    icon: "host" | "router" | "switch";
     position: Position;
   }
 }
@@ -45,27 +46,49 @@ const getNodeState = (nodeName: string, state: IProjectState): INodeState => {
   return null;
 };
 
-const getNodeShape = (nodeType: string, nodeState: INodeState) => {
-  switch (nodeType) {
+const getNodeShape = (node: ITopologyNode, nodeState: INodeState) => {
+  const shapes = {
+    router: {
+      shape: "circularImage",
+      image: nodeState?.running ? routerRunning : router,
+    },
+    host: {
+      shape: "image",
+      image: nodeState?.running ? hostRunning : host,
+    },
+    switch: {
+      shape: "image",
+      image: nodeState?.running ? swRunning : sw,
+
+    },
+    default: {
+      shape: "square",
+    }
+  };
+
+  if (node.ui?.icon) {
+    switch (node.ui?.icon) {
+      case "router":
+        return shapes.router;
+      case "host":
+        return shapes.host;
+      case "switch":
+        return shapes.switch;
+      default:
+        return shapes.default;
+    }
+  }
+
+  switch (node.type) {
     case "docker.router":
-      return {
-        shape: "circularImage",
-        image: nodeState?.running ? routerRunning : router,
-      };
+    case "docker.vyos":
+      return shapes.router;
     case "docker.host":
-      return {
-        shape: "image",
-        image: nodeState?.running ? hostRunning : host,
-      };
+      return shapes.host;
     case "ovs":
-      return {
-        shape: "image",
-        image: nodeState?.running ? swRunning : sw,
-      };
+      return shapes.switch;
     default:
-      return {
-        shape: "square",
-      };
+      return shapes.default;
   }
 };
 
@@ -142,7 +165,7 @@ const getNodesAndEdges = (
       id: name,
       label: name,
       fixed: false,
-      ...getNodeShape(nodeAttr.type, getNodeState(name, prjState)),
+      ...getNodeShape(nodeAttr, getNodeState(name, prjState)),
       ...getNodePosition(topology, name, network),
     };
   }) : [];
@@ -228,6 +251,7 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
           nodes[nId] = {
             ...topo.nodes[nId],
             ui: {
+              ...topo.nodes[nId].ui,
               position: positions[nId]
             }
           };
