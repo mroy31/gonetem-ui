@@ -176,7 +176,7 @@ const getNodesAndEdges = (
       from: getNodeIdFromPeer(link.peer1),
       to: getNodeIdFromPeer(link.peer2),
       labelFrom: getNodeIdxFromPeer(link.peer1),
-      labelTo: getNodeIdxFromPeer(link.peer1),
+      labelTo: getNodeIdxFromPeer(link.peer2),
       smooth: false,
       ...getEdgeColor(link.peer1, link.peer2, prjState),
       font: {
