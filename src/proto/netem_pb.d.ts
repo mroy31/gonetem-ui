@@ -341,12 +341,16 @@ export class LinkConfig extends jspb.Message {
     setPeer1(value: string): LinkConfig;
     getPeer2(): string;
     setPeer2(value: string): LinkConfig;
-    getLoss(): number;
-    setLoss(value: number): LinkConfig;
-    getDelay(): number;
-    setDelay(value: number): LinkConfig;
-    getJitter(): number;
-    setJitter(value: number): LinkConfig;
+
+    hasPeer1qos(): boolean;
+    clearPeer1qos(): void;
+    getPeer1qos(): LinkConfig.QoSConfig | undefined;
+    setPeer1qos(value?: LinkConfig.QoSConfig): LinkConfig;
+
+    hasPeer2qos(): boolean;
+    clearPeer2qos(): void;
+    getPeer2qos(): LinkConfig.QoSConfig | undefined;
+    setPeer2qos(value?: LinkConfig.QoSConfig): LinkConfig;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): LinkConfig.AsObject;
@@ -362,10 +366,43 @@ export namespace LinkConfig {
     export type AsObject = {
         peer1: string,
         peer2: string,
-        loss: number,
-        delay: number,
-        jitter: number,
+        peer1qos?: LinkConfig.QoSConfig.AsObject,
+        peer2qos?: LinkConfig.QoSConfig.AsObject,
     }
+
+
+    export class QoSConfig extends jspb.Message { 
+        getLoss(): number;
+        setLoss(value: number): QoSConfig;
+        getDelay(): number;
+        setDelay(value: number): QoSConfig;
+        getJitter(): number;
+        setJitter(value: number): QoSConfig;
+        getRate(): number;
+        setRate(value: number): QoSConfig;
+        getBuffer(): number;
+        setBuffer(value: number): QoSConfig;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): QoSConfig.AsObject;
+        static toObject(includeInstance: boolean, msg: QoSConfig): QoSConfig.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: QoSConfig, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): QoSConfig;
+        static deserializeBinaryFromReader(message: QoSConfig, reader: jspb.BinaryReader): QoSConfig;
+    }
+
+    export namespace QoSConfig {
+        export type AsObject = {
+            loss: number,
+            delay: number,
+            jitter: number,
+            rate: number,
+            buffer: number,
+        }
+    }
+
 }
 
 export class LinkRequest extends jspb.Message { 
