@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { tmpdir } from "os";
+import { tmpdir, homedir } from "os";
 import { join } from "path";
 import { mkdtemp, readFile, writeFile } from "fs/promises";
 import { dialog } from "electron";
@@ -29,11 +29,23 @@ import {
 const mocks = vi.hoisted(() => ({
   client: { current: null as unknown },
   win: { webContents: { send: vi.fn() } },
+  options: { lastProjectDir: "" },
 }));
 
 vi.mock("./client", () => ({
   get CLIENT() {
     return mocks.client.current;
+  },
+}));
+
+vi.mock("./options", () => ({
+  getAppState: () => ({
+    winBounds: { width: 1200, height: 800 },
+    lastProjectDir: mocks.options.lastProjectDir,
+    lastImageExportDir: "",
+  }),
+  setLastProjectDir: (dir: string) => {
+    mocks.options.lastProjectDir = dir;
   },
 }));
 
@@ -155,6 +167,7 @@ describe("open / save / close project flow", () => {
   beforeEach(async () => {
     dir = await mkdtemp(join(tmpdir(), "gnt-prj-"));
     mocks.client.current = null;
+    mocks.options.lastProjectDir = "";
     mocks.win.webContents.send.mockClear();
     await handleConnectProject(IPC_EVENT, "");
     expect(projectModule.CURRENT_PROJECT_ID).toBe("");
@@ -288,6 +301,108 @@ describe("open / save / close project flow", () => {
     await cleanupClose();
     expect(projectModule.CURRENT_PROJECT_ID).toBe("");
     expect(projectModule.CURRENT_PROJECT_FILEPATH).toBe("");
+  });
+
+  it("opens the open dialog in the stored project directory", async () => {
+    mocks.client.current = {};
+    mocks.options.lastProjectDir = dir;
+    vi.mocked(dialog.showOpenDialog).mockResolvedValueOnce({
+      canceled: true,
+    } as Awaited<ReturnType<typeof dialog.showOpenDialog>>);
+
+    await handleOpenProject(IPC_EVENT);
+    const [options] = vi.mocked(dialog.showOpenDialog).mock.calls[0];
+    expect(options?.defaultPath).toBe(dir);
+  });
+
+  it("falls back to the home directory when the stored directory is gone", async () => {
+    mocks.client.current = {};
+    mocks.options.lastProjectDir = join(dir, "unmounted");
+    vi.mocked(dialog.showOpenDialog).mockResolvedValueOnce({
+      canceled: true,
+    } as Awaited<ReturnType<typeof dialog.showOpenDialog>>);
+
+    await handleOpenProject(IPC_EVENT);
+    const [options] = vi.mocked(dialog.showOpenDialog).mock.calls[0];
+    expect(options?.defaultPath).toBe(homedir());
+  });
+
+  it("remembers the directory of a confirmed open pick", async () => {
+    const file = join(dir, "lab.gnet");
+    await writeFile(file, "gzip-bytes");
+    mocks.client.current = {
+      projectOpen: unary({
+        res: resWith(okStatus(), { getId: () => "mem-id" }),
+      }),
+    };
+    vi.mocked(dialog.showOpenDialog).mockResolvedValueOnce({
+      canceled: false,
+      filePaths: [file],
+    } as Awaited<ReturnType<typeof dialog.showOpenDialog>>);
+
+    expectOk(await handleOpenProject(IPC_EVENT));
+    expect(mocks.options.lastProjectDir).toBe(dir);
+
+    await cleanupClose();
+  });
+
+  it("keeps the stored directory when the open dialog is canceled", async () => {
+    mocks.client.current = {};
+    mocks.options.lastProjectDir = "/pristine";
+    vi.mocked(dialog.showOpenDialog).mockResolvedValueOnce({
+      canceled: true,
+    } as Awaited<ReturnType<typeof dialog.showOpenDialog>>);
+
+    const err = expectErr(await handleOpenProject(IPC_EVENT));
+    expect(err.error).toBe("Open dialog canceled");
+    expect(mocks.options.lastProjectDir).toBe("/pristine");
+  });
+
+  it("does not remember an extension-rejected open pick", async () => {
+    const file = join(dir, "notes.txt");
+    await writeFile(file, "x");
+    mocks.client.current = {};
+    mocks.options.lastProjectDir = "/pristine";
+    vi.mocked(dialog.showOpenDialog).mockResolvedValueOnce({
+      canceled: false,
+      filePaths: [file],
+    } as Awaited<ReturnType<typeof dialog.showOpenDialog>>);
+
+    expectErr(await handleOpenProject(IPC_EVENT));
+    expect(mocks.options.lastProjectDir).toBe("/pristine");
+  });
+
+  it("create dialog shares the project directory memory", async () => {
+    const file = join(dir, "shared.gnet");
+    mocks.client.current = {
+      projectOpen: unary({
+        res: resWith(okStatus(), { getId: () => "shared-id" }),
+      }),
+    };
+    mocks.options.lastProjectDir = dir;
+    vi.mocked(dialog.showSaveDialog).mockResolvedValueOnce({
+      canceled: false,
+      filePath: file,
+    } as Awaited<ReturnType<typeof dialog.showSaveDialog>>);
+
+    expectOk(await handleCreateProject(IPC_EVENT));
+    const [options] = vi.mocked(dialog.showSaveDialog).mock.calls[0];
+    expect(options?.defaultPath).toBe(dir);
+    expect(mocks.options.lastProjectDir).toBe(dir);
+
+    await cleanupClose();
+  });
+
+  it("keeps the stored directory when the create dialog is canceled", async () => {
+    mocks.client.current = {};
+    mocks.options.lastProjectDir = "/pristine";
+    vi.mocked(dialog.showSaveDialog).mockResolvedValueOnce({
+      canceled: true,
+    } as Awaited<ReturnType<typeof dialog.showSaveDialog>>);
+
+    const err = expectErr(await handleCreateProject(IPC_EVENT));
+    expect(err.error).toBe("Save dialog canceled");
+    expect(mocks.options.lastProjectDir).toBe("/pristine");
   });
 
   it("fails fast when not connected", async () => {

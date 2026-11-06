@@ -1,9 +1,11 @@
 import { dialog, IpcMainInvokeEvent } from "electron";
 import { writeFile } from 'fs/promises';
+import { dirname, join } from "path";
 import { ProjectRequest, TopologyRunMsg, WNetworkRequest } from "../proto/netem_pb";
 import { CLIENT } from "./client";
 import type { NetemClient } from "../proto/netem_grpc_pb";
-import { readStatusError } from "./utils";
+import { readStatusError, existingDirOrHome } from "./utils";
+import { getAppState, setLastImageExportDir } from "./options";
 import { mainWindow } from "..";
 
 function readTopologyFile(client: NetemClient, prjId: string): Promise<FileApiResponse> {
@@ -175,7 +177,7 @@ export const handleRecordTopologyImg = async (_event: IpcMainInvokeEvent, data: 
   const { canceled, filePath } = await dialog.showSaveDialog({
     title: "Record topology image",
     message: "Set folder/name to save image",
-    defaultPath: "topology.png",
+    defaultPath: join(existingDirOrHome(getAppState().lastImageExportDir), "topology.png"),
     properties: ['createDirectory'], 
     filters: [
       { name: "PNG files", extensions: ["png"] },
@@ -186,6 +188,8 @@ export const handleRecordTopologyImg = async (_event: IpcMainInvokeEvent, data: 
   if (canceled) {
     return { status: false, error: "Save dialog canceled" };
   }
+
+  setLastImageExportDir(dirname(filePath));
 
   try {
     await writeFile(filePath, data, 'binary');

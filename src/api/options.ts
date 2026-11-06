@@ -23,6 +23,8 @@ export interface IAppState {
         x?: number;
         y?: number;
     };
+    lastProjectDir: string;
+    lastImageExportDir: string;
 }
 
 const store = new Store<IOptions & IAppState>({
@@ -48,7 +50,9 @@ const store = new Store<IOptions & IAppState>({
                 height: {type: "number"},
             },
             required: ["width", "height"],
-        }
+        },
+        lastProjectDir: { type: "string" },
+        lastImageExportDir: { type: "string" },
     }, 
     defaults: {
         server: "",
@@ -60,18 +64,30 @@ const store = new Store<IOptions & IAppState>({
         winBounds: {
             height: 800,
             width: 1200,
-        }
+        },
+        lastProjectDir: "",
+        lastImageExportDir: "",
     }
 });
 
 export const getAppState = (): IAppState => {
     return {
         winBounds: store.get("winBounds"),
+        lastProjectDir: store.get("lastProjectDir"),
+        lastImageExportDir: store.get("lastImageExportDir"),
     };
 }
 
 export const setAppWinBounds = (bounds: Rectangle) => {
     store.set("winBounds", bounds);
+}
+
+export const setLastProjectDir = (dir: string): void => {
+    store.set("lastProjectDir", dir);
+}
+
+export const setLastImageExportDir = (dir: string): void => {
+    store.set("lastImageExportDir", dir);
 }
 
 export const getOptions = (): IOptions => {

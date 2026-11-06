@@ -6,7 +6,8 @@ import { IpcMainInvokeEvent, dialog } from "electron";
 import { CLIENT } from "./client";
 import type { NetemClient } from "../proto/netem_grpc_pb";
 import { OpenRequest, ProjectCloseMsg, ProjectRequest, ProjectSaveMsg } from "../proto/netem_pb";
-import { readStatusError } from "./utils";
+import { readStatusError, existingDirOrHome } from "./utils";
+import { getAppState, setLastProjectDir } from "./options";
 import { Empty } from "google-protobuf/google/protobuf/empty_pb";
 import { closeRunningConsoles } from "./console";
 import { mainWindow } from "..";
@@ -53,6 +54,7 @@ export const handleOpenProject = async (
     };
 
   const { canceled, filePaths } = await dialog.showOpenDialog({
+    defaultPath: existingDirOrHome(getAppState().lastProjectDir),
     properties: ["openFile"],
     filters: [
       { name: "Projets gonetem", extensions: ["gnet"] },
@@ -68,6 +70,8 @@ export const handleOpenProject = async (
   if (path.extname(filepath) != ".gnet") {
     return { status: false, error: "Open file has not a .gnet extension" };
   }
+
+  setLastProjectDir(path.dirname(filepath));
 
   try {
     const data = await fs.promises.readFile(filepath);
@@ -112,6 +116,7 @@ export const handleCreateProject = async (
     };
 
   const { canceled, filePath } = await dialog.showSaveDialog({
+    defaultPath: existingDirOrHome(getAppState().lastProjectDir),
     properties: ["createDirectory"],
     filters: [
       { name: "Projets gonetem", extensions: ["gnet"] },
@@ -126,6 +131,8 @@ export const handleCreateProject = async (
   if (path.extname(filePath) != ".gnet") {
     return { status: false, error: "Created file has not a .gnet extension" };
   }
+
+  setLastProjectDir(path.dirname(filePath));
 
   try {
     await createEmptyProject(filePath);

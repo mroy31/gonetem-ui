@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { tmpdir } from "os";
+import { tmpdir, homedir } from "os";
 import { join } from "path";
 import { mkdtemp, readFile } from "fs/promises";
 import { dialog } from "electron";
@@ -26,11 +26,23 @@ import {
 const mocks = vi.hoisted(() => ({
   client: { current: null as unknown },
   win: { webContents: { send: vi.fn() } },
+  options: { lastImageExportDir: "" },
 }));
 
 vi.mock("./client", () => ({
   get CLIENT() {
     return mocks.client.current;
+  },
+}));
+
+vi.mock("./options", () => ({
+  getAppState: () => ({
+    winBounds: { width: 1200, height: 800 },
+    lastProjectDir: "",
+    lastImageExportDir: mocks.options.lastImageExportDir,
+  }),
+  setLastImageExportDir: (dir: string) => {
+    mocks.options.lastImageExportDir = dir;
   },
 }));
 
@@ -195,6 +207,10 @@ describe("handleRunTopology", () => {
 });
 
 describe("handleRecordTopologyImg", () => {
+  beforeEach(() => {
+    mocks.options.lastImageExportDir = "";
+  });
+
   it("writes the image when a path is chosen", async () => {
     const dir = await mkdtemp(join(tmpdir(), "gnt-"));
     const file = join(dir, "topology.png");
@@ -214,5 +230,50 @@ describe("handleRecordTopologyImg", () => {
 
     const err = expectErr(await handleRecordTopologyImg(IPC_EVENT, Buffer.from("x")));
     expect(err.error).toBe("Save dialog canceled");
+  });
+
+  it("anchors defaultPath to the stored image export directory", async () => {
+    mocks.options.lastImageExportDir = tmpdir();
+    vi.mocked(dialog.showSaveDialog).mockResolvedValueOnce({
+      canceled: true,
+    } as Awaited<ReturnType<typeof dialog.showSaveDialog>>);
+
+    await handleRecordTopologyImg(IPC_EVENT, Buffer.from("x"));
+    const [options] = vi.mocked(dialog.showSaveDialog).mock.calls[0];
+    expect(options?.defaultPath).toBe(join(tmpdir(), "topology.png"));
+  });
+
+  it("falls back to the home directory when the stored directory is gone", async () => {
+    mocks.options.lastImageExportDir = join(tmpdir(), "gnt-no-such-dir");
+    vi.mocked(dialog.showSaveDialog).mockResolvedValueOnce({
+      canceled: true,
+    } as Awaited<ReturnType<typeof dialog.showSaveDialog>>);
+
+    await handleRecordTopologyImg(IPC_EVENT, Buffer.from("x"));
+    const [options] = vi.mocked(dialog.showSaveDialog).mock.calls[0];
+    expect(options?.defaultPath).toBe(join(homedir(), "topology.png"));
+  });
+
+  it("remembers the directory of a confirmed export", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "gnt-"));
+    const file = join(dir, "topology.png");
+    mocks.options.lastImageExportDir = "/pristine";
+    vi.mocked(dialog.showSaveDialog).mockResolvedValueOnce({
+      canceled: false,
+      filePath: file,
+    } as Awaited<ReturnType<typeof dialog.showSaveDialog>>);
+
+    expectOk(await handleRecordTopologyImg(IPC_EVENT, Buffer.from("PNGDATA")));
+    expect(mocks.options.lastImageExportDir).toBe(dir);
+  });
+
+  it("keeps the stored directory when the export is canceled", async () => {
+    mocks.options.lastImageExportDir = "/pristine";
+    vi.mocked(dialog.showSaveDialog).mockResolvedValueOnce({
+      canceled: true,
+    } as Awaited<ReturnType<typeof dialog.showSaveDialog>>);
+
+    expectErr(await handleRecordTopologyImg(IPC_EVENT, Buffer.from("x")));
+    expect(mocks.options.lastImageExportDir).toBe("/pristine");
   });
 });

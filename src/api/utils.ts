@@ -1,9 +1,20 @@
 import * as path from "path";
 import * as fs from "fs/promises";
+import { statSync } from "fs";
+import { homedir } from "os";
 import { Status, StatusCode } from "../proto/netem_pb";
 
 export function decodeB64(b64Str: string): string {
   return Buffer.from(b64Str, "base64").toString("utf8");
+}
+
+export function existingDirOrHome(dir: string): string {
+  if (dir != "") {
+    try {
+      if (statSync(dir).isDirectory()) return dir;
+    } catch {}
+  }
+  return homedir();
 }
 
 export function readStatusError(res: {
