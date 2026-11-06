@@ -6,19 +6,23 @@ Guidance for AI agents working in this repository.
 
 gonetem-ui is a cross-platform Electron + React + TypeScript GUI for the
 [gonetem](https://github.com/mroy31/gonetem) network emulator. It talks to the
-gonetem server over gRPC (protobuf). UI is built with React 18, Tailwind CSS +
+gonetem server over gRPC (protobuf). UI is built with React 19, Tailwind CSS +
 DaisyUI, vis-network (topology graph), xterm (consoles), and CodeMirror
 (config editor).
 
 ## Commands
 
-- Package manager: **yarn** (`yarn install`)
+- Package manager: **yarn** (`yarn install`). Always run Forge through yarn
+  (`yarn start`/`yarn package`/`yarn make`), never `npx electron-forge` — Forge's
+  system check detects the package manager from the npm user-agent and fails under npx.
 - `yarn start` — run the app in dev mode (Electron Forge + webpack)
-- `yarn lint` — eslint over `.ts`/`.tsx`
+- `yarn lint` — eslint (flat config, `eslint.config.mjs`) over `.ts`/`.tsx`
+- `yarn test` / `yarn test:watch` — vitest (node project: `src/**/*.test.ts`,
+  jsdom project: `src/**/*.test.tsx`); `vitest.config.mts`
 - `yarn package` / `yarn make` — build/package the app (`out/make` for distributables)
 - `./scripts/build-proto.sh` — regenerate gRPC/protobuf code from `proto/*.proto` into `src/proto/`
 
-There is **no test suite**; verify changes with `yarn lint` and by running `yarn start`.
+Verify changes with `yarn lint` + `yarn test` (+ `yarn start` for UI behavior).
 
 ## Architecture
 
@@ -41,9 +45,21 @@ There is **no test suite**; verify changes with `yarn lint` and by running `yarn
 
 - `vis-network` is a local link dependency (`link:./../vis-network-9.1.9`, a
   patched fork outside the repo). It cannot be reinstalled from npm here.
-- TypeScript config: `tsconfig.json` with `jsx: react` (classic runtime) and
-  path mapping into `types/`.
-- Lint config (`.eslintrc.json`): unused vars are errors unless prefixed with `_`.
+- Frozen dependency set (do not upgrade, see
+  `openspec/changes/upgrade-dependencies-with-tests/design.md`): `vis-network`
+  (link), `vis-data` ~7.1.x, `vis-util` ~5.0.x, `google-protobuf` 3.21.x,
+  TypeScript 5.x, Tailwind 3.4.x, daisyUI 4.x,
+  `@vercel/webpack-asset-relocator-loader` 1.7.3 (1.8+ injects `__dirname`
+  into the sandboxed preload and throws). `package.json` `resolutions` keep a
+  single copy of `@codemirror/*` + `@lezer/common` (yarn v1 does not dedupe
+  them; duplicates break CodeMirror's instanceof checks at runtime).
+- TypeScript config: `tsconfig.json` with `jsx: react` (classic runtime; test
+  files need `import React`), `moduleResolution: bundler` (ESM-only deps like
+  electron-store v12). Global API types are ambient via `include` of `types/`.
+- Lint config (`eslint.config.mjs`, flat): unused vars are errors unless
+  prefixed with `_`.
+- Electron main is sandboxed with `contextIsolation`; the preload/webpack bundle
+  must stay browser-safe (no bare `__dirname`/`fs` in renderer or preload).
 - This repo uses OpenSpec for change management (`openspec/`); check
   `openspec/specs` and `openspec/changes` when planning non-trivial features.
 

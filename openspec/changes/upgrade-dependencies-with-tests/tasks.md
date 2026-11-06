@@ -40,8 +40,8 @@
 
 ## 6. Integration checks
 
-- [ ] 6.1 Full suite green on final tree: `yarn lint`, `yarn test`, `yarn package`; frozen-set audit: confirm `vis-network` link, `vis-data` ~7.1.x, `vis-util` ~5.0.x, `google-protobuf` 3.21.x, TypeScript 5.x, Tailwind 3.4.x, daisyUI 4.x remain pinned as designed
-- [ ] 6.2 Update AGENT.md gotchas/commands section with the new lint/test workflow and the freeze list; verify the documented commands run as written
+- [x] 6.1 Full suite green on final tree: `yarn lint`, `yarn test` (54), `yarn package`, `npx tsc --noEmit`; frozen-set audit passed (vis-network link, vis-data ~7.1.9, vis-util ~5.0.7, google-protobuf ~3.21.2, TypeScript 5.9.3, Tailwind ^3.4.19, daisyui ~4.12.24, relocator 1.7.3, CodeMirror resolutions intact). Audit also caught a phantom `js-yaml` import (undeclared, resolving via eslint's tree) — declared explicitly at the already-bundled 4.1.0
+- [x] 6.2 AGENT.md updated: React 19, yarn-vs-npx Forge note, `yarn test`/vitest, flat eslint config, moduleResolution bundler, frozen-set + relocator/CodeMirror-resolutions gotchas, sandbox note; all documented commands were run green on this tree
 
 ## Workflow follow-up
 
