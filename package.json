@@ -97,5 +97,15 @@
     "vis-network": "link:./../vis-network-9.1.9",
     "vis-util": "~5.0.7",
     "yaml": "^2.9.1"
+  },
+  "resolutions": {
+    "@codemirror/state": "6.7.6",
+    "@codemirror/view": "6.43.15",
+    "@codemirror/autocomplete": "6.20.4",
+    "@codemirror/commands": "6.11.1",
+    "@codemirror/language": "6.13.1",
+    "@codemirror/search": "6.7.2",
+    "@codemirror/lint": "6.9.7",
+    "@lezer/common": "1.5.5"
   }
 }
