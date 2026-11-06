@@ -6,7 +6,7 @@ const IPCBackend = (): BackendModule => {
   return {
     type: "backend",
 
-    init: function (services, backendOptions, i18nextOptions) {
+    init: function (services, _backendOptions, _i18nextOptions) {
       this.services = services;
     },
 

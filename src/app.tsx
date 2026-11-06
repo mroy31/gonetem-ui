@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import {
@@ -46,7 +46,13 @@ function App(): JSX.Element {
       }
     });
 
-    window.api.getOptions().then((res) => setOptions(res.result));
+    window.api.getOptions().then((res) => {
+      if (!res.status) {
+        setError(res.error);
+        return;
+      }
+      setOptions(res.result);
+    });
   }, []);
 
   const handleConnect = async () => {

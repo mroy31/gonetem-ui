@@ -1,10 +1,12 @@
 import { dialog, IpcMainInvokeEvent } from "electron";
 import { writeFile } from 'fs/promises';
-import { ProjectRequest, StatusCode, TopologyRunMsg, WNetworkRequest } from "../proto/netem_pb";
+import { ProjectRequest, TopologyRunMsg, WNetworkRequest } from "../proto/netem_pb";
 import { CLIENT } from "./client";
+import type { NetemClient } from "../proto/netem_grpc_pb";
+import { readStatusError } from "./utils";
 import { mainWindow } from "..";
 
-function readTopologyFile(prjId: string): Promise<FileApiResponse> {
+function readTopologyFile(client: NetemClient, prjId: string): Promise<FileApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to read topology of project '${prjId}': ${err}`;
 
@@ -12,19 +14,16 @@ function readTopologyFile(prjId: string): Promise<FileApiResponse> {
     const request = new ProjectRequest();
     request.setId(prjId);
 
-    CLIENT.readNetworkFile(request, (err, res) => {
+    client.readNetworkFile(request, (err, res) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
-        const code = res.getStatus().getCode();
-        code == StatusCode.ERROR
-          ? resolve({
-              status: false,
-              error: errorFmt(res.getStatus().getError()),
-            })
-          : resolve({ 
+        const statusErr = readStatusError(res);
+        statusErr != null
+          ? resolve({ status: false, error: errorFmt(statusErr) })
+          : resolve({
             status: true,
-            result: Buffer.from(res.getData_asB64(), 'base64').toString('utf8') 
+            result: Buffer.from(res.getData_asB64(), 'base64').toString('utf8')
           });
       }
     });
@@ -38,10 +37,10 @@ export const handleReadTopologyFile = async (
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
-  return await readTopologyFile(prjId);
+  return await readTopologyFile(CLIENT, prjId);
 };
 
-function writeTopologyFile(prjId: string, data: string): Promise<ApiResponse> {
+function writeTopologyFile(client: NetemClient, prjId: string, data: string): Promise<ApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to write topology of project '${prjId}': ${err}`;
 
@@ -50,17 +49,14 @@ function writeTopologyFile(prjId: string, data: string): Promise<ApiResponse> {
     request.setId(prjId);
     request.setData(Buffer.from(data).toString('base64'));
 
-    CLIENT.writeNetworkFile(request, (err, res) => {
+    client.writeNetworkFile(request, (err, res) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
-        const code = res.getStatus().getCode();
-        code == StatusCode.ERROR
-          ? resolve({
-              status: false,
-              error: errorFmt(res.getStatus().getError()),
-            })
-          : resolve({ 
+        const statusErr = readStatusError(res);
+        statusErr != null
+          ? resolve({ status: false, error: errorFmt(statusErr) })
+          : resolve({
             status: true,
           });
       }
@@ -72,14 +68,14 @@ export const handleWriteTopologyFile = async (
   _event: IpcMainInvokeEvent,
   prjId: string,
   data: string,
-): Promise<FileApiResponse> => {
+): Promise<ApiResponse> => {
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
-  return await writeTopologyFile(prjId, data);
+  return await writeTopologyFile(CLIENT, prjId, data);
 };
 
-function checkTopologyFile(prjId: string): Promise<ApiResponse> {
+function checkTopologyFile(client: NetemClient, prjId: string): Promise<ApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to check topology of project '${prjId}': ${err}`;
 
@@ -87,17 +83,17 @@ function checkTopologyFile(prjId: string): Promise<ApiResponse> {
     const request = new ProjectRequest();
     request.setId(prjId);
 
-    CLIENT.topologyCheck(request, (err, res) => {
+    client.topologyCheck(request, (err, res) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
-        const code = res.getStatus().getCode();
-        code == StatusCode.ERROR
+        const statusErr = readStatusError(res);
+        statusErr != null
           ? resolve({
               status: false,
-              error: res.getStatus().getError(),
+              error: statusErr,
             })
-          : resolve({ 
+          : resolve({
             status: true,
           });
       }
@@ -112,10 +108,10 @@ export const handleCheckTopologyFile = async (
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
-  return await checkTopologyFile(prjId);
+  return await checkTopologyFile(CLIENT, prjId);
 };
 
-function runTopology(prjId: string): Promise<ApiResponse> {
+function runTopology(client: NetemClient, prjId: string): Promise<ApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to run topology of project '${prjId}': ${err}`;
 
@@ -123,7 +119,7 @@ function runTopology(prjId: string): Promise<ApiResponse> {
     const request = new ProjectRequest();
     request.setId(prjId);
 
-    const stub = CLIENT.topologyRun(request)
+    const stub = client.topologyRun(request)
     stub.on('status', () => { resolve({ status: true }); });
     stub.on('data', (data: TopologyRunMsg) => { mainWindow.webContents.send("topology:run:event", data.toObject()); });
     stub.on('error', (e: Error) => {
@@ -142,10 +138,10 @@ export const handleRunTopology = async (
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
-  return await runTopology(prjId);
+  return await runTopology(CLIENT, prjId);
 };
 
-function reloadTopology(prjId: string): Promise<ApiResponse> {
+function reloadTopology(client: NetemClient, prjId: string): Promise<ApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to reload topology of project '${prjId}': ${err}`;
 
@@ -153,7 +149,7 @@ function reloadTopology(prjId: string): Promise<ApiResponse> {
     const request = new ProjectRequest();
     request.setId(prjId);
 
-    const stub = CLIENT.topologyReload(request);
+    const stub = client.topologyReload(request);
     stub.on('status', () => { resolve({ status: true }); });
     stub.on('data', (data: TopologyRunMsg) => { mainWindow.webContents.send("topology:run:event", data.toObject()); });
     stub.on('error', (e: Error) => {
@@ -172,7 +168,7 @@ export const handleReloadTopology = async (
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
-  return await reloadTopology(prjId);
+  return await reloadTopology(CLIENT, prjId);
 };
 
 export const handleRecordTopologyImg = async (_event: IpcMainInvokeEvent, data: Buffer): Promise<ApiResponse> => {
@@ -188,7 +184,7 @@ export const handleRecordTopologyImg = async (_event: IpcMainInvokeEvent, data: 
   });
 
   if (canceled) {
-    return {status: false};
+    return { status: false, error: "Save dialog canceled" };
   }
 
   try {

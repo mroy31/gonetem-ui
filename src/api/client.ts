@@ -4,10 +4,10 @@ import { Empty } from "google-protobuf/google/protobuf/empty_pb";
 import * as grpc from "@grpc/grpc-js";
 import services from "../proto/netem_grpc_pb";
 import { getOptions } from "./options";
-import { StatusCode } from "../proto/netem_pb";
 import { CURRENT_PROJECT_ID } from "./project";
+import { readStatusError } from "./utils";
 
-export let CLIENT: services.NetemClient = null;
+export let CLIENT: services.NetemClient | null = null;
 
 async function createClientCredentials(
   isSecure: boolean,
@@ -16,6 +16,9 @@ async function createClientCredentials(
   clientKey?: string
 ): Promise<grpc.ChannelCredentials> {
   if (!isSecure) return grpc.credentials.createInsecure();
+
+  if (caCert == null || clientCert == null || clientKey == null)
+    throw new Error("TLS enabled but certificate paths are not configured");
 
   try {
     const caCertData = await fs.readFile(caCert);
@@ -32,20 +35,17 @@ async function createClientCredentials(
   }
 }
 
-function getVersion(): Promise<StringApiResponse> {
+function getVersion(client: services.NetemClient): Promise<StringApiResponse> {
   const errorFmt = (err: string) => `Unable to get server version: ${err}`;
 
   return new Promise<StringApiResponse>((resolve) => {
-    CLIENT.serverGetVersion(new Empty(), (err, version) => {
+    client.serverGetVersion(new Empty(), (err, version) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
-        const code = version.getStatus().getCode();
-        code == StatusCode.ERROR
-          ? resolve({
-              status: false,
-              error: errorFmt(version.getStatus().getError()),
-            })
+        const statusErr = readStatusError(version);
+        statusErr != null
+          ? resolve({ status: false, error: errorFmt(statusErr) })
           : resolve({ status: true, result: version.getVersion() });
       }
     });
@@ -57,7 +57,7 @@ export const handleIsConnected = async (
 ): Promise<IsConnectedApiResponse> => {
   if (CLIENT == null) return { status: true, result: { connected: false } };
 
-  const res = await getVersion();
+  const res = await getVersion(CLIENT);
   return res.status
     ? {
         status: true,
@@ -71,7 +71,7 @@ export const handleIsConnected = async (
 };
 
 export const connectToServer = async (): Promise<StringApiResponse> => {
-  if (CLIENT != null) return await getVersion();
+  if (CLIENT != null) return await getVersion(CLIENT);
 
   const options = getOptions();
   try {
@@ -83,9 +83,7 @@ export const connectToServer = async (): Promise<StringApiResponse> => {
     );
 
     CLIENT = new services.NetemClient(options.server, creds);
-    return CLIENT.serverGetVersion
-      ? await getVersion()
-      : { status: false, error: "Unable to connect to server" };
+    return await getVersion(CLIENT);
   } catch (err) {
     return { status: false, error: err.message };
   }

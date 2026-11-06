@@ -24,14 +24,15 @@ export default function TopologyEditorPanel({
   const [content, setContent] = useState(topology);
   const [ showCheckMsg, setShowCheckMsg ] = useState(false);
   const [height, setHeight] = useState("200px");
-  const containerRef = useRef<HTMLDivElement>();
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (containerRef.current) {
       setHeight(`${containerRef.current.offsetHeight}px`);
 
       const resizeCb = () => {
-        setHeight(`${containerRef.current.offsetHeight}px`);
+        if (containerRef.current)
+          setHeight(`${containerRef.current.offsetHeight}px`);
       };
       window.addEventListener("resize", resizeCb);
       return () => window.removeEventListener("resize", resizeCb);

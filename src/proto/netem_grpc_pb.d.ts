@@ -35,6 +35,7 @@ interface INetemService extends grpc.ServiceDefinition<grpc.UntypedServiceImplem
     nodeCopyTo: INetemService_INodeCopyTo;
     nodeGetConsoleCmd: INetemService_INodeGetConsoleCmd;
     nodeExec: INetemService_INodeExec;
+    nodeExecOnce: INetemService_INodeExecOnce;
     linkUpdate: INetemService_ILinkUpdate;
     linkAdd: INetemService_ILinkAdd;
     linkDel: INetemService_ILinkDel;
@@ -274,6 +275,15 @@ interface INetemService_INodeExec extends grpc.MethodDefinition<netem_pb.ExecClt
     responseSerialize: grpc.serialize<netem_pb.ExecSrvMsg>;
     responseDeserialize: grpc.deserialize<netem_pb.ExecSrvMsg>;
 }
+interface INetemService_INodeExecOnce extends grpc.MethodDefinition<netem_pb.NodeExecOnceRequest, netem_pb.ExecOnceResponse> {
+    path: "/netem.Netem/NodeExecOnce";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<netem_pb.NodeExecOnceRequest>;
+    requestDeserialize: grpc.deserialize<netem_pb.NodeExecOnceRequest>;
+    responseSerialize: grpc.serialize<netem_pb.ExecOnceResponse>;
+    responseDeserialize: grpc.deserialize<netem_pb.ExecOnceResponse>;
+}
 interface INetemService_ILinkUpdate extends grpc.MethodDefinition<netem_pb.LinkRequest, netem_pb.AckResponse> {
     path: "/netem.Netem/LinkUpdate";
     requestStream: false;
@@ -331,6 +341,7 @@ export interface INetemServer {
     nodeCopyTo: grpc.handleClientStreamingCall<netem_pb.CopyMsg, netem_pb.AckResponse>;
     nodeGetConsoleCmd: grpc.handleUnaryCall<netem_pb.ConsoleCmdRequest, netem_pb.ConsoleCmdResponse>;
     nodeExec: grpc.handleBidiStreamingCall<netem_pb.ExecCltMsg, netem_pb.ExecSrvMsg>;
+    nodeExecOnce: grpc.handleUnaryCall<netem_pb.NodeExecOnceRequest, netem_pb.ExecOnceResponse>;
     linkUpdate: grpc.handleUnaryCall<netem_pb.LinkRequest, netem_pb.AckResponse>;
     linkAdd: grpc.handleUnaryCall<netem_pb.LinkRequest, netem_pb.AckResponse>;
     linkDel: grpc.handleUnaryCall<netem_pb.LinkRequest, netem_pb.AckResponse>;
@@ -409,6 +420,9 @@ export interface INetemClient {
     nodeExec(): grpc.ClientDuplexStream<netem_pb.ExecCltMsg, netem_pb.ExecSrvMsg>;
     nodeExec(options: Partial<grpc.CallOptions>): grpc.ClientDuplexStream<netem_pb.ExecCltMsg, netem_pb.ExecSrvMsg>;
     nodeExec(metadata: grpc.Metadata, options?: Partial<grpc.CallOptions>): grpc.ClientDuplexStream<netem_pb.ExecCltMsg, netem_pb.ExecSrvMsg>;
+    nodeExecOnce(request: netem_pb.NodeExecOnceRequest, callback: (error: grpc.ServiceError | null, response: netem_pb.ExecOnceResponse) => void): grpc.ClientUnaryCall;
+    nodeExecOnce(request: netem_pb.NodeExecOnceRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: netem_pb.ExecOnceResponse) => void): grpc.ClientUnaryCall;
+    nodeExecOnce(request: netem_pb.NodeExecOnceRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.ExecOnceResponse) => void): grpc.ClientUnaryCall;
     linkUpdate(request: netem_pb.LinkRequest, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
     linkUpdate(request: netem_pb.LinkRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
     linkUpdate(request: netem_pb.LinkRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
@@ -493,6 +507,9 @@ export class NetemClient extends grpc.Client implements INetemClient {
     public nodeGetConsoleCmd(request: netem_pb.ConsoleCmdRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.ConsoleCmdResponse) => void): grpc.ClientUnaryCall;
     public nodeExec(options?: Partial<grpc.CallOptions>): grpc.ClientDuplexStream<netem_pb.ExecCltMsg, netem_pb.ExecSrvMsg>;
     public nodeExec(metadata?: grpc.Metadata, options?: Partial<grpc.CallOptions>): grpc.ClientDuplexStream<netem_pb.ExecCltMsg, netem_pb.ExecSrvMsg>;
+    public nodeExecOnce(request: netem_pb.NodeExecOnceRequest, callback: (error: grpc.ServiceError | null, response: netem_pb.ExecOnceResponse) => void): grpc.ClientUnaryCall;
+    public nodeExecOnce(request: netem_pb.NodeExecOnceRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: netem_pb.ExecOnceResponse) => void): grpc.ClientUnaryCall;
+    public nodeExecOnce(request: netem_pb.NodeExecOnceRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.ExecOnceResponse) => void): grpc.ClientUnaryCall;
     public linkUpdate(request: netem_pb.LinkRequest, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
     public linkUpdate(request: netem_pb.LinkRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;
     public linkUpdate(request: netem_pb.LinkRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: netem_pb.AckResponse) => void): grpc.ClientUnaryCall;

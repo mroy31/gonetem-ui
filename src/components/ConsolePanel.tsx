@@ -5,17 +5,17 @@ import { FitAddon } from "@xterm/addon-fit";
 import { SerializeAddon } from "@xterm/addon-serialize";
 import classNames from "classnames";
 import { INodeState, IProjectState } from "../api/interface";
-import "xterm/css/xterm.css";
+import "@xterm/xterm/css/xterm.css";
 import { useTranslation } from "react-i18next";
 
 function usePrevious<T>(value: T): T {
-  const ref: any = useRef<T>();
+  const ref = useRef<T>();
 
   useEffect(() => {
     ref.current = JSON.parse(JSON.stringify(value));
   }, [value]);
 
-  return ref.current;
+  return ref.current as T;
 }
 
 const TermPanel = ({
@@ -28,8 +28,10 @@ const TermPanel = ({
   const {t} = useTranslation();
   const previousNodeName = usePrevious(nodeName);
   const [isTermInit, setTermInit] = useState<boolean>(false);
-  const [resizeListener, setResizeListener] = useState<IDisposable>(null);
-  const [dataListener, setDataListener] = useState<IDisposable>(null);
+  const [resizeListener, setResizeListener] = useState<IDisposable | null>(
+    null
+  );
+  const [dataListener, setDataListener] = useState<IDisposable | null>(null);
 
   const term = useRef(new Terminal());
   const fitAddon = useRef(new FitAddon());
@@ -37,12 +39,14 @@ const TermPanel = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (containerRef.current == null) return;
+
     const resizeObserver = new ResizeObserver((_entries) => {
       fitAddon.current.fit();
     });
     resizeObserver.observe(containerRef.current);
 
-    if (containerRef.current && !isTermInit) {
+    if (!isTermInit) {
       term.current.loadAddon(fitAddon.current);
       term.current.loadAddon(serializeAddon.current);
 
@@ -132,7 +136,7 @@ export default function ConsolePanel({
 }): JSX.Element {
   const {t} = useTranslation();
   const [nodes, setNodes] = useState<INodeState[]>([]);
-  const [selectedConsole, setSelectedConsole] = useState<string>(null);
+  const [selectedConsole, setSelectedConsole] = useState<string | null>(null);
   const [runningConsoles, setRunningConsoles] = useState<string[]>([]);
 
   const closeConsole = useCallback(() => {

@@ -15,7 +15,7 @@ import swRunning from "../../img/switch-running.svg";
 interface ITopologyNode {
   type: string;
   ui?: {
-    icon: "host" | "router" | "switch";
+    icon?: "host" | "router" | "switch";
     position: Position;
   }
 }
@@ -38,7 +38,10 @@ const getNodeIdxFromPeer = (peer: string) => {
   return peer.split(".")[1];
 };
 
-const getNodeState = (nodeName: string, state: IProjectState): INodeState => {
+const getNodeState = (
+  nodeName: string,
+  state: IProjectState
+): INodeState | null => {
   for (const node of state.nodes) {
     if (node.name == nodeName) return node;
   }
@@ -46,7 +49,10 @@ const getNodeState = (nodeName: string, state: IProjectState): INodeState => {
   return null;
 };
 
-const getNodeShape = (node: ITopologyNode, nodeState: INodeState) => {
+const getNodeShape = (
+  node: ITopologyNode | null,
+  nodeState: INodeState | null
+) => {
   const shapes = {
     router: {
       shape: "circularImage",
@@ -66,7 +72,7 @@ const getNodeShape = (node: ITopologyNode, nodeState: INodeState) => {
     }
   };
 
-  if (node.ui?.icon) {
+  if (node?.ui?.icon) {
     switch (node.ui?.icon) {
       case "router":
         return shapes.router;
@@ -79,7 +85,7 @@ const getNodeShape = (node: ITopologyNode, nodeState: INodeState) => {
     }
   }
 
-  switch (node.type) {
+  switch (node?.type) {
     case "docker.router":
     case "docker.vyos":
       return shapes.router;
@@ -95,16 +101,16 @@ const getNodeShape = (node: ITopologyNode, nodeState: INodeState) => {
 const getNodePosition = (
   topology: ITopology,
   nodeName: string,
-  network: Network,
+  network: Network | null,
 ) => {
   if (network == null)
-    return topology.nodes[nodeName].ui?.position || {};
+    return topology.nodes[nodeName]?.ui?.position || {};
 
   try {
     return network.getPosition(nodeName);
-  } catch (err) {
+  } catch {
     // node is just created and has no defined position
-    return topology.nodes[nodeName].ui?.position || {};
+    return topology.nodes[nodeName]?.ui?.position || {};
   }
 }
 
@@ -116,7 +122,7 @@ const getEdgeColor = (
   const isPeerIfUp = (peer: string): boolean => {
     const peerId = peer.split(".");
     const peerState = getNodeState(peerId[0], prjState);
-    if (!peerState.running) return false;
+    if (!peerState?.running) return false;
 
     for (const ifState of peerState.interfaces) {
       if (ifState.name == peerId[1] || ifState.name == `eth${peerId[1]}`)
@@ -157,7 +163,7 @@ const getEdgeColor = (
 const getNodesAndEdges = (
   topology: ITopology,
   prjState: IProjectState,
-  network: Network,
+  network: Network | null,
 ): [Node[], Edge[]] => {
   const nodes: Node[] = topology.nodes ? Object.keys(topology.nodes).map((name) => {
     const nodeAttr = topology.nodes[name];
@@ -198,7 +204,7 @@ type PropsT = {
 }
 
 export type ProjectGrahHandle = {
-  exportImage: () => Promise<Buffer>;
+  exportImage: () => Promise<Buffer | null>;
   fit: () => void;
   saveNodePositions: () => Promise<ApiResponse>;
 }
@@ -211,7 +217,7 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
 }: PropsT, ref): JSX.Element {
   const {t} = useTranslation();
   const [error, setError] = useState("");
-  const [network, setNetwork] = useState<Network>(null);
+  const [network, setNetwork] = useState<Network | null>(null);
   const [contextMenu, setContextMenu] = useState<NodeContextMenuT>({
     prjId: prjStatus.id,
     nodeId: "",
@@ -222,8 +228,8 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
 
   useImperativeHandle(ref, () => {
     return {
-      exportImage: (): Promise<Buffer> => {
-        return new Promise<Buffer>((resolve) => {
+      exportImage: (): Promise<Buffer | null> => {
+        return new Promise<Buffer | null>((resolve) => {
           if (visJsRef.current == null || network == null) {
             resolve(null);
             return;
@@ -231,6 +237,10 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
 
           const canvas = visJsRef.current.getElementsByTagName("canvas").item(0) as HTMLCanvasElement;
           canvas.toBlob((blob) => {
+            if (blob == null) {
+              resolve(null);
+              return;
+            }
             blob.arrayBuffer().then((aBuf) => resolve(Buffer.from(aBuf)));
           });
         });
@@ -241,20 +251,27 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
         }
       },
       saveNodePositions: (): Promise<ApiResponse> => {
-        if (network == null) return;
+        if (network == null)
+          return Promise.resolve({
+            status: false,
+            error: "Topology graph is not ready",
+          });
 
         const positions = network.getPositions();
         const topo = YAML.parse(topology) as ITopology;
 
         const nodes: {[key: string]: ITopologyNode | null;}  = {}
         Object.keys(topo.nodes).forEach((nId) => {
-          nodes[nId] = {
-            ...topo.nodes[nId],
-            ui: {
-              ...topo.nodes[nId].ui,
-              position: positions[nId]
-            }
-          };
+          const nodeAttr = topo.nodes[nId];
+          nodes[nId] = nodeAttr == null
+            ? null
+            : {
+                ...nodeAttr,
+                ui: {
+                  ...nodeAttr.ui,
+                  position: positions[nId]
+                }
+              };
         });
         topo.nodes = nodes;
 

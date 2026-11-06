@@ -16,14 +16,12 @@ enum ActionKing {
   ERROR = "ERROR",
 }
 
-interface IAction {
-  type: ActionKing;
-  nodes?: INodeState[];
-  error?: string;
-  node?: string;
-  selected?: string;
-  files?: ConfigFileT[];
-}
+type IAction =
+  | { type: ActionKing.ERROR; error: string }
+  | { type: ActionKing.UPDATE_NODE_STATES; nodes: INodeState[]; node: string }
+  | { type: ActionKing.UPDATE_NODE; node: string }
+  | { type: ActionKing.UPDATE_NODE_FILES; files: ConfigFileT[] }
+  | { type: ActionKing.UPDATE_SELECTED; selected: string };
 
 interface IState {
   error: string;
@@ -49,7 +47,7 @@ function reducer(state: IState, action: IAction): IState {
     case ActionKing.ERROR:
       return {
         ...state,
-        error: action.error as string,
+        error: action.error,
         loading: false,
       };
     case ActionKing.UPDATE_NODE_STATES:

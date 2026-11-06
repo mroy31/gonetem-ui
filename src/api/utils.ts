@@ -1,8 +1,18 @@
 import * as path from "path";
 import * as fs from "fs/promises";
+import { Status, StatusCode } from "../proto/netem_pb";
 
 export function decodeB64(b64Str: string): string {
   return Buffer.from(b64Str, "base64").toString("utf8");
+}
+
+export function readStatusError(res: {
+  getStatus(): Status | undefined;
+}): string | null {
+  const status = res.getStatus();
+  if (status == null) return "Malformed server response: status is missing";
+  if (status.getCode() == StatusCode.ERROR) return status.getError();
+  return null;
 }
 
 /**
@@ -22,7 +32,7 @@ export async function findExecutable(exe: string): Promise<string | null> {
   );
   try {
     return await Promise.any(candidates.map(checkFileExists));
-  } catch (e) {
+  } catch {
     return null;
   }
 

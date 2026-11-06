@@ -3,19 +3,20 @@ import * as grpc from "@grpc/grpc-js";
 import { ConsoleCmdRequest, ExecCltMsg, ExecSrvMsg } from "../proto/netem_pb";
 import { mainWindow } from "..";
 import { CLIENT } from "./client";
+import type { NetemClient } from "../proto/netem_grpc_pb";
 import { CURRENT_PROJECT_ID } from "./project";
 
-let RUNNING_CONSOLES = new Map<
+const RUNNING_CONSOLES = new Map<
   string,
   grpc.ClientDuplexStream<ExecCltMsg, ExecSrvMsg>
 >();
-let CONSOLE_STATES = new Map<string, string>();
+const CONSOLE_STATES = new Map<string, string>();
 
 export function closeRunningConsoles() {
-  for (const key of RUNNING_CONSOLES.keys()) {
+  for (const [key, stream] of RUNNING_CONSOLES.entries()) {
     try {
-      RUNNING_CONSOLES.get(key).destroy();
-    } catch (err) {
+      stream.destroy();
+    } catch (_err) {
     } finally {
       RUNNING_CONSOLES.delete(key);
     }
@@ -23,7 +24,10 @@ export function closeRunningConsoles() {
   CONSOLE_STATES.clear();
 }
 
-function runNodeInternalConsole(nodeId: string): Promise<StringApiResponse> {
+function runNodeInternalConsole(
+  client: NetemClient,
+  nodeId: string
+): Promise<StringApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to run internal console for node ${nodeId}: ${err}`;
 
@@ -31,7 +35,7 @@ function runNodeInternalConsole(nodeId: string): Promise<StringApiResponse> {
     if (RUNNING_CONSOLES.has(nodeId)) {
       resolve({
         status: true,
-        result: CONSOLE_STATES.has(nodeId) ? CONSOLE_STATES.get(nodeId) : "",
+        result: CONSOLE_STATES.get(nodeId) ?? "",
       });
       return;
     }
@@ -40,7 +44,7 @@ function runNodeInternalConsole(nodeId: string): Promise<StringApiResponse> {
     cmdMsg.setPrjid(CURRENT_PROJECT_ID);
     cmdMsg.setNode(nodeId);
     cmdMsg.setShell(false);
-    CLIENT.nodeGetConsoleCmd(cmdMsg, (err, res) => {
+    client.nodeGetConsoleCmd(cmdMsg, (err, res) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
@@ -51,8 +55,9 @@ function runNodeInternalConsole(nodeId: string): Promise<StringApiResponse> {
         msg.setNode(nodeId);
         msg.setTty(true);
 
-        RUNNING_CONSOLES.set(nodeId, CLIENT.nodeExec());
-        RUNNING_CONSOLES.get(nodeId).on("data", (data: ExecSrvMsg) => {
+        const execStream = client.nodeExec();
+        RUNNING_CONSOLES.set(nodeId, execStream);
+        execStream.on("data", (data: ExecSrvMsg) => {
           switch (data.getCode()) {
             case ExecSrvMsg.Code.CLOSE:
               mainWindow.webContents.send(`console:close:${nodeId}`);
@@ -81,16 +86,16 @@ function runNodeInternalConsole(nodeId: string): Promise<StringApiResponse> {
               break;
           }
         });
-        RUNNING_CONSOLES.get(nodeId).on("error", function (e) {
+        execStream.on("error", function (e: Error) {
           mainWindow.webContents.send(`console:error:${nodeId}`, e);
           if (RUNNING_CONSOLES.has(nodeId)) {
-            RUNNING_CONSOLES.get(nodeId).destroy();
+            execStream.destroy();
             RUNNING_CONSOLES.delete(nodeId);
           }
           CONSOLE_STATES.delete(nodeId);
         });
 
-        RUNNING_CONSOLES.get(nodeId).write(msg, (error: Error) => {
+        execStream.write(msg, (error: Error) => {
           if (error) {
             RUNNING_CONSOLES.delete(nodeId);
             CONSOLE_STATES.delete(nodeId);
@@ -115,10 +120,11 @@ export const handleRunNodeInternalConsole = async (
   if (CURRENT_PROJECT_ID == "")
     return { status: false, error: "No open project" };
 
-  return await runNodeInternalConsole(nodeId);
+  return await runNodeInternalConsole(CLIENT, nodeId);
 };
 
 const writeInternalConsole = (
+  execStream: grpc.ClientDuplexStream<ExecCltMsg, ExecSrvMsg>,
   nodeId: string,
   data: string
 ): Promise<ApiResponse> => {
@@ -130,7 +136,7 @@ const writeInternalConsole = (
     msg.setCode(ExecCltMsg.Code.DATA);
     msg.setData(Buffer.from(data).toString("base64"));
 
-    RUNNING_CONSOLES.get(nodeId).write(msg, (error: Error) => {
+    execStream.write(msg, (error: Error) => {
       error
         ? resolve({ status: false, error: errorFmt(error.message) })
         : resolve({ status: true });
@@ -146,13 +152,15 @@ export const handleWriteInternalConsole = async (
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
-  if (!RUNNING_CONSOLES.has(nodeId))
+  const execStream = RUNNING_CONSOLES.get(nodeId);
+  if (execStream == null)
     return { status: false, error: "Not connected to the server" };
 
-  return await writeInternalConsole(nodeId, data);
+  return await writeInternalConsole(execStream, nodeId, data);
 };
 
 const resizeInternalConsole = (
+  execStream: grpc.ClientDuplexStream<ExecCltMsg, ExecSrvMsg>,
   nodeId: string,
   width: number,
   height: number
@@ -166,7 +174,7 @@ const resizeInternalConsole = (
     msg.setTtyheight(height);
     msg.setTtywidth(width);
 
-    RUNNING_CONSOLES.get(nodeId).write(msg, (error: Error) => {
+    execStream.write(msg, (error: Error) => {
       error
         ? resolve({ status: false, error: errorFmt(error.message) })
         : resolve({ status: true });
@@ -183,10 +191,11 @@ export const handleResizeInternalConsole = async (
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
-  if (!RUNNING_CONSOLES.has(nodeId))
+  const execStream = RUNNING_CONSOLES.get(nodeId);
+  if (execStream == null)
     return { status: false, error: "Not connected to the server" };
 
-  return await resizeInternalConsole(nodeId, width, height);
+  return await resizeInternalConsole(execStream, nodeId, width, height);
 };
 
 const saveConsoleState = (
@@ -203,7 +212,7 @@ export const handleSaveConsoleState = async (
   _event: IpcMainInvokeEvent,
   nodeId: string,
   state: string
-): Promise<StringListApiResponse> => {
+): Promise<ApiResponse> => {
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
@@ -213,7 +222,7 @@ export const handleSaveConsoleState = async (
 const listOpenConsoles = (): Promise<StringListApiResponse> => {
   return new Promise<StringListApiResponse>((resolve) => {
     const openConsoles: string[] = [];
-    for (let key of RUNNING_CONSOLES.keys()) openConsoles.push(key);
+    for (const key of RUNNING_CONSOLES.keys()) openConsoles.push(key);
 
     resolve({ status: true, result: openConsoles });
   });

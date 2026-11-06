@@ -18,25 +18,25 @@ const NodeContextMenu = ({
   onHide,
 }: {
   contextMenu: NodeContextMenuT;
-  state: INodeState;
+  state: INodeState | null;
   onHide: (state: boolean) => void;
-}): JSX.Element => {
+}): JSX.Element | null => {
   const {t} = useTranslation();
   const { setError } = useAppContext();
   const [loading, setLoading] = useState("");
 
   const handleRunConsole = useCallback((shell: boolean) => {
-    if (state.running && loading == "") {
+    if (state?.running && loading == "") {
       window.api
         .runNodeConsole(contextMenu.prjId, contextMenu.nodeId, shell)
         .then((res) => {
           res.status ? onHide(false) : setError(res.error);
         });
     }
-  }, [contextMenu, state.running]);
+  }, [contextMenu, state?.running]);
 
   const handleStart = useCallback(() => {
-    if (!state.running && loading == "") {
+    if (!state?.running && loading == "") {
       setLoading("start");
       window.api
         .runNodeStart(contextMenu.prjId, contextMenu.nodeId)
@@ -45,10 +45,10 @@ const NodeContextMenu = ({
           res.status ? onHide(true) : setError(res.error);
         });
     }
-  }, [contextMenu, state.running]);
+  }, [contextMenu, state?.running]);
 
   const handleStop = useCallback(() => {
-    if (state.running && loading == "") {
+    if (state?.running && loading == "") {
       setLoading("stop");
       window.api
         .runNodeStop(contextMenu.prjId, contextMenu.nodeId)
@@ -57,10 +57,10 @@ const NodeContextMenu = ({
           res.status ? onHide(true) : setError(res.error);
         });
     }
-  }, [contextMenu, state.running]);
+  }, [contextMenu, state?.running]);
 
   const handleRestart = useCallback(() => {
-    if (state.running && loading == "") {
+    if (state?.running && loading == "") {
       setLoading("restart");
       window.api
         .runNodeRestart(contextMenu.prjId, contextMenu.nodeId)
@@ -69,14 +69,14 @@ const NodeContextMenu = ({
           res.status ? onHide(true) : setError(res.error);
         });
     }
-  }, [contextMenu, state.running]);
+  }, [contextMenu, state?.running]);
 
   const handleCapture = useCallback(
     (ifName: string) => {
-      if (state.running && loading == "") {
+      if (state?.running && loading == "") {
         const match = ifName.match(/eth([0-9]+)/);
 
-        if (match.length > 1) {
+        if (match != null && match.length > 1) {
           setLoading("capture");
 
           const ifIndex = parseInt(match[1]);
@@ -89,15 +89,15 @@ const NodeContextMenu = ({
         }
       }
     },
-    [contextMenu, state.running]
+    [contextMenu, state?.running]
   );
 
   const handleIfState = useCallback(
     (ifName: string, up: boolean) => {
-      if (state.running && loading == "") {
+      if (state?.running && loading == "") {
         const match = ifName.match(/eth([0-9]+)/);
 
-        if (match.length > 1) {
+        if (match != null && match.length > 1) {
           const ifIndex = parseInt(match[1]);
           window.api
             .runNodeSetIfState(contextMenu.prjId, contextMenu.nodeId, ifIndex, up)
@@ -108,10 +108,11 @@ const NodeContextMenu = ({
         }
       }
     },
-    [contextMenu, state.running]
+    [contextMenu, state?.running]
   );
 
   const actionClasses = classNames({ disabled: loading != "" });
+  if (state == null) return null;
   return (
     <div
       style={{

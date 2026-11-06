@@ -8,11 +8,11 @@ import {
   NodeInterfaceRequest,
   NodeRequest,
   ProjectRequest,
-  StatusCode,
 } from "../proto/netem_pb";
 import { CLIENT } from "./client";
+import type { NetemClient } from "../proto/netem_grpc_pb";
 import { getOptions } from "./options";
-import { decodeB64, findExecutable } from "./utils";
+import { decodeB64, findExecutable, readStatusError } from "./utils";
 
 const consoleCmd = async (
   prjId: string,
@@ -39,6 +39,7 @@ const consoleCmd = async (
 };
 
 function readNodeConfigFiles(
+  client: NetemClient,
   prjId: string,
   nodeId: string
 ): Promise<ConfigFilesApiResponse> {
@@ -50,16 +51,13 @@ function readNodeConfigFiles(
     request.setPrjid(prjId);
     request.setNode(nodeId);
 
-    CLIENT.nodeReadConfigFiles(request, (err, res) => {
+    client.nodeReadConfigFiles(request, (err, res) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
-        const code = res.getStatus().getCode();
-        code == StatusCode.ERROR
-          ? resolve({
-              status: false,
-              error: errorFmt(res.getStatus().getError()),
-            })
+        const statusErr = readStatusError(res);
+        statusErr != null
+          ? resolve({ status: false, error: errorFmt(statusErr) })
           : resolve({
               status: true,
               result: {
@@ -85,7 +83,7 @@ export const handleReadNodeConfigFiles = async (
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
-  return await readNodeConfigFiles(prjId, nodeId);
+  return await readNodeConfigFiles(CLIENT, prjId, nodeId);
 };
 
 function runNodeConsole(
@@ -98,11 +96,13 @@ function runNodeConsole(
 
   return new Promise<ApiResponse>((resolve) => {
     consoleCmd(prjId, nodeId, shell).then((cmd) => {
-      if (cmd == null)
+      if (cmd == null) {
         resolve({
           status: false,
           error: "Term command defined in option not found",
         });
+        return;
+      }
 
       const process = spawn(cmd, { shell: true });
       process.on("error", (err) => {
@@ -120,28 +120,28 @@ export const handleRunNodeConsole = async (
   prjId: string,
   nodeId: string,
   shell: boolean
-): Promise<ConfigFilesApiResponse> => {
+): Promise<ApiResponse> => {
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
   return await runNodeConsole(prjId, nodeId, shell);
 };
 
-function runAllConsoles(prjId: string, shell: boolean): Promise<ApiResponse> {
+function runAllConsoles(client: NetemClient, prjId: string, shell: boolean): Promise<ApiResponse> {
   const errorFmt = (err: string) => `Unable to run console: ${err}`;
   return new Promise<ApiResponse>((resolve) => {
     const request = new ProjectRequest();
     request.setId(prjId);
 
-    CLIENT.projectGetStatus(request, (err, res) => {
+    client.projectGetStatus(request, (err, res) => {
       if (err) {
         resolve({ status: false, error: err });
         return;
       }
 
-      const code = res.getStatus().getCode();
-      if (code == StatusCode.ERROR) {
-        resolve({ status: false, error: err });
+      const statusErr = readStatusError(res);
+      if (statusErr != null) {
+        resolve({ status: false, error: errorFmt(statusErr) });
         return;
       }
 
@@ -152,11 +152,13 @@ function runAllConsoles(prjId: string, shell: boolean): Promise<ApiResponse> {
         promiseList.push(
           new Promise<{ error: string; nodeId: string }>((nResolve) => {
             consoleCmd(prjId, node.getName(), shell).then((cmd) => {
-              if (cmd == null)
+              if (cmd == null) {
                 nResolve({
                   nodeId: node.getName(),
                   error: "Term command defined in option not found",
                 });
+                return;
+              }
 
               const process = spawn(cmd, { shell: true });
               process.on("error", (err) => {
@@ -190,14 +192,14 @@ export const handleRunAllConsoles = async (
   _event: IpcMainInvokeEvent,
   prjId: string,
   shell: boolean
-): Promise<ConfigFilesApiResponse> => {
+): Promise<ApiResponse> => {
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
-  return await runAllConsoles(prjId, shell);
+  return await runAllConsoles(CLIENT, prjId, shell);
 };
 
-function nodeStart(prjId: string, nodeId: string): Promise<ApiResponse> {
+function nodeStart(client: NetemClient, prjId: string, nodeId: string): Promise<ApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to start node '${prjId}.${nodeId}': ${err}`;
 
@@ -206,16 +208,13 @@ function nodeStart(prjId: string, nodeId: string): Promise<ApiResponse> {
     request.setPrjid(prjId);
     request.setNode(nodeId);
 
-    CLIENT.nodeStart(request, (err, res) => {
+    client.nodeStart(request, (err, res) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
-        const code = res.getStatus().getCode();
-        code == StatusCode.ERROR
-          ? resolve({
-              status: false,
-              error: errorFmt(res.getStatus().getError()),
-            })
+        const statusErr = readStatusError(res);
+        statusErr != null
+          ? resolve({ status: false, error: errorFmt(statusErr) })
           : resolve({ status: true });
       }
     });
@@ -226,14 +225,14 @@ export const handleNodeStart = async (
   _event: IpcMainInvokeEvent,
   prjId: string,
   nodeId: string
-): Promise<ConfigFilesApiResponse> => {
+): Promise<ApiResponse> => {
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
-  return await nodeStart(prjId, nodeId);
+  return await nodeStart(CLIENT, prjId, nodeId);
 };
 
-function nodeStop(prjId: string, nodeId: string): Promise<ApiResponse> {
+function nodeStop(client: NetemClient, prjId: string, nodeId: string): Promise<ApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to stop node '${prjId}.${nodeId}': ${err}`;
 
@@ -242,16 +241,13 @@ function nodeStop(prjId: string, nodeId: string): Promise<ApiResponse> {
     request.setPrjid(prjId);
     request.setNode(nodeId);
 
-    CLIENT.nodeStop(request, (err, res) => {
+    client.nodeStop(request, (err, res) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
-        const code = res.getStatus().getCode();
-        code == StatusCode.ERROR
-          ? resolve({
-              status: false,
-              error: errorFmt(res.getStatus().getError()),
-            })
+        const statusErr = readStatusError(res);
+        statusErr != null
+          ? resolve({ status: false, error: errorFmt(statusErr) })
           : resolve({ status: true });
       }
     });
@@ -262,14 +258,14 @@ export const handleNodeStop = async (
   _event: IpcMainInvokeEvent,
   prjId: string,
   nodeId: string
-): Promise<ConfigFilesApiResponse> => {
+): Promise<ApiResponse> => {
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
-  return await nodeStop(prjId, nodeId);
+  return await nodeStop(CLIENT, prjId, nodeId);
 };
 
-function nodeRestart(prjId: string, nodeId: string): Promise<ApiResponse> {
+function nodeRestart(client: NetemClient, prjId: string, nodeId: string): Promise<ApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to restart node '${prjId}.${nodeId}': ${err}`;
 
@@ -278,16 +274,13 @@ function nodeRestart(prjId: string, nodeId: string): Promise<ApiResponse> {
     request.setPrjid(prjId);
     request.setNode(nodeId);
 
-    CLIENT.nodeRestart(request, (err, res) => {
+    client.nodeRestart(request, (err, res) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
-        const code = res.getStatus().getCode();
-        code == StatusCode.ERROR
-          ? resolve({
-              status: false,
-              error: errorFmt(res.getStatus().getError()),
-            })
+        const statusErr = readStatusError(res);
+        statusErr != null
+          ? resolve({ status: false, error: errorFmt(statusErr) })
           : resolve({ status: true });
       }
     });
@@ -298,14 +291,16 @@ export const handleNodeRestart = async (
   _event: IpcMainInvokeEvent,
   prjId: string,
   nodeId: string
-): Promise<ConfigFilesApiResponse> => {
+): Promise<ApiResponse> => {
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
-  return await nodeRestart(prjId, nodeId);
+  return await nodeRestart(CLIENT, prjId, nodeId);
 };
 
 function nodeSetIfState(
+  client: NetemClient,
+  
   prjId: string,
   nodeId: string,
   interfaceId: number,
@@ -321,16 +316,13 @@ function nodeSetIfState(
     request.setIfindex(interfaceId);
     request.setState(up ? IfState.UP : IfState.DOWN);
 
-    CLIENT.nodeSetIfState(request, (err, res) => {
+    client.nodeSetIfState(request, (err, res) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
-        const code = res.getStatus().getCode();
-        code == StatusCode.ERROR
-          ? resolve({
-              status: false,
-              error: errorFmt(res.getStatus().getError()),
-            })
+        const statusErr = readStatusError(res);
+        statusErr != null
+          ? resolve({ status: false, error: errorFmt(statusErr) })
           : resolve({ status: true });
       }
     });
@@ -347,10 +339,12 @@ export const handleNodeSetIfState = async (
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
-  return await nodeSetIfState(prjId, nodeId, interfaceId, up);
+  return await nodeSetIfState(CLIENT, prjId, nodeId, interfaceId, up);
 };
 
 function nodeCapture(
+  client: NetemClient,
+  
   prjId: string,
   nodeId: string,
   interfaceId: number
@@ -372,7 +366,7 @@ function nodeCapture(
 
       let captureProcess: ChildProcessWithoutNullStreams | null = null;
 
-      const captureStream = CLIENT.nodeCapture(request);
+      const captureStream = client.nodeCapture(request);
       captureStream.on("data", (msg: CaptureSrvMsg) => {
         if (captureProcess == null) {
           const args = [
@@ -411,9 +405,9 @@ export const handleNodeCapture = async (
   prjId: string,
   nodeId: string,
   interfaceId: number
-): Promise<ConfigFilesApiResponse> => {
+): Promise<ApiResponse> => {
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
-  return await nodeCapture(prjId, nodeId, interfaceId);
+  return await nodeCapture(CLIENT, prjId, nodeId, interfaceId);
 };

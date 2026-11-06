@@ -25,6 +25,8 @@ function reducer(state: IProjectSaveState, msg: ProjectSaveMsg.AsObject): IProje
                 ...state,
                 nodeSave: state.nodeSave+1,
             }
+        default:
+            return state;
     }
 }
 

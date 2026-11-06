@@ -3,20 +3,30 @@ import path from 'path';
 import fs from 'fs/promises';
 import { Mutex } from "async-mutex";
 
-type QueueT = {
+type QueueItemT = {
     filename: string,
     key: string,
     text: string,
-}[];
+};
+
+type QueueT = QueueItemT[];
+
+type GroupT = {
+    key: string;
+    values: QueueT;
+};
 
 const mutex = new Mutex();
 const queue: QueueT = []
-let timeout: NodeJS.Timeout = null;
+let timeout: NodeJS.Timeout | null = null;
 
-const groupByArray = function(xs: QueueT, key: "filename" | Function) {
-    return xs.reduce(function (rv, x) {
+const groupByArray = function(
+    xs: QueueT,
+    key: "filename" | ((item: QueueItemT) => string)
+): GroupT[] {
+    return xs.reduce(function (rv: GroupT[], x: QueueItemT) {
         const v = key instanceof Function ? key(x) : x[key];
-        let el = rv.find((r) => r && r.key === v);
+        const el = rv.find((r) => r && r.key === v);
         if (el) {
             el.values.push(x);
         } else {
@@ -37,7 +47,7 @@ const mergeJSONData = async (filename: string, values: {key: string; text: strin
         values.forEach((v) => data[v["key"]] = v["text"]);
 
         return data;
-    } catch (err) {
+    } catch {
         const data: {[key: string]: string;} = {};
         values.forEach((v) => data[v["key"]] = v["text"]);
 
@@ -94,36 +104,35 @@ export const handleI18nCreate = async (
     namespace: string,
     key: string,
     fallbackValue: string,
-  ): Promise<ApiResponse> => { 
-    return new Promise<ApiResponse>(async (resolve) => {
-        await mutex.runExclusive(() => {
-            languages.forEach((lng) => {
-                const filename = path.join(
-                    getResourcesPath(),
-                    "app", "localization", "locales",
-                    lng, `${namespace}.missing.json`
-                );
+  ): Promise<ApiResponse> => {
+    await mutex.runExclusive(() => {
+        languages.forEach((lng) => {
+            const filename = path.join(
+                getResourcesPath(),
+                "app", "localization", "locales",
+                lng, `${namespace}.missing.json`
+            );
 
-                queue.push({
-                    filename,
-                    key,
-                    text: fallbackValue,
-                });
+            queue.push({
+                filename,
+                key,
+                text: fallbackValue,
             });
-        }); 
-
-        if (timeout === null && queue.length > 0) {
-            timeout = setTimeout(async () => {
-                await mutex.runExclusive(async () => {
-                    const toWork = groupByArray(queue, "filename");
-                    for (const data of toWork) {
-                        const mergedData = await mergeJSONData(data.key, data.values);
-                        await fs.writeFile(path.resolve(data.key), JSON.stringify(mergedData, null, 2));
-                    }
-                    timeout = null;
-                });
-            }, 1000);
-        }
-        resolve({status: true});
+        });
     });
+
+    if (timeout === null && queue.length > 0) {
+        timeout = setTimeout(async () => {
+            await mutex.runExclusive(async () => {
+                const toWork = groupByArray(queue, "filename");
+                for (const data of toWork) {
+                    const mergedData = await mergeJSONData(data.key, data.values);
+                    await fs.writeFile(path.resolve(data.key), JSON.stringify(mergedData, null, 2));
+                }
+                timeout = null;
+            });
+        }, 1000);
+    }
+
+    return { status: true };
   }

@@ -4,7 +4,9 @@ import { createGzip } from "zlib";
 import tar from "tar-stream";
 import { IpcMainInvokeEvent, dialog } from "electron";
 import { CLIENT } from "./client";
-import { OpenRequest, ProjectCloseMsg, ProjectRequest, ProjectSaveMsg, StatusCode } from "../proto/netem_pb";
+import type { NetemClient } from "../proto/netem_grpc_pb";
+import { OpenRequest, ProjectCloseMsg, ProjectRequest, ProjectSaveMsg } from "../proto/netem_pb";
+import { readStatusError } from "./utils";
 import { Empty } from "google-protobuf/google/protobuf/empty_pb";
 import { closeRunningConsoles } from "./console";
 import { mainWindow } from "..";
@@ -13,6 +15,7 @@ export let CURRENT_PROJECT_ID = "";
 export let CURRENT_PROJECT_FILEPATH = "";
 
 function openProject(
+  client: NetemClient,
   filename: string,
   data: Buffer
 ): Promise<StringApiResponse> {
@@ -24,16 +27,13 @@ function openProject(
     request.setData(data);
     request.setName(filename);
 
-    CLIENT.projectOpen(request, (err, res) => {
+    client.projectOpen(request, (err, res) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
-        const code = res.getStatus().getCode();
-        code == StatusCode.ERROR
-          ? resolve({
-              status: false,
-              error: errorFmt(res.getStatus().getError()),
-            })
+        const statusErr = readStatusError(res);
+        statusErr != null
+          ? resolve({ status: false, error: errorFmt(statusErr) })
           : resolve({ status: true, result: res.getId() });
       }
     });
@@ -61,7 +61,7 @@ export const handleOpenProject = async (
   });
 
   if (canceled) {
-    return { status: false };
+    return { status: false, error: "Open dialog canceled" };
   }
 
   const filepath = filePaths[0];
@@ -71,7 +71,7 @@ export const handleOpenProject = async (
 
   try {
     const data = await fs.promises.readFile(filepath);
-    const res = await openProject(path.basename(filepath, ".gnet"), data);
+    const res = await openProject(CLIENT, path.basename(filepath, ".gnet"), data);
     if (res.status) {
       CURRENT_PROJECT_ID = res.result;
       CURRENT_PROJECT_FILEPATH = filepath;
@@ -120,7 +120,7 @@ export const handleCreateProject = async (
   });
 
   if (canceled) {
-    return { status: false };
+    return { status: false, error: "Save dialog canceled" };
   }
 
   if (path.extname(filePath) != ".gnet") {
@@ -131,7 +131,7 @@ export const handleCreateProject = async (
     await createEmptyProject(filePath);
     // open created project
     const data = await fs.promises.readFile(filePath);
-    const res = await openProject(path.basename(filePath, ".gnet"), data);
+    const res = await openProject(CLIENT, path.basename(filePath, ".gnet"), data);
     if (res.status) {
       CURRENT_PROJECT_ID = res.result;
       CURRENT_PROJECT_FILEPATH = filePath;
@@ -154,20 +154,17 @@ export const handleConnectProject = async (
   return { status: true };
 };
 
-function listProjects(): Promise<PrjListApiResponse> {
+function listProjects(client: NetemClient): Promise<PrjListApiResponse> {
   const errorFmt = (err: string) => `Unable to list projects: ${err}`;
 
   return new Promise<PrjListApiResponse>((resolve) => {
-    CLIENT.projectGetMany(new Empty(), (err, res) => {
+    client.projectGetMany(new Empty(), (err, res) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
-        const code = res.getStatus().getCode();
-        code == StatusCode.ERROR
-          ? resolve({
-              status: false,
-              error: errorFmt(res.getStatus().getError()),
-            })
+        const statusErr = readStatusError(res);
+        statusErr != null
+          ? resolve({ status: false, error: errorFmt(statusErr) })
           : resolve({
               status: true,
               result: res.getProjectsList().map((info) => {
@@ -189,10 +186,10 @@ export const handleListProjects = async (
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
-  return await listProjects();
+  return await listProjects(CLIENT, );
 };
 
-function getProjectState(prjId: string): Promise<PrjStateApiResponse> {
+function getProjectState(client: NetemClient, prjId: string): Promise<PrjStateApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to get status of project '${prjId}': ${err}`;
 
@@ -200,16 +197,13 @@ function getProjectState(prjId: string): Promise<PrjStateApiResponse> {
     const request = new ProjectRequest();
     request.setId(prjId);
 
-    CLIENT.projectGetStatus(request, (err, res) => {
+    client.projectGetStatus(request, (err, res) => {
       if (err) {
         resolve({ status: false, error: errorFmt(err) });
       } else {
-        const code = res.getStatus().getCode();
-        code == StatusCode.ERROR
-          ? resolve({
-              status: false,
-              error: errorFmt(res.getStatus().getError()),
-            })
+        const statusErr = readStatusError(res);
+        statusErr != null
+          ? resolve({ status: false, error: errorFmt(statusErr) })
           : resolve({
               status: true,
               result: {
@@ -243,10 +237,10 @@ export const handleGetProjectState = async (
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
-  return await getProjectState(prjId);
+  return await getProjectState(CLIENT, prjId);
 };
 
-function saveProject(prjId: string, filePath: string): Promise<ApiResponse> {
+function saveProject(client: NetemClient, prjId: string, filePath: string): Promise<ApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to save project '${prjId}': ${err}`;
 
@@ -254,7 +248,7 @@ function saveProject(prjId: string, filePath: string): Promise<ApiResponse> {
     const request = new ProjectRequest();
     request.setId(prjId);
 
-    const stub = CLIENT.projectSave(request);
+    const stub = client.projectSave(request);
     stub.on('status', () => { resolve({ status: true }); });
     stub.on('data', (data: ProjectSaveMsg) => { 
       if (data.getCode() == ProjectSaveMsg.Code.DATA) {
@@ -282,10 +276,10 @@ export const handleSaveProject = async (
   if (CURRENT_PROJECT_FILEPATH == "") 
     return { status: false, error: "No filepath known for open project" };
 
-  return await saveProject(prjId, CURRENT_PROJECT_FILEPATH);
+  return await saveProject(CLIENT, prjId, CURRENT_PROJECT_FILEPATH);
 };
 
-function closeProject(prjId: string): Promise<ApiResponse> {
+function closeProject(client: NetemClient, prjId: string): Promise<ApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to close project '${prjId}': ${err}`;
 
@@ -294,7 +288,7 @@ function closeProject(prjId: string): Promise<ApiResponse> {
     request.setId(prjId);
 
     closeRunningConsoles();
-    const stub = CLIENT.projectClose(request);
+    const stub = client.projectClose(request);
     stub.on('status', () => { resolve({ status: true }); });
     stub.on('data', (data: ProjectCloseMsg) => { mainWindow.webContents.send("project:close:event", data.toObject()); });
     stub.on('error', (e: Error) => {
@@ -315,5 +309,5 @@ export const handleCloseProject = async (
 
   CURRENT_PROJECT_ID = "";
   CURRENT_PROJECT_FILEPATH = "";
-  return await closeProject(prjId);
+  return await closeProject(CLIENT, prjId);
 };

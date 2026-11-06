@@ -93,6 +93,17 @@ function deserialize_netem_ExecCltMsg(buffer_arg) {
   return netem_pb.ExecCltMsg.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_netem_ExecOnceResponse(arg) {
+  if (!(arg instanceof netem_pb.ExecOnceResponse)) {
+    throw new Error('Expected argument of type netem.ExecOnceResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_netem_ExecOnceResponse(buffer_arg) {
+  return netem_pb.ExecOnceResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_netem_ExecSrvMsg(arg) {
   if (!(arg instanceof netem_pb.ExecSrvMsg)) {
     throw new Error('Expected argument of type netem.ExecSrvMsg');
@@ -124,6 +135,17 @@ function serialize_netem_LinkRequest(arg) {
 
 function deserialize_netem_LinkRequest(buffer_arg) {
   return netem_pb.LinkRequest.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_netem_NodeExecOnceRequest(arg) {
+  if (!(arg instanceof netem_pb.NodeExecOnceRequest)) {
+    throw new Error('Expected argument of type netem.NodeExecOnceRequest');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_netem_NodeExecOnceRequest(buffer_arg) {
+  return netem_pb.NodeExecOnceRequest.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_netem_NodeIfStateRequest(arg) {
@@ -572,6 +594,17 @@ nodeReadConfigFiles: {
     requestDeserialize: deserialize_netem_ExecCltMsg,
     responseSerialize: serialize_netem_ExecSrvMsg,
     responseDeserialize: deserialize_netem_ExecSrvMsg,
+  },
+  nodeExecOnce: {
+    path: '/netem.Netem/NodeExecOnce',
+    requestStream: false,
+    responseStream: false,
+    requestType: netem_pb.NodeExecOnceRequest,
+    responseType: netem_pb.ExecOnceResponse,
+    requestSerialize: serialize_netem_NodeExecOnceRequest,
+    requestDeserialize: deserialize_netem_NodeExecOnceRequest,
+    responseSerialize: serialize_netem_ExecOnceResponse,
+    responseDeserialize: deserialize_netem_ExecOnceResponse,
   },
   // Link actions
 linkUpdate: {

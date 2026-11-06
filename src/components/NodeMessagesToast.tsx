@@ -12,7 +12,7 @@ export default function NodeMessagesToast({
 }: {
   nodeMessages: INodeMessages[];
   clearNodeMessages: () => void;
-}): JSX.Element {
+}): JSX.Element | null {
   const {t} = useTranslation();
   const hasNodeMessages = React.useCallback((): boolean => {
     for (const nMessages of nodeMessages) {

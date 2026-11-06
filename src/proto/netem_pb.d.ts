@@ -512,6 +512,34 @@ export namespace NodeRequest {
     }
 }
 
+export class NodeExecOnceRequest extends jspb.Message { 
+    getPrjid(): string;
+    setPrjid(value: string): NodeExecOnceRequest;
+    getNode(): string;
+    setNode(value: string): NodeExecOnceRequest;
+    clearCmdList(): void;
+    getCmdList(): Array<string>;
+    setCmdList(value: Array<string>): NodeExecOnceRequest;
+    addCmd(value: string, index?: number): string;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): NodeExecOnceRequest.AsObject;
+    static toObject(includeInstance: boolean, msg: NodeExecOnceRequest): NodeExecOnceRequest.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: NodeExecOnceRequest, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): NodeExecOnceRequest;
+    static deserializeBinaryFromReader(message: NodeExecOnceRequest, reader: jspb.BinaryReader): NodeExecOnceRequest;
+}
+
+export namespace NodeExecOnceRequest {
+    export type AsObject = {
+        prjid: string,
+        node: string,
+        cmdList: Array<string>,
+    }
+}
+
 export class ConsoleCmdRequest extends jspb.Message { 
     getPrjid(): string;
     setPrjid(value: string): ConsoleCmdRequest;
@@ -736,6 +764,42 @@ export namespace ConsoleCmdResponse {
     }
 }
 
+export class ExecOnceResponse extends jspb.Message { 
+
+    hasStatus(): boolean;
+    clearStatus(): void;
+    getStatus(): Status | undefined;
+    setStatus(value?: Status): ExecOnceResponse;
+    getStdout(): Uint8Array | string;
+    getStdout_asU8(): Uint8Array;
+    getStdout_asB64(): string;
+    setStdout(value: Uint8Array | string): ExecOnceResponse;
+    getExitcode(): number;
+    setExitcode(value: number): ExecOnceResponse;
+    getStderr(): Uint8Array | string;
+    getStderr_asU8(): Uint8Array;
+    getStderr_asB64(): string;
+    setStderr(value: Uint8Array | string): ExecOnceResponse;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): ExecOnceResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: ExecOnceResponse): ExecOnceResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: ExecOnceResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ExecOnceResponse;
+    static deserializeBinaryFromReader(message: ExecOnceResponse, reader: jspb.BinaryReader): ExecOnceResponse;
+}
+
+export namespace ExecOnceResponse {
+    export type AsObject = {
+        status?: Status.AsObject,
+        stdout: Uint8Array | string,
+        exitcode: number,
+        stderr: Uint8Array | string,
+    }
+}
+
 export class StatusResponse extends jspb.Message { 
 
     hasStatus(): boolean;
@@ -802,6 +866,8 @@ export namespace StatusResponse {
     export class NodeStatus extends jspb.Message { 
         getName(): string;
         setName(value: string): NodeStatus;
+        getType(): string;
+        setType(value: string): NodeStatus;
         getRunning(): boolean;
         setRunning(value: boolean): NodeStatus;
         clearInterfacesList(): void;
@@ -822,6 +888,7 @@ export namespace StatusResponse {
     export namespace NodeStatus {
         export type AsObject = {
             name: string,
+            type: string,
             running: boolean,
             interfacesList: Array<StatusResponse.IfStatus.AsObject>,
         }

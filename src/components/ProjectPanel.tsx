@@ -16,18 +16,17 @@ export enum PrjActionKing {
     SELECT_EDGE = 'SELECT_EDGE',
 }
 
-export interface IPrjAction {
-    type: PrjActionKing;
-    error?: string;
-    state?: IProjectState;
-    topology?: string;
-    edge?: string;
-}
+export type IPrjAction =
+    | { type: PrjActionKing.INIT; state: IProjectState; topology: string }
+    | { type: PrjActionKing.STATE; state: IProjectState }
+    | { type: PrjActionKing.TOPOLOGY; topology: string }
+    | { type: PrjActionKing.ERROR; error: string }
+    | { type: PrjActionKing.SELECT_EDGE; edge: string };
 
 interface IPrjState {
     error: string;
     loading: boolean;
-    status: IProjectState;
+    status: IProjectState | null;
     topology: string;
     selectedEdge: string;
 }
@@ -57,7 +56,7 @@ function reducer(state: IPrjState, action: IPrjAction): IPrjState {
         case PrjActionKing.ERROR:
             return {
                 ...state,
-                error: action.error as string,
+                error: action.error,
                 loading: false,
             };
         case PrjActionKing.SELECT_EDGE:
@@ -100,8 +99,9 @@ export default function ProjectPanel({
         if (graphRef.current == null) return;
 
         graphRef.current.exportImage().then((data) => {
+            if (data == null) return;
             window.api.recordTopologyImg(data).then((res) => {
-                if (res.error) setError(res.error);
+                if (!res.status) setError(res.error);
             });
         });
     }, [graphRef]);
@@ -169,6 +169,10 @@ export default function ProjectPanel({
                 <div className="alert alert-error flex gap-2">
                     <span>{state.error}</span>
                 </div>
+            </div>
+        ) : state.status == null ? (
+            <div className="flex-1 h-full bg-base-100 flex align-middle justify-center">
+                <span className="loading loading-bars loading-lg"></span>
             </div>
         ) : (
             <div className="flex-1 grid grid-cols-[auto_min-content] bg-base-100 min-h-0">

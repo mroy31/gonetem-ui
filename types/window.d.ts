@@ -12,58 +12,73 @@ import {
 export {}; // needed to make TypeScript happy
 
 declare global {
-  export interface ApiResponse {
-    status: boolean,
-    error?: string,
+  export type ApiResponseErr = {
+    status: false,
+    error: string,
   }
 
-  export interface IsConnectedApiResponse extends ApiResponse {
-      result?: {
-        connected: boolean;
-        version?: string;
-        currentPrj?: string;
-      }
-  }
+  export type ApiResponse = {
+    status: true,
+  } | ApiResponseErr
 
-  export interface StringApiResponse extends ApiResponse {
-      result?: string;
-  }
+  export type IsConnectedApiResponse = {
+    status: true,
+    result: {
+      connected: false;
+    } | {
+      connected: true;
+      version: string;
+      currentPrj: string;
+    }
+  } | ApiResponseErr
 
-  export interface StringListApiResponse extends ApiResponse {
-      result?: string[];
-  }
+  export type StringApiResponse = {
+    status: true,
+    result: string;
+  } | ApiResponseErr
 
-  export interface OptionsApiResponse extends ApiResponse {
-      result?: IOptions;
-  }
+  export type StringListApiResponse = {
+    status: true,
+    result: string[];
+  } | ApiResponseErr
 
-  export interface PrjListApiResponse extends ApiResponse {
-      result?: IProject[];
-  }
+  export type OptionsApiResponse = {
+    status: true,
+    result: IOptions;
+  } | ApiResponseErr
 
-  export interface PrjStateApiResponse extends ApiResponse {
-      result?: IProjectState;
-  }
+  export type PrjListApiResponse = {
+    status: true,
+    result: IProject[];
+  } | ApiResponseErr
 
-  export interface FileApiResponse extends ApiResponse {
-      result?: string;
-  }
+  export type PrjStateApiResponse = {
+    status: true,
+    result: IProjectState;
+  } | ApiResponseErr
 
-  export interface ConfigFilesApiResponse extends ApiResponse {
-      result?: {
-        running: boolean;
-        files: {
-          name: string;
-          data: string;
-        }[];
-      }
-  }
+  export type FileApiResponse = {
+    status: true,
+    result: string;
+  } | ApiResponseErr
 
-  export interface I18nApiResponse extends ApiResponse {
-    result?: {
+  export type ConfigFilesApiResponse = {
+    status: true,
+    result: {
+      running: boolean;
+      files: {
+        name: string;
+        data: string;
+      }[];
+    }
+  } | ApiResponseErr
+
+  export type I18nApiResponse = {
+    status: true,
+    result: {
       [key: string]: string;
     }
-  }
+  } | ApiResponseErr
 
   export type ContextBridgeApi = {
     isConnected: () => Promise<IsConnectedApiResponse>,
