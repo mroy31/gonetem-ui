@@ -20,7 +20,7 @@ const NodeContextMenu = ({
   contextMenu: NodeContextMenuT;
   state: INodeState | null;
   onHide: (state: boolean) => void;
-}): JSX.Element | null => {
+}): React.JSX.Element | null => {
   const {t} = useTranslation();
   const { setError } = useAppContext();
   const [loading, setLoading] = useState("");

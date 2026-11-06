@@ -15,7 +15,7 @@ export default function ProjectContextPanel({
   prjStatus: IProjectState;
   topology: string;
   dispatch: React.Dispatch<IPrjAction>;
-}): JSX.Element {
+}): React.JSX.Element {
   const {t} = useTranslation();
   const [width, setWidth] = useState(450);
   const [selectedTab, setSelectedTab] = useState<"topo" | "config" | "console">("config");

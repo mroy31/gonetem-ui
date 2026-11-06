@@ -21,7 +21,7 @@ import ProgressProjectSave from "./components/ProgressProjectSave";
 import NodeMessagesToast, { INodeMessages } from "./components/NodeMessagesToast";
 import ProgressServerPull from "./components/ProgressServerPull";
 
-function App(): JSX.Element {
+function App(): React.JSX.Element {
   const { t } = useTranslation();
   const [version, setVersion] = useState("");
   const [optionsModalOpen, setOptionsModalOpen] = useState(false);

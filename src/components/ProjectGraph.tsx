@@ -214,7 +214,7 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
   topology,
   updateState,
   onSelectEdge,
-}: PropsT, ref): JSX.Element {
+}: PropsT, ref): React.JSX.Element {
   const {t} = useTranslation();
   const [error, setError] = useState("");
   const [network, setNetwork] = useState<Network | null>(null);

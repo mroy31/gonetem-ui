@@ -30,7 +30,7 @@ function reducer(state: IProjectSaveState, msg: ProjectSaveMsg.AsObject): IProje
     }
 }
 
-export default function ProgressProjectSave(): JSX.Element {
+export default function ProgressProjectSave(): React.JSX.Element {
     const {t} = useTranslation();
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
 

@@ -13,7 +13,7 @@ export default function ProjectGraphToolbar({
   dwImgHandle: () => void;
   fitHandle: () => void;
   saveTopologyHandle: () => void;
-}): JSX.Element {
+}): React.JSX.Element {
   const {t} = useTranslation();
 
   return (

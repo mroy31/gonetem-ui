@@ -42,7 +42,7 @@ function reducer(state: IProjectCloseState, msg: ProjectCloseMsg.AsObject): IPro
     }
 }
 
-export default function ProgressProjectClose(): JSX.Element {
+export default function ProgressProjectClose(): React.JSX.Element {
     const {t} = useTranslation();
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
 

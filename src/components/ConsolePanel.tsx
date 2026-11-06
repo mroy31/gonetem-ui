@@ -9,7 +9,7 @@ import "@xterm/xterm/css/xterm.css";
 import { useTranslation } from "react-i18next";
 
 function usePrevious<T>(value: T): T {
-  const ref = useRef<T>();
+  const ref = useRef<T>(null);
 
   useEffect(() => {
     ref.current = JSON.parse(JSON.stringify(value));
@@ -24,7 +24,7 @@ const TermPanel = ({
 }: {
   nodeName: string;
   onClose: () => void;
-}): JSX.Element => {
+}): React.JSX.Element => {
   const {t} = useTranslation();
   const previousNodeName = usePrevious(nodeName);
   const [isTermInit, setTermInit] = useState<boolean>(false);
@@ -133,7 +133,7 @@ export default function ConsolePanel({
   prjStatus,
 }: {
   prjStatus: IProjectState;
-}): JSX.Element {
+}): React.JSX.Element {
   const {t} = useTranslation();
   const [nodes, setNodes] = useState<INodeState[]>([]);
   const [selectedConsole, setSelectedConsole] = useState<string | null>(null);

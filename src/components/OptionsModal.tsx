@@ -11,7 +11,7 @@ export default function OptionsModal({
   options: IOptions;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-}): JSX.Element {
+}): React.JSX.Element {
   const {t} = useTranslation();
   const [server, setServer] = useState(options?.server || "localhost:10110");
   const [autoconnect, setAutoconnect] = useState<boolean>(options?.autoconnect);

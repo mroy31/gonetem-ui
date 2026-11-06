@@ -15,7 +15,7 @@ function reducer(state: ServerPullStateT, msg:PullSrvMsg.AsObject): ServerPullSt
     }
 }
 
-export default function ProgressServerPull(): JSX.Element {
+export default function ProgressServerPull(): React.JSX.Element {
     const {t} = useTranslation();
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
 

@@ -75,7 +75,7 @@ export default function ProjectPanel({
 }: {
     prjId: string;
     onClose: () => void;
-}): JSX.Element {
+}): React.JSX.Element {
     const {t} = useTranslation();
     const { setError, setInfoMsg } = useAppContext();
     const graphRef = useRef<ProjectGrahHandle>(null);

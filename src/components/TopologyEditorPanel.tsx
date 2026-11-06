@@ -18,7 +18,7 @@ export default function TopologyEditorPanel({
   prjId: string,
   topology: string;
   dispatch: React.Dispatch<IPrjAction>;
-}): JSX.Element {
+}): React.JSX.Element {
   const {t} = useTranslation();
   const { setError } = useAppContext();
   const [content, setContent] = useState(topology);

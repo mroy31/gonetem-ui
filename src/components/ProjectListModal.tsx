@@ -9,7 +9,7 @@ const PrjListTable = ({
 }: {
   prjList: IProject[];
   onSelect: (prjId: string) => void;
-}): JSX.Element => {
+}): React.JSX.Element => {
   const {t} = useTranslation();
 
   if (prjList.length > 0)
@@ -51,7 +51,7 @@ export default function ProjectListModal({
 }: {
   isOpen: boolean;
   onClose: (selectedPrj: string) => void;
-}): JSX.Element {
+}): React.JSX.Element {
   const {t} = useTranslation();
   const [prjList, setPrjList] = useState<IProject[]>([]);
   const [error, setError] = useState("");

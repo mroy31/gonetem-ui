@@ -10,7 +10,7 @@ export default function MsgToast({
     type: string,
     msg: string,
     clearMsg: () => void
-}): JSX.Element {
+}): React.JSX.Element {
     React.useEffect(() => {
         if (type != "error") {
             setTimeout(clearMsg, 5000);

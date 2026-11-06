@@ -14,7 +14,7 @@ export default function ProjectToolbar({
   prjStatus: IProjectState;
   onClose: () => void;
   dispatch: React.Dispatch<IPrjAction>;
-}): JSX.Element {
+}): React.JSX.Element {
   const {t} = useTranslation();
   const {setError, currentPrgOperation, setCurrentPrgOperation} = useAppContext();
 

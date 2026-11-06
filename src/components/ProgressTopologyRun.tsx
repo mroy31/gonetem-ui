@@ -92,7 +92,7 @@ export default function ProgressTopologyRun({
     setNodeMessages,
 }: {
     setNodeMessages: (nodeMessages: INodeMessages[]) => void;
-}): JSX.Element {
+}): React.JSX.Element {
     const {t} = useTranslation();
     const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
     const {currentPrgOperation} = useAppContext();
