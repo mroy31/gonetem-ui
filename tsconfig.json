@@ -9,8 +9,8 @@
     "strictNullChecks": true,
     "noImplicitAny": true,
     "sourceMap": true,
-    "baseUrl": ".",
     "outDir": "dist",
+    "rootDir": "./src",
     "target": "ES2021",
     "moduleResolution": "bundler",
     "resolveJsonModule": true
