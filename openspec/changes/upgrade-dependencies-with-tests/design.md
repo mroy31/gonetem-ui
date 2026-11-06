@@ -66,6 +66,13 @@ Attempt the v12 ESM migration (webpack main bundle + `environment: { esVersion: 
 - No main-process code changes needed for Electron 31→43 (app already had `contextIsolation: true`, `nodeIntegration: false`, stable API surface; preload/`window.api` verified intact via dev boot with renderer console logging).
 - `electron-is-dev` and `electron-squirrel-startup` still fine on Electron 43 (open question resolved).
 
+## Wave 4 Execution Notes (electron-store v12 — gate PASSED)
+
+- electron-store 12.0.0 (ESM-only, `conf` 16) bundles into the webpack CJS main bundle with zero warnings; `src/api/options.ts` API surface (get/set/schema/defaults) is unchanged from v8 — zero code edits needed.
+- Prerequisite: tsconfig `module` es2022->esnext, `moduleResolution` node->bundler (node10 cannot resolve `exports`-only packages). The legacy `paths` wildcard `"*": ["node_modules/*"]` was removed: under bundler resolution it shadowed `@types/*` (react types "not found"); it was redundant with classic resolution anyway (`types/` is ambient, pulled in via `include`).
+- Store file location is identical to v8 (`~/Library/Application Support/gonetem-ui/config.json`); existing user options are read and rewritten by v12 with values preserved (verified via packaged app boot + close-write mtime).
+- vitest is unaffected: tests mock `./options` at the module boundary (the wave-0 DI seam paid off).
+
 ## Open Questions
 
 - Resolved at wave 3: latest 43.x was 43.8.7.

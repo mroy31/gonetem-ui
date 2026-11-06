@@ -29,14 +29,14 @@
 
 - [x] 4.1 Upgrade `electron` to latest stable 43.x at execution time (43.8.7) and all `@electron-forge/*` to 8.x (8.0.1); adapt to Forge 8 (`package.json` main -> `.webpack/main/index.cjs`); verify `yarn start` boots with preload/contextBridge intact
 - [x] 4.2 Main-process review: no code changes required (contextIsolation already explicit, stable API surface); `window.api` verified intact via dev boot with renderer console logging — no uncaught renderer errors
-- [ ] 4.3 Manual smoke against the real gonetem server: connect, project open/close/save with progress UIs, topology edit + run, node console, packet capture, image pull progress; verify no regressions vs. pre-upgrade behavior
+- [x] 4.3 Manual smoke against the real gonetem server: connect, project open/close/save with progress UIs, topology edit + run, node console, packet capture, image pull progress; verify no regressions vs. pre-upgrade behavior — confirmed by developer on Electron 43.8.7 + Forge 8.0.1
 - [x] 4.4 `yarn make` produces `out/make/zip/darwin/arm64/gonetem-ui-darwin-arm64-0.6.0.zip`; packaged app boots; checkpoint commit
 
 ## 5. Wave 4 - electron-store gate
 
-- [ ] 5.1 Attempt electron-store v12 ESM migration in `src/api/options.ts` under the webpack main build; verify app boots, options persist across restarts, and settings from v8 store file migrate or are re-initializable
-- [ ] 5.2 If migration proves unworkable within reasonable effort, record the decision in this file, keep v8, and note the upgrade-blocking constraint; verify `yarn lint`/`yarn test`/`yarn start` green either way
-- [ ] 5.3 Checkpoint commit
+- [x] 5.1 electron-store v12 ESM migration: webpack bundles it into the CJS main bundle warning-free (needed tsconfig `moduleResolution: "bundler"`; the legacy `"*": ["node_modules/*"]` paths wildcard also removed — it shadowed `@types/*` under bundler resolution); options.ts API unchanged (get/set/schema still identical). Packaged app boots reading the existing config; v12 rewrite-on-close verified via mtime with all values preserved; 54 tests green. `src/api/options.ts` itself needed zero code edits
+- [x] 5.2 Gate decision: **v12 adopted** (migration workable, no constraint). v8 store file at `~/Library/Application Support/gonetem-ui/config.json` is read/written unchanged by v12 (same userData default); no migration shimming required
+- [x] 5.3 Checkpoint commit
 
 ## 6. Integration checks
 

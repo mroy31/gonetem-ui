@@ -2,7 +2,7 @@
   "compilerOptions": {
     "jsx": "react",
     "allowJs": true,
-    "module": "es2022",
+    "module": "esnext",
     "lib": ["DOM", "es2021"],
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -12,11 +12,8 @@
     "baseUrl": ".",
     "outDir": "dist",
     "target": "ES2021",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "paths": {
-      "*": ["node_modules/*", "types/*"]
-    }
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true
   },
   "include": [
     "types/*",
