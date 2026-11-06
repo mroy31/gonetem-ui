@@ -200,6 +200,7 @@ export default function ProjectPanel({
                         saveTopologyHandle={saveTopologyHandle}
                         dwImgHandle={dwImgHandle}
                         fitHandle={() => graphRef.current?.fit()}
+                        layoutHandle={(kind) => graphRef.current?.applyLayout(kind)}
                         selectedEdge={state.selectedEdge}
                     />                    
                 </div>

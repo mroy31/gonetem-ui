@@ -2,6 +2,8 @@ import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } f
 import { useTranslation } from "react-i18next";
 import YAML from "yaml";
 import cytoscape from "cytoscape";
+import cytoscapeFcose from "cytoscape-fcose";
+import { GraphLayoutKind, hasSavedPositions } from "./topologyLayout";
 import { Buffer } from 'buffer';
 import { INodeState, IProjectState, IfState } from "../api/interface";
 import NodeContextMenu, { NodeContextMenuT } from "./NodeContextMenu";
@@ -11,6 +13,8 @@ import host from "../../img/host.svg";
 import hostRunning from "../../img/host-running.svg";
 import sw from "../../img/switch.svg";
 import swRunning from "../../img/switch-running.svg";
+
+cytoscape.use(cytoscapeFcose);
 
 interface ITopologyNode {
   type: string;
@@ -32,6 +36,13 @@ interface ITopology {
 
 const NODE_SIZE = 50;
 const ALL_CLASSES = "icon-router icon-host icon-switch up down inactive";
+
+const LAYOUT_OPTIONS: { [kind in GraphLayoutKind]: cytoscape.LayoutOptions } = {
+  force: { name: "fcose" },
+  grid: { name: "grid" },
+  concentric: { name: "concentric" },
+  hierarchical: { name: "breadthfirst" },
+};
 
 const cyStyle: cytoscape.StylesheetJson = [
   {
@@ -63,8 +74,8 @@ const cyStyle: cytoscape.StylesheetJson = [
       "curve-style": "straight",
       "source-label": "data(fromLabel)",
       "target-label": "data(toLabel)",
-      "source-text-offset": 25,
-      "target-text-offset": 25,
+      "source-text-offset": 20,
+      "target-text-offset": 20,
       "font-size": 12,
       color: "#00F",
     },
@@ -121,6 +132,7 @@ const getNodeIcon = (
     case "docker.vyos":
       return "router";
     case "docker.host":
+    case "docker.server":
       return "host";
     case "ovs":
       return "switch";
@@ -248,6 +260,7 @@ type PropsT = {
 export type ProjectGrahHandle = {
   exportImage: () => Promise<Buffer | null>;
   fit: () => void;
+  applyLayout: (kind: GraphLayoutKind) => void;
   saveNodePositions: () => Promise<ApiResponse>;
 }
 
@@ -291,6 +304,14 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
         if (cy != null && !cy.destroyed()) {
           cy.fit();
         }
+      },
+      applyLayout: (kind: GraphLayoutKind) => {
+        const cy = cyRef.current;
+        if (cy == null || cy.destroyed()) return;
+
+        const layout = cy.elements().layout(LAYOUT_OPTIONS[kind]);
+        layout.one("stop", () => cy.fit());
+        layout.run();
       },
       saveNodePositions: (): Promise<ApiResponse> => {
         const cy = cyRef.current;
@@ -339,7 +360,9 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
           container: containerRef.current,
           style: cyStyle,
           elements: getElements(topo, prjStatus),
-          layout: { name: "preset" },
+          layout: hasSavedPositions(topo.nodes)
+            ? { name: "preset" }
+            : { name: "fcose" },
           wheelSensitivity: 0.2,
         });
 
