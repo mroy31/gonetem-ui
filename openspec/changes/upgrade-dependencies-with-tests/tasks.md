@@ -22,8 +22,8 @@
 
 - [x] 3.1 Upgrade `react`, `react-dom`, `@types/react*` to 19; fix type errors (ref-as-prop changes) in `src/components/` and `src/app.tsx`; verify `yarn lint` + `yarn test` green
 - [x] 3.2 Upgrade `i18next`, `react-i18next`, `i18next-browser-languagedetector`, `i18next-fs-backend`; adapt `src/i18n/main.ts` and `src/i18n/renderer.ts` to v24-v26 API changes; verify i18n tests from 1.4 still pass (adjusting only intentional API renames) — no adaptation needed, all i18n tests passed unmodified
-- [ ] 3.3 Manual smoke: language switch in options, all visible strings render in at least two locales, consoles and config editor unaffected; verify via `yarn start`
-- [ ] 3.4 Checkpoint commit
+- [x] 3.3 Manual smoke: language switch in options, all visible strings render in at least two locales, consoles and config editor unaffected; verify via `yarn start` — confirmed by developer
+- [x] 3.4 Checkpoint commit (`fc79816`)
 
 ## 4. Wave 3 - runtime majors (Electron + Forge)
 
