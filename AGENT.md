@@ -7,7 +7,7 @@ Guidance for AI agents working in this repository.
 gonetem-ui is a cross-platform Electron + React + TypeScript GUI for the
 [gonetem](https://github.com/mroy31/gonetem) network emulator. It talks to the
 gonetem server over gRPC (protobuf). UI is built with React 19, Tailwind CSS +
-DaisyUI, vis-network (topology graph), xterm (consoles), and CodeMirror
+DaisyUI, Cytoscape.js (topology graph), xterm (consoles), and CodeMirror
 (config editor).
 
 ## Commands
@@ -43,11 +43,8 @@ Verify changes with `yarn lint` + `yarn test` (+ `yarn start` for UI behavior).
 
 ## Gotchas
 
-- `vis-network` is a local link dependency (`link:./../vis-network-9.1.9`, a
-  patched fork outside the repo). It cannot be reinstalled from npm here.
 - Frozen dependency set (do not upgrade, see
-  `openspec/changes/upgrade-dependencies-with-tests/design.md`): `vis-network`
-  (link), `vis-data` ~7.1.x, `vis-util` ~5.0.x, `google-protobuf` 3.21.x,
+  `openspec/changes/upgrade-dependencies-with-tests/design.md`): `google-protobuf` 3.21.x,
   TypeScript 5.x, Tailwind 3.4.x, daisyUI 4.x,
   `@vercel/webpack-asset-relocator-loader` 1.7.3 (1.8+ injects `__dirname`
   into the sandboxed preload and throws). `package.json` `resolutions` keep a

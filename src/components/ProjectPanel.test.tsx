@@ -3,10 +3,10 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import ProjectPanel from "./ProjectPanel";
 
-vi.mock("vis-network", () => ({
-  Network: class {
-    on() {}
-  },
+vi.mock("cytoscape", () => ({
+  default: () => ({
+    on: () => {},
+  }),
 }));
 
 vi.mock("./ProjectGraph", async () => {

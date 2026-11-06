@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeAll } from "vitest";
 import { screen } from "@testing-library/react";
 
-vi.mock("vis-network", () => ({
-  Network: class {
-    on() {}
-  },
+vi.mock("cytoscape", () => ({
+  default: () => ({
+    on: () => {},
+  }),
 }));
 
 const EN_FIXTURE: Record<string, string> = {

@@ -1345,6 +1345,13 @@
   dependencies:
     "@types/node" "*"
 
+"@types/cytoscape@^3.31.0":
+  version "3.31.0"
+  resolved "https://registry.yarnpkg.com/@types/cytoscape/-/cytoscape-3.31.0.tgz#4cb3ec07c2f331c1ab8aff92a2e52716433dce4e"
+  integrity sha512-EXHOHxqQjGxLDEh5cP4te6J0bi7LbCzmZkzsR6f703igUac8UGMdEohMyU3GHAayCTZrLQOMnaE/lqB2Ekh8Ww==
+  dependencies:
+    cytoscape "*"
+
 "@types/deep-eql@*":
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/@types/deep-eql/-/deep-eql-4.0.2.tgz#334311971d3a07121e7eb91b684a605e7eea9cbd"
@@ -3089,6 +3096,11 @@ csstype@^3.2.2:
   version "3.2.3"
   resolved "https://registry.yarnpkg.com/csstype/-/csstype-3.2.3.tgz#ec48c0f3e993e50648c86da559e2610995cf989a"
   integrity sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==
+
+cytoscape@*, cytoscape@^3.34.4:
+  version "3.34.4"
+  resolved "https://registry.yarnpkg.com/cytoscape/-/cytoscape-3.34.4.tgz#20cbd1b1f8cb2e25699bdf68887564fc3c74b375"
+  integrity sha512-msY99tMY8iWTg+sIPGfSqDcPNOt4xcj+v/K/7qUFaCUxxlqnMkUYLBjRUzn9W5CU/R2hrmtJa5+UtovrEM2ctg==
 
 daisyui@^5.7.50:
   version "5.7.50"
@@ -7841,20 +7853,6 @@ vary@~1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/vary/-/vary-1.1.2.tgz#2299f02c6ded30d4a5961b0b9f74524a18f634fc"
   integrity sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==
-
-vis-data@~7.1.9:
-  version "7.1.9"
-  resolved "https://registry.yarnpkg.com/vis-data/-/vis-data-7.1.9.tgz#ea0504df6fcbaae175173f4bbb05a960ce6c8891"
-  integrity sha512-COQsxlVrmcRIbZMMTYwD+C2bxYCFDNQ2EHESklPiInbD/Pk3JZ6qNL84Bp9wWjYjAzXfSlsNaFtRk+hO9yBPWA==
-
-"vis-network@link:../vis-network-9.1.9":
-  version "0.0.0"
-  uid ""
-
-vis-util@~5.0.7:
-  version "5.0.7"
-  resolved "https://registry.yarnpkg.com/vis-util/-/vis-util-5.0.7.tgz#05fdc1b2ce8f58bfd5635de5de3f152b4b7b0c63"
-  integrity sha512-E3L03G3+trvc/X4LXvBfih3YIHcKS2WrP0XTdZefr6W6Qi/2nNCqZfe4JFfJU6DcQLm6Gxqj2Pfl+02859oL5A==
 
 vite@^8.3.6:
   version "8.3.6"

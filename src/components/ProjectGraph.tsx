@@ -1,7 +1,7 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import YAML from "yaml";
-import { Network, type Node, type Edge, Position } from "vis-network";
+import cytoscape from "cytoscape";
 import { Buffer } from 'buffer';
 import { INodeState, IProjectState, IfState } from "../api/interface";
 import NodeContextMenu, { NodeContextMenuT } from "./NodeContextMenu";
@@ -16,7 +16,7 @@ interface ITopologyNode {
   type: string;
   ui?: {
     icon?: "host" | "router" | "switch";
-    position: Position;
+    position: cytoscape.Position;
   }
 }
 
@@ -29,6 +29,59 @@ interface ITopology {
     peer2: string;
   }[] | null;
 }
+
+const NODE_SIZE = 50;
+const ALL_CLASSES = "icon-router icon-host icon-switch up down inactive";
+
+const cyStyle: cytoscape.StylesheetJson = [
+  {
+    selector: "node",
+    style: {
+      shape: "rectangle",
+      width: NODE_SIZE,
+      height: NODE_SIZE,
+      "background-image": "data(image)",
+      "background-fit": "contain",
+      label: "data(name)",
+      "text-halign": "center",
+      "text-valign": "bottom",
+      "text-margin-y": 4,
+      "font-size": 14,
+    },
+  },
+  {
+    selector: "node.icon-router",
+    style: {
+      "background-shape": "circle",
+      "background-fit": "cover",
+    } as cytoscape.Css.Node,
+  },
+  {
+    selector: "edge",
+    style: {
+      width: 1,
+      "curve-style": "straight",
+      "source-label": "data(fromLabel)",
+      "target-label": "data(toLabel)",
+      "source-text-offset": 25,
+      "target-text-offset": 25,
+      "font-size": 12,
+      color: "#00F",
+    },
+  },
+  {
+    selector: "edge:selected",
+    style: {
+      width: 3,
+      "overlay-color": "#0000FF",
+      "overlay-opacity": 0.25,
+      "overlay-padding": 5,
+    },
+  },
+  { selector: "edge.up", style: { "line-color": "#91bf8f" } },
+  { selector: "edge.down", style: { "line-color": "#FF0000" } },
+  { selector: "edge.inactive", style: { "line-color": "#696969" } },
+];
 
 const getNodeIdFromPeer = (peer: string) => {
   return peer.split(".")[0];
@@ -49,72 +102,51 @@ const getNodeState = (
   return null;
 };
 
-const getNodeShape = (
-  node: ITopologyNode | null,
-  nodeState: INodeState | null
-) => {
-  const shapes = {
-    router: {
-      shape: "circularImage",
-      image: nodeState?.running ? routerRunning : router,
-    },
-    host: {
-      shape: "image",
-      image: nodeState?.running ? hostRunning : host,
-    },
-    switch: {
-      shape: "image",
-      image: nodeState?.running ? swRunning : sw,
-
-    },
-    default: {
-      shape: "square",
-    }
-  };
-
+const getNodeIcon = (
+  node: ITopologyNode | null
+): "router" | "host" | "switch" | null => {
   if (node?.ui?.icon) {
-    switch (node.ui?.icon) {
+    switch (node.ui.icon) {
       case "router":
-        return shapes.router;
       case "host":
-        return shapes.host;
       case "switch":
-        return shapes.switch;
+        return node.ui.icon;
       default:
-        return shapes.default;
+        return null;
     }
   }
 
   switch (node?.type) {
     case "docker.router":
     case "docker.vyos":
-      return shapes.router;
+      return "router";
     case "docker.host":
-      return shapes.host;
+      return "host";
     case "ovs":
-      return shapes.switch;
+      return "switch";
     default:
-      return shapes.default;
+      return null;
   }
 };
 
-const getNodePosition = (
-  topology: ITopology,
-  nodeName: string,
-  network: Network | null,
-) => {
-  if (network == null)
-    return topology.nodes[nodeName]?.ui?.position || {};
-
-  try {
-    return network.getPosition(nodeName);
-  } catch {
-    // node is just created and has no defined position
-    return topology.nodes[nodeName]?.ui?.position || {};
+const getNodeImage = (
+  node: ITopologyNode | null,
+  nodeState: INodeState | null
+): string | undefined => {
+  const running = nodeState?.running;
+  switch (getNodeIcon(node)) {
+    case "router":
+      return (running ? routerRunning : router) as string;
+    case "host":
+      return (running ? hostRunning : host) as string;
+    case "switch":
+      return (running ? swRunning : sw) as string;
+    default:
+      return undefined;
   }
-}
+};
 
-const getEdgeColor = (
+const getEdgeClass = (
   peer1: string,
   peer2: string,
   prjState: IProjectState,
@@ -134,65 +166,75 @@ const getEdgeColor = (
 
   if (prjState.running) {
     if (isPeerIfUp(peer1) && isPeerIfUp(peer2))
-      return {
-        color: {
-          color: "#91bf8f",
-          highlight: "#91bf8f",
-          hover: "#91bf8f",
-        }
-      }
-    
-    return {
-      color: {
-        color: "#FF0000",
-        highlight: "#FF0000",
-        hover: "##FF0000",
-      }
-    }
+      return "up";
+
+    return "down";
   }
 
-  return {
-    color: {
-      color: "#696969",
-      highlight: "#696969",
-      hover: "#696969",
-    }
-  }
+  return "inactive";
 }
 
-const getNodesAndEdges = (
+const getElements = (
   topology: ITopology,
   prjState: IProjectState,
-  network: Network | null,
-): [Node[], Edge[]] => {
-  const nodes: Node[] = topology.nodes ? Object.keys(topology.nodes).map((name) => {
-    const nodeAttr = topology.nodes[name];
-    return {
-      id: name,
-      label: name,
-      fixed: false,
-      ...getNodeShape(nodeAttr, getNodeState(name, prjState)),
-      ...getNodePosition(topology, name, network),
-    };
-  }) : [];
+): cytoscape.ElementDefinition[] => {
+  const elements: cytoscape.ElementDefinition[] = [];
 
-  const edges: Edge[] = topology.links ? topology.links.map((link) => {
-    return {
-      id: `${link.peer1} -- ${link.peer2}`,
-      from: getNodeIdFromPeer(link.peer1),
-      to: getNodeIdFromPeer(link.peer2),
-      labelFrom: getNodeIdxFromPeer(link.peer1),
-      labelTo: getNodeIdxFromPeer(link.peer2),
-      smooth: false,
-      ...getEdgeColor(link.peer1, link.peer2, prjState),
-      font: {
-        size: 12,
-        color: "#00F",
-        align: "top",
+  if (topology.nodes) {
+    Object.keys(topology.nodes).forEach((name) => {
+      const nodeAttr = topology.nodes[name];
+      const icon = getNodeIcon(nodeAttr);
+      elements.push({
+        group: "nodes",
+        data: {
+          id: name,
+          name,
+          image: getNodeImage(nodeAttr, getNodeState(name, prjState)),
+        },
+        position: nodeAttr?.ui?.position,
+        classes: icon ? `icon-${icon}` : "",
+      });
+    });
+  }
+
+  if (topology.links) {
+    topology.links.forEach((link) => {
+      elements.push({
+        group: "edges",
+        data: {
+          id: `${link.peer1} -- ${link.peer2}`,
+          source: getNodeIdFromPeer(link.peer1),
+          target: getNodeIdFromPeer(link.peer2),
+          fromLabel: getNodeIdxFromPeer(link.peer1),
+          toLabel: getNodeIdxFromPeer(link.peer2),
+        },
+        classes: getEdgeClass(link.peer1, link.peer2, prjState),
+      });
+    });
+  }
+
+  return elements;
+};
+
+const updateElements = (cy: cytoscape.Core, elements: cytoscape.ElementDefinition[]) => {
+  const ids = new Set(elements.map((el) => el.data?.id as string));
+
+  cy.batch(() => {
+    elements.forEach((def) => {
+      const existing = cy.getElementById(def.data?.id as string);
+      if (existing.nonempty()) {
+        existing.data(def.data);
+        existing.removeClass(ALL_CLASSES);
+        if (def.classes) existing.addClass(def.classes);
+      } else {
+        cy.add(def);
       }
-    };
-  }) : [];
-  return [nodes, edges];
+    });
+
+    cy.elements().forEach((el) => {
+      if (!ids.has(el.id())) el.remove();
+    });
+  });
 };
 
 
@@ -217,47 +259,51 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
 }: PropsT, ref): React.JSX.Element {
   const {t} = useTranslation();
   const [error, setError] = useState("");
-  const [network, setNetwork] = useState<Network | null>(null);
   const [contextMenu, setContextMenu] = useState<NodeContextMenuT>({
     prjId: prjStatus.id,
     nodeId: "",
     x: 0,
     y: 0,
   });
-  const visJsRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const cyRef = useRef<cytoscape.Core | null>(null);
 
   useImperativeHandle(ref, () => {
     return {
       exportImage: (): Promise<Buffer | null> => {
         return new Promise<Buffer | null>((resolve) => {
-          if (visJsRef.current == null || network == null) {
+          const cy = cyRef.current;
+          if (cy == null || cy.destroyed()) {
             resolve(null);
             return;
           }
 
-          const canvas = visJsRef.current.getElementsByTagName("canvas").item(0) as HTMLCanvasElement;
-          canvas.toBlob((blob) => {
-            if (blob == null) {
-              resolve(null);
-              return;
-            }
+          const blob = cy.png({ output: "blob" });
+          if (blob instanceof Blob) {
             blob.arrayBuffer().then((aBuf) => resolve(Buffer.from(aBuf)));
-          });
+            return;
+          }
+          resolve(null);
         });
       },
       fit: () => {
-        if (network != null) {
-          network.fit();
+        const cy = cyRef.current;
+        if (cy != null && !cy.destroyed()) {
+          cy.fit();
         }
       },
       saveNodePositions: (): Promise<ApiResponse> => {
-        if (network == null)
+        const cy = cyRef.current;
+        if (cy == null || cy.destroyed())
           return Promise.resolve({
             status: false,
             error: "Topology graph is not ready",
           });
 
-        const positions = network.getPositions();
+        const positions: { [id: string]: cytoscape.Position } = {};
+        cy.nodes().forEach((n) => {
+          positions[n.id()] = n.position();
+        });
         const topo = YAML.parse(topology) as ITopology;
 
         const nodes: {[key: string]: ITopologyNode | null;}  = {}
@@ -281,67 +327,63 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
   });
 
   useEffect(() => {
-    if (!visJsRef.current) return;
+    if (!containerRef.current) return;
     if (!prjStatus.id) return;
 
     try {
       const topo = YAML.parse(topology) as ITopology;
-      const [nodes, edges] = getNodesAndEdges(topo, prjStatus, network);
+      const cy = cyRef.current;
 
-      if (network == null) {
-        const net = new Network(
-          visJsRef.current,
-          { nodes, edges },
-          {
-            physics: false,
-            interaction: {
-              dragView: true,
-              zoomView: true,
-            },
-          }
-        );
+      if (cy == null || cy.destroyed()) {
+        const net = cytoscape({
+          container: containerRef.current,
+          style: cyStyle,
+          elements: getElements(topo, prjStatus),
+          layout: { name: "preset" },
+          wheelSensitivity: 0.2,
+        });
+
         net.on(
-          "oncontext",
-          (evt: {
-            pointer: {
-              canvas: { x: number; y: number };
-              DOM: { x: number; y: number };
-            };
-          }) => {
-            const nodeId = net.getNodeAt({
-              x: evt.pointer.DOM.x,
-              y: evt.pointer.DOM.y,
-            });
+          "cxttap",
+          "node",
+          (evt: cytoscape.EventObject) => {
+            const nodeId = evt.target.id();
             if (nodeId) {
               setContextMenu({
-                ...contextMenu,
-                nodeId: nodeId as string,
-                x: evt.pointer.DOM.x,
-                y: evt.pointer.DOM.y,
+                prjId: prjStatus.id,
+                nodeId,
+                x: evt.renderedPosition.x,
+                y: evt.renderedPosition.y,
               });
             }
           }
         );
-        net.on("click", () => setContextMenu({ ...contextMenu, nodeId: "", x: 0, y: 0 }));
-        net.on('selectEdge', (obj) => {
-          onSelectEdge(obj.edges.join(" || "))  
+        net.on("tap", () => setContextMenu({ ...contextMenu, nodeId: "", x: 0, y: 0 }));
+        net.on("select", "edge", (evt: cytoscape.EventObject) => {
+          onSelectEdge(evt.target.id())
         });
-        net.on('deselectEdge', (obj) => {
-          onSelectEdge(obj.edges.join(" || "))  
-        });
-        net.on('controlNodeDragEnd', () => {
-          net.storePositions();
+        net.on("unselect", "edge", (evt: cytoscape.EventObject) => {
+          onSelectEdge(evt.target.id())
         });
 
-        setNetwork(net);
+        cyRef.current = net;
       } else {
-        network.setData({ nodes, edges });
+        updateElements(cy, getElements(topo, prjStatus));
       }
     } catch (err) {
       setError(t("ProjectGraphErrMsg", {error: err}));
       return;
     }
-  }, [visJsRef, prjStatus, topology]);
+  }, [prjStatus, topology]);
+
+  useEffect(() => {
+    return () => {
+      if (cyRef.current != null && !cyRef.current.destroyed()) {
+        cyRef.current.destroy();
+      }
+      cyRef.current = null;
+    };
+  }, []);
 
   const getNodeState = (nodeId: string): INodeState | null => {
     for (const nState of prjStatus.nodes) {
@@ -365,7 +407,7 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
   return (
     <>
       <div
-        ref={visJsRef}
+        ref={containerRef}
         data-theme="light"
         className="w-full h-full min-h-0"
       />
