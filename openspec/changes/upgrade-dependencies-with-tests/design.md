@@ -58,7 +58,15 @@ Attempt the v12 ESM migration (webpack main bundle + `environment: { esVersion: 
 2. Waves 1-4 each: dependency bump commit → code fixes → lint/test/manual smoke → checkpoint. Any wave that cannot be stabilized is reverted wholesale and re-planned, since waves are ordered by independence.
 3. On completion: `yarn package` + `yarn make` sanity pass on the target platforms the developer uses; record electron-store outcome.
 
+## Wave 3 Execution Notes (Electron 43.8.7 + Forge 8.0.1)
+
+- Forge 8's webpack plugin emits the main bundle as `.webpack/main/index.cjs`; `package.json` `main` updated from `.webpack/main` accordingly. Preload is `preload.cjs` (bridge unaffected).
+- Forge 8 uses `@electron/packager` 20.x, which fixes the electron-packager 18 promisify/extract-zip race that silently produced no `out/` on Node 26: **`yarn package`/`yarn make` now work on Node 26; the `node@24` PATH workaround is obsolete.**
+- Always invoke Forge through `yarn` (`yarn package`, `yarn make`), never `npx electron-forge` — Forge's system check resolves the package manager from `npm_config_user_agent` and fails the npm version check under npx.
+- No main-process code changes needed for Electron 31→43 (app already had `contextIsolation: true`, `nodeIntegration: false`, stable API surface; preload/`window.api` verified intact via dev boot with renderer console logging).
+- `electron-is-dev` and `electron-squirrel-startup` still fine on Electron 43 (open question resolved).
+
 ## Open Questions
 
-- Which exact patch of Electron 43.x is current when wave 3 executes (pick latest 43.x at that time).
-- Whether `electron-is-dev` / `electron-squirrel-startup` still add value post-upgrade (harmless either way; revisit at wave 3).
+- Resolved at wave 3: latest 43.x was 43.8.7.
+- Whether `electron-store` v12 ESM migration is workable under the webpack main build (wave 4 gate).

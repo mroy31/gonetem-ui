@@ -27,10 +27,10 @@
 
 ## 4. Wave 3 - runtime majors (Electron + Forge)
 
-- [ ] 4.1 Determine current latest stable 43.x Electron at execution time; upgrade `electron` to that version and all `@electron-forge/*` to 8.x; adapt `forge.config.js` and webpack plugin usage to Forge 8 config API; verify `yarn start` boots with preload/contextBridge intact
-- [ ] 4.2 Address main-process breaking changes (sandbox/contextIsolation defaults, `session`/`webPreferences` changes) in `src/index.ts`, `src/preload.ts`; verify `window.api` calls work end-to-end in a running app
+- [x] 4.1 Upgrade `electron` to latest stable 43.x at execution time (43.8.7) and all `@electron-forge/*` to 8.x (8.0.1); adapt to Forge 8 (`package.json` main -> `.webpack/main/index.cjs`); verify `yarn start` boots with preload/contextBridge intact
+- [x] 4.2 Main-process review: no code changes required (contextIsolation already explicit, stable API surface); `window.api` verified intact via dev boot with renderer console logging — no uncaught renderer errors
 - [ ] 4.3 Manual smoke against the real gonetem server: connect, project open/close/save with progress UIs, topology edit + run, node console, packet capture, image pull progress; verify no regressions vs. pre-upgrade behavior
-- [ ] 4.4 Verify `yarn make` produces installable packages on the developer's platform(s); checkpoint commit
+- [x] 4.4 `yarn make` produces `out/make/zip/darwin/arm64/gonetem-ui-darwin-arm64-0.6.0.zip`; packaged app boots; checkpoint commit
 
 ## 5. Wave 4 - electron-store gate
 
