@@ -41,7 +41,7 @@ Jumping to the just-released Electron 45 + Forge 8.0.1 puts us on the least-prov
 Attempt the v12 ESM migration (webpack main bundle + `environment: { esVersion: ... }` or dynamic-import usage). If the build fights back, consciously stay on v8 and record the outcome in tasks.md — v8 still works; this is the only dependency allowed to stay old via a recorded decision.
 
 **D6: Freeze list (upgrade-excluded, reasons recorded).**
-`vis-network` (link fork), `vis-data` ~7.1.x, `vis-util` ~5.0.x — pinned to what the fork needs. `google-protobuf` + `@types/google-protobuf` at 3.21.x and the proto toolchain unchanged — 4.x breaks the generated code contract. TypeScript latest 5.x only (not 6/7 — native rewrite, loaders not ready). Tailwind stays within 3.4.x, daisyUI stays 4.x — v4's CSS-first rewrite is a separate change.
+`vis-network` (link fork), `vis-data` ~7.1.x, `vis-util` ~5.0.x — pinned to what the fork needs. `google-protobuf` + `@types/google-protobuf` at 3.21.x and the proto toolchain unchanged — 4.x breaks the generated code contract. `@vercel/webpack-asset-relocator-loader` at 1.7.3 (observed in wave 1: >=1.8 emits a `webpack/runtime/asset-relocator-loader` runtime chunk referencing bare `__dirname`, which throws ReferenceError in the sandboxed preload and Chromium renderer; revisit with the Forge 8 webpack plugin in wave 3). TypeScript latest 5.x only (not 6/7 — native rewrite, loaders not ready). Tailwind stays within 3.4.x, daisyUI stays 4.x — v4's CSS-first rewrite is a separate change.
 
 ## Risks / Trade-offs
 

@@ -8,13 +8,13 @@
 - [x] 1.4 Write i18n tests for the custom backend: supported-locale load, known-key translation, missing-key fallback; verify against current (pre-upgrade) behavior and record expectations
 - [x] 1.5 Write renderer smoke tests: app shell and one core panel mount with stubbed `window.api` and mocked `vis-network`; verify they pass under the jsdom project
 - [x] 1.6 Run `yarn package` to confirm test files do not enter webpack bundles; add build-rule exclusions only if they do; verify packaged app boots
-- [ ] 1.7 Checkpoint commit
+- [x] 1.7 Checkpoint commit
 
 ## 2. Wave 1 - low-risk minor/patch bumps
 
-- [ ] 2.1 Bump runtime deps: `@codemirror/*`, `@uiw/react-codemirror`, `@heroicons/react`, `classnames`, `yaml`, `tar-stream`, `async-mutex`, `buffer`, `@grpc/grpc-js`, `@grpc/proto-loader`; verify `yarn test`, `yarn lint`, `yarn start` (config editor + project ops smoke)
-- [ ] 2.2 Bump build deps: `webpack`, loaders (`css`, `style`, `file`, `node`, `ts`), `fork-ts-checker-webpack-plugin`, `@vercel/webpack-asset-relocator-loader`, `postcss`/`autoprefixer`/`postcss-loader`, `dotenv-webpack`, `eslint-plugin-import`; TypeScript to latest 5.x (NOT 6/7); verify lint + test + `yarn start` + `yarn package`
-- [ ] 2.3 Bump `@types/*` (node to 24.x/26.x, others to latest matching runtime majors); fix surfaced type errors; verify lint + test green
+- [x] 2.1 Bump runtime deps: `@codemirror/*`, `@uiw/react-codemirror`, `@heroicons/react`, `classnames`, `yaml`, `tar-stream`, `async-mutex`, `buffer`, `@grpc/grpc-js`, `@grpc/proto-loader`; verify `yarn test`, `yarn lint`, `yarn start` (config editor + project ops smoke)
+- [x] 2.2 Bump build deps: `webpack`, loaders (`css`, `style`, `file`, `node`, `ts`), `fork-ts-checker-webpack-plugin`, `@vercel/webpack-asset-relocator-loader`, `postcss`/`autoprefixer`/`postcss-loader`, `dotenv-webpack`, `eslint-plugin-import`; TypeScript to latest 5.x (NOT 6/7); verify lint + test + `yarn start` + `yarn package`
+- [x] 2.3 Bump `@types/*` (node to 24.x/26.x, others to latest matching runtime majors); fix surfaced type errors; verify lint + test green
 - [ ] 2.4 Bump `@xterm/*` to 6.x with matching addon versions; fix any console API breakage; verify console behavior manually (`yarn start`, open node console, run commands)
 - [ ] 2.5 Checkpoint commit
 
