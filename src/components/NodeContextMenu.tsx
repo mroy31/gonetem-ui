@@ -111,7 +111,7 @@ const NodeContextMenu = ({
     [contextMenu, state?.running]
   );
 
-  const actionClasses = classNames({ disabled: loading != "" });
+  const actionClasses = classNames({ "menu-disabled": loading != "" });
   if (state == null) return null;
   return (
     <div
@@ -126,31 +126,31 @@ const NodeContextMenu = ({
           {contextMenu.nodeId} ({state.running ? t("Running") : t("NotRunning")})
         </li>
         {!state.running && (
-          <li>
-            <a className={actionClasses} onClick={handleStart}>
+          <li className={actionClasses}>
+            <a onClick={handleStart}>
               {loading == "start" ? t("StartProgressMsg") : t("Start")}
             </a>
           </li>
         )}
         {state.running && (
           <>
-            <li>
-              <a className={actionClasses} onClick={() => handleRunConsole(false)}>
+            <li className={actionClasses}>
+              <a onClick={() => handleRunConsole(false)}>
                 { t("ExternalConsole") }
               </a>
             </li>
-            <li>
-              <a className={actionClasses} onClick={() => handleRunConsole(true)}>
+            <li className={actionClasses}>
+              <a onClick={() => handleRunConsole(true)}>
                 { t("DebugShell") }
               </a>
             </li>
-            <li>
-              <a className={actionClasses} onClick={handleStop}>
+            <li className={actionClasses}>
+              <a onClick={handleStop}>
                 {loading == "stop" ? t("StopProgressMsg") : t("Stop")}
               </a>
             </li>
-            <li>
-              <a className={actionClasses} onClick={handleRestart}>
+            <li className={actionClasses}>
+              <a onClick={handleRestart}>
                 {loading == "restart" ? t("RestartProgressMsg") : t("Restart")}
               </a>
             </li>

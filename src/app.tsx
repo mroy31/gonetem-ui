@@ -113,12 +113,12 @@ function App(): React.JSX.Element {
           <span className="btn btn-ghost text-xl">GONETEM UI</span>
         </div>
 
-        <div className="flex-none">
+        <div className="flex-none flex">
           <div className="flex gap-1 align-middle">
             <div className="join px-1">
               <button
                 onClick={() => setOptionsModalOpen(true)}
-                className="btn btn-outline btn-neutral btn-sm join-item"
+                className="btn btn-outline btn-sm join-item"
               >
                 <WrenchScrewdriverIcon className="w-5" />
                 <span>{ t("Options") }</span>
@@ -168,7 +168,7 @@ function App(): React.JSX.Element {
               <button
                 disabled={!connected || currentPrj != ""}
                 onClick={() => setprjListModalOpen(true)}
-                className="btn btn-outline btn-neutral btn-sm join-item"
+                className="btn btn-outline btn-sm join-item"
               >
                 <BoltIcon className="w-5" />
                 <span>{t("ConnectToProjectLabel")}</span>
@@ -176,7 +176,7 @@ function App(): React.JSX.Element {
               <button
                 disabled={!connected || currentPrj != ""}
                 onClick={handleServerPullImages}
-                className="btn btn-outline btn-neutral btn-sm join-item"
+                className="btn btn-outline btn-sm join-item"
               >
                 <CloudArrowDownIcon className="w-5" />
                 <span>{t("PullDockerImgLabel")}</span>

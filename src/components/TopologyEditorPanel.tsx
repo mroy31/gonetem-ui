@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import CodeMirror from "@uiw/react-codemirror";
 import { type Diagnostic, linter, lintGutter } from "@codemirror/lint";
 import { StreamLanguage } from "@codemirror/language";
+import { oneDark } from "@codemirror/theme-one-dark";
 import * as yamlMode from "@codemirror/legacy-modes/mode/yaml";
 import parser from 'js-yaml';
 import { IPrjAction, PrjActionKing } from "./ProjectPanel";
@@ -108,6 +109,7 @@ export default function TopologyEditorPanel({
 
       <div className="flex-1 min-h-0" ref={containerRef}>
           <CodeMirror
+            theme={oneDark}
             height={height}
             maxHeight={height}
             value={content}

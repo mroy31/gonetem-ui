@@ -204,7 +204,7 @@ export default function ConsolePanel({
   return (
     <div className="flex flex-col w-full h-full min-h-0">
       <div className="bg-base-200 flex-none flex justify-between align-middle p-2">
-        <div className="tabs tabs-bordered">
+        <div className="tabs tabs-border">
           {runningConsoles.map((n) => (
             <a
               key={n}
@@ -230,7 +230,7 @@ export default function ConsolePanel({
             </div>
             <ul
               tabIndex={0}
-              className="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box"
+              className="p-2 shadow-sm menu dropdown-content z-[1] bg-base-100 rounded-box"
             >
               {nodes
                 .filter((n) => !runningConsoles.includes(n.name))

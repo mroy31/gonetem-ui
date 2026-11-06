@@ -1,6 +1,6 @@
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: dark --default, light;
+}
 
 iframe#webpack-dev-server-client-overlay{display:none!important}

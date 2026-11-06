@@ -1,6 +1,5 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { useTranslation } from 'react-i18next';
-import classNames from "classnames";
 import { IOptions } from "../api/options";
 
 export default function OptionsModal({
@@ -18,15 +17,6 @@ export default function OptionsModal({
   const [tls, setTls] = useState(options?.tls);
   const [consoleCmd, setConsoleCmd] = useState(options?.consoleExternalCmd);
 
-  const modalClass = useMemo(
-    () =>
-      classNames({
-        modal: true,
-        "modal-open": isOpen,
-      }),
-    [isOpen]
-  );
-
   const setOptions = () => {
     window.api
       .setOptions({
@@ -41,89 +31,90 @@ export default function OptionsModal({
   };
 
   return (
-    <dialog className={modalClass}>
+    <dialog open={isOpen} className="modal">
       <div className="modal-box">
         <h2 className="text-2xl font-bold">{t("Options")}</h2>
 
         <div className="flex flex-col gap-2 w-full">
           <div className="divider">{t("ServerConnectionHeader")}</div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">{t("ServerURILabel")}</span>
-            </div>
+          <fieldset className="fieldset">
+            <label className="fieldset-legend" htmlFor="optServer">
+              {t("ServerURILabel")}
+            </label>
             <input
+              id="optServer"
               type="text"
               value={server}
               onChange={(e) => setServer(e.target.value)}
-              className="input input-bordered w-full max-w-xs"
+              className="input"
             />
-          </label>
-          <div className="form-control">
-            <label className="label cursor-pointer">
-              <span className="label-text">{t("ConnectAtStartupLabel")}</span> 
-              <input 
-                type="checkbox"
-                checked={autoconnect}
-                onChange={(e) => setAutoconnect(e.target.checked)}
-                className="checkbox"/>
-            </label>
-          </div>
-          <div className="form-control">
-            <label className="label cursor-pointer">
-              <span className="label-text">{t("TLSEnabledLabel")}</span> 
-              <input 
-                type="checkbox"
-                checked={tls.enabled}
-                onChange={(e) => setTls({...tls, enabled: e.target.checked})}
-                className="checkbox"/>
-            </label>
-          </div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">{t("CACertificateLabel")}</span>
-            </div>
+          </fieldset>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <span>{t("ConnectAtStartupLabel")}</span>
             <input
+              type="checkbox"
+              checked={autoconnect}
+              onChange={(e) => setAutoconnect(e.target.checked)}
+              className="checkbox"/>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <span>{t("TLSEnabledLabel")}</span>
+            <input
+              type="checkbox"
+              checked={tls.enabled}
+              onChange={(e) => setTls({...tls, enabled: e.target.checked})}
+              className="checkbox"/>
+          </label>
+          <fieldset className="fieldset">
+            <label className="fieldset-legend" htmlFor="optCaCert">
+              {t("CACertificateLabel")}
+            </label>
+            <input
+              id="optCaCert"
               type="text"
               value={tls.ca ?? ""}
               onChange={(e) => setTls({...tls, ca: e.target.value})}
-              className="input input-bordered w-full max-w-xs"
+              className="input"
             />
-          </label>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">{t("ClientCertificateLabel")}</span>
-            </div>
+          </fieldset>
+          <fieldset className="fieldset">
+            <label className="fieldset-legend" htmlFor="optClientCert">
+              {t("ClientCertificateLabel")}
+            </label>
             <input
+              id="optClientCert"
               type="text"
               value={tls.cert ?? ""}
               onChange={(e) => setTls({...tls, cert: e.target.value})}
-              className="input input-bordered w-full max-w-xs"
+              className="input"
             />
-          </label>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">{t("ClientPrivateKeyLabel")}</span>
-            </div>
+          </fieldset>
+          <fieldset className="fieldset">
+            <label className="fieldset-legend" htmlFor="optClientKey">
+              {t("ClientPrivateKeyLabel")}
+            </label>
             <input
+              id="optClientKey"
               type="text"
               value={tls.key ?? ""}
               onChange={(e) => setTls({...tls, key: e.target.value})}
-              className="input input-bordered w-full max-w-xs"
+              className="input"
             />
-          </label>
+          </fieldset>
 
           <div className="divider">Console</div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">{t("ExternalConsoleCommandLabel")}</span>
-            </div>
+          <fieldset className="fieldset">
+            <label className="fieldset-legend" htmlFor="optConsoleCmd">
+              {t("ExternalConsoleCommandLabel")}
+            </label>
             <input
+              id="optConsoleCmd"
               type="text"
               value={consoleCmd ?? ""}
               onChange={(e) => setConsoleCmd(e.target.value)}
-              className="input input-bordered w-full max-w-xs"
+              className="input"
             />
-          </label>
+          </fieldset>
         </div>
 
         <div className="modal-action">

@@ -154,7 +154,7 @@ export default function ConfigurationViewerPanel({
       <div className="bg-base-200 flex-none flex justify-between align-middle p-2">
         <div>
           <select
-            className="select select-bordered select-secondary select-sm"
+            className="select select-secondary select-sm"
             value={state.node}
             onChange={(e) => handleNodeChange(e.target.value)}
           >
@@ -168,7 +168,7 @@ export default function ConfigurationViewerPanel({
 
         <div>
           <select
-            className="select select-bordered select-sm"
+            className="select select-sm"
             value={state.selected}
             onChange={(e) => handleSelectedChange(e.target.value)}
           >

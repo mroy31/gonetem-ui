@@ -1,5 +1,4 @@
-import classNames from "classnames";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { IProject } from "../api/interface";
 
@@ -55,14 +54,6 @@ export default function ProjectListModal({
   const {t} = useTranslation();
   const [prjList, setPrjList] = useState<IProject[]>([]);
   const [error, setError] = useState("");
-  const modalClass = useMemo(
-    () =>
-      classNames({
-        modal: true,
-        "modal-open": isOpen,
-      }),
-    [isOpen]
-  );
 
   useEffect(() => {
     window.api.listProjects().then((res) => {
@@ -77,7 +68,7 @@ export default function ProjectListModal({
   }, [isOpen]);
 
   return (
-    <dialog className={modalClass}>
+    <dialog open={isOpen} className="modal">
       <div className="modal-box">
         <h3>{t("SelectProjectHeader")}</h3>
 

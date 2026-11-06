@@ -53,7 +53,7 @@ export default function ProjectContextPanel({
         className="flex flex-col h-full min-h-0"
         style={{ width: `${width / 16}rem` }}
       >
-        <div role="tablist flex-none" className="tabs tabs-bordered">
+        <div role="tablist flex-none" className="tabs tabs-border">
           <a
             role="tab"
             className={tabClasses("config")}

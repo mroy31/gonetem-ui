@@ -98,7 +98,7 @@ export default function ProjectToolbar({
         <button 
           onClick={handleSave}
           disabled={currentPrgOperation != ProgressOperation.None}
-          className="btn btn-outline btn-neutral btn-sm join-item"
+          className="btn btn-outline btn-sm join-item"
         >
           <DocumentCheckIcon className="w-5" />
           <span>{t("Save")}</span>
@@ -106,7 +106,7 @@ export default function ProjectToolbar({
         <button 
           onClick={handleReload}
           disabled={currentPrgOperation != ProgressOperation.None}
-          className="btn btn-outline btn-neutral btn-sm join-item"
+          className="btn btn-outline btn-sm join-item"
         >
           <ArrowPathIcon className="w-5" />
           <span>{t("Reload")}</span>
