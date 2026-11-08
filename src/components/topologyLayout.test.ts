@@ -28,6 +28,18 @@ describe("hasSavedPositions", () => {
     ).toBe(true);
   });
 
+  it("ignores stored labels: label-only files still allow the initial layout", () => {
+    // mirrors a file parsed as { nodes: {...}, ui: { labels: {...} } } where
+    // no node stores a ui.position: labels must not count as saved positions
+    expect(
+      hasSavedPositions({
+        r1: { ui: { icon: "router" } },
+        h1: { ui: {} },
+        h2: null,
+      })
+    ).toBe(false);
+  });
+
   it("returns true when all nodes have a saved position", () => {
     expect(
       hasSavedPositions({

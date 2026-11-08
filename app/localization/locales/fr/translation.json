@@ -6,7 +6,7 @@
     "CreateProjectLabel": "Créer un nouveau projet",
     "ConnectToProjectLabel": "Se connecter à un projet en cours",
     "PullDockerImgLabel": "Télécharger les images docker",
-    "PullDockerImgProgress": "Téléchargement de l'image docker {{image}}", 
+    "PullDockerImgProgress": "Téléchargement de l'image docker {{image}}",
     "ServerConnectionHeader": "Connexion au serveur",
     "ServerURILabel": "URI",
     "ConnectAtStartupLabel": "Se connecter au lancement",
@@ -71,7 +71,12 @@
     "NotModified": "Non modifié",
     "Check": "Vérifier",
     "Write": "Enregistrer",
-    "TopologyOK": "Topologie OK",   
+    "TopologyOK": "Topologie OK",
     "File": "Fichier",
-    "Quit": "Quitter"   
+    "Quit": "Quitter",
+    "Cancel": "Annuler",
+    "AddLabelMenu": "Ajouter une étiquette",
+    "DeleteLabelMenu": "Supprimer l'étiquette",
+    "LabelTextModalHeader": "Texte de l'étiquette",
+    "LabelTextLabel": "Texte"
 }

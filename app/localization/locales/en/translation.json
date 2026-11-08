@@ -6,7 +6,7 @@
     "CreateProjectLabel": "Create an empty .gnet project",
     "ConnectToProjectLabel": "Connect to a running project",
     "PullDockerImgLabel": "Pull docker images",
-    "PullDockerImgProgress": "Pull docker image {{image}}" ,
+    "PullDockerImgProgress": "Pull docker image {{image}}",
     "ServerConnectionHeader": "Server connection",
     "ServerURILabel": "URI",
     "ConnectAtStartupLabel": "Connect at startup",
@@ -73,5 +73,10 @@
     "Write": "Write",
     "TopologyOK": "Topology OK",
     "File": "File",
-    "Quit": "Quit"   
+    "Quit": "Quit",
+    "Cancel": "Cancel",
+    "AddLabelMenu": "Add label",
+    "DeleteLabelMenu": "Delete label",
+    "LabelTextModalHeader": "Label text",
+    "LabelTextLabel": "Text"
 }

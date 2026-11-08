@@ -4,9 +4,13 @@ import YAML from "yaml";
 import cytoscape from "cytoscape";
 import cytoscapeFcose from "cytoscape-fcose";
 import { GraphLayoutKind, hasSavedPositions } from "./topologyLayout";
+
 import { Buffer } from 'buffer';
 import { INodeState, IProjectState, IfState } from "../api/interface";
 import NodeContextMenu, { NodeContextMenuT } from "./NodeContextMenu";
+import LabelContextMenu, { HIDDEN_LABEL_MENU, LabelContextMenuT } from "./LabelContextMenu";
+import LabelTextModal from "./LabelTextModal";
+import { applyLabelConfirm, mergeLabelsIntoTopology, parseTopologyLabels, serializeLabels } from "./topologyLabels";
 import router from "../../img/router.svg";
 import routerRunning from "../../img/router-running.svg";
 import host from "../../img/host.svg";
@@ -32,10 +36,11 @@ interface ITopology {
     peer1: string;
     peer2: string;
   }[] | null;
+  ui?: unknown;
 }
 
 const NODE_SIZE = 50;
-const ALL_CLASSES = "icon-router icon-host icon-switch up down inactive";
+const ALL_CLASSES = "icon-router icon-host icon-switch up down inactive label";
 
 const LAYOUT_OPTIONS: { [kind in GraphLayoutKind]: cytoscape.LayoutOptions } = {
   force: { name: "fcose" },
@@ -44,7 +49,7 @@ const LAYOUT_OPTIONS: { [kind in GraphLayoutKind]: cytoscape.LayoutOptions } = {
   hierarchical: { name: "breadthfirst" },
 };
 
-const cyStyle: cytoscape.StylesheetJson = [
+export const cyStyle: cytoscape.StylesheetJson = [
   {
     selector: "node",
     style: {
@@ -56,8 +61,8 @@ const cyStyle: cytoscape.StylesheetJson = [
       label: "data(name)",
       "text-halign": "center",
       "text-valign": "bottom",
-      "text-margin-y": 4,
-      "font-size": 14,
+      "text-margin-y": 2,
+      "font-size": 12,
     },
   },
   {
@@ -65,6 +70,29 @@ const cyStyle: cytoscape.StylesheetJson = [
     style: {
       "background-shape": "circle",
       "background-fit": "cover",
+    } as cytoscape.Css.Node,
+  },
+  {
+    // .label nodes are free-floating annotations from the topology's top-level
+    // ui section: excluded from layouts and node-position saves.
+    selector: "node.label",
+    style: {
+      "shape": "round-rectangle",
+      "width": "label",
+      "height": "label",
+      "padding": "3px",
+      "background-color": "#fffbe6",
+      "background-image": "none",
+      "border-width": 1,
+      "border-color": "#d6c98a",
+      "label": "data(text)",
+      "text-halign": "center",
+      "text-valign": "center",
+      "font-size": 10,
+      "text-wrap": "wrap",
+      "text-margin-y": 0,
+      "text-max-width": "180",
+      color: "#333333",
     } as cytoscape.Css.Node,
   },
   {
@@ -186,7 +214,7 @@ const getEdgeClass = (
   return "inactive";
 }
 
-const getElements = (
+export const getElements = (
   topology: ITopology,
   prjState: IProjectState,
 ): cytoscape.ElementDefinition[] => {
@@ -224,6 +252,16 @@ const getElements = (
       });
     });
   }
+
+  const labels = parseTopologyLabels(topology);
+  Object.keys(labels).forEach((id) => {
+    elements.push({
+      group: "nodes",
+      data: { id, text: labels[id].text },
+      position: { ...labels[id].position },
+      classes: "label",
+    });
+  });
 
   return elements;
 };
@@ -278,8 +316,17 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
     x: 0,
     y: 0,
   });
+  const [labelMenu, setLabelMenu] = useState<LabelContextMenuT>(HIDDEN_LABEL_MENU);
+  const [labelModal, setLabelModal] = useState<{
+    open: boolean;
+    mode: "add" | "edit";
+    id: string;
+    text: string;
+    position: cytoscape.Position;
+  }>({ open: false, mode: "add", id: "", text: "", position: { x: 0, y: 0 } });
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
+  const pendingLabelPositionRef = useRef<cytoscape.Position>({ x: 0, y: 0 });
 
   useImperativeHandle(ref, () => {
     return {
@@ -309,7 +356,7 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
         const cy = cyRef.current;
         if (cy == null || cy.destroyed()) return;
 
-        const layout = cy.elements().layout(LAYOUT_OPTIONS[kind]);
+        const layout = cy.elements().not(".label").layout(LAYOUT_OPTIONS[kind]);
         layout.one("stop", () => cy.fit());
         layout.run();
       },
@@ -322,9 +369,15 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
           });
 
         const positions: { [id: string]: cytoscape.Position } = {};
-        cy.nodes().forEach((n) => {
+        cy.nodes().not(".label").forEach((n) => {
           positions[n.id()] = n.position();
         });
+
+        const labelEntries: { id: string; text: string; position: cytoscape.Position }[] = [];
+        cy.nodes(".label").forEach((n) => {
+          labelEntries.push({ id: n.id(), text: String(n.data("text") ?? ""), position: n.position() });
+        });
+
         const topo = YAML.parse(topology) as ITopology;
 
         const nodes: {[key: string]: ITopologyNode | null;}  = {}
@@ -341,6 +394,8 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
               };
         });
         topo.nodes = nodes;
+
+        mergeLabelsIntoTopology(topo, serializeLabels(labelEntries));
 
         return window.api.writeTopologyFile(prjStatus.id, YAML.stringify(topo))
       }
@@ -360,28 +415,71 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
           container: containerRef.current,
           style: cyStyle,
           elements: getElements(topo, prjStatus),
-          layout: hasSavedPositions(topo.nodes)
-            ? { name: "preset" }
-            : { name: "fcose" },
+          layout: { name: "preset" },
           wheelSensitivity: 0.2,
         });
+
+        if (!hasSavedPositions(topo.nodes)) {
+          const autoLayout = net.nodes().not(".label").layout(LAYOUT_OPTIONS.force);
+          autoLayout.one("stop layoutstop", () => net.fit());
+          autoLayout.run();
+        }
 
         net.on(
           "cxttap",
           "node",
           (evt: cytoscape.EventObject) => {
             const nodeId = evt.target.id();
-            if (nodeId) {
+            if (nodeId && !evt.target.hasClass("label")) {
+              const rect = net.container()?.getBoundingClientRect();
               setContextMenu({
                 prjId: prjStatus.id,
                 nodeId,
-                x: evt.renderedPosition.x,
-                y: evt.renderedPosition.y,
+                x: (rect?.left ?? 0) + evt.renderedPosition.x,
+                y: (rect?.top ?? 0) + evt.renderedPosition.y,
               });
             }
           }
         );
-        net.on("tap", () => setContextMenu({ ...contextMenu, nodeId: "", x: 0, y: 0 }));
+        net.on("cxttap", (evt: cytoscape.EventObject) => {
+          // renderedPosition is relative to the graph container; the menu is
+          // position:fixed, so offset by the container's viewport rect.
+          const rect = net.container()?.getBoundingClientRect();
+          const menuX = (rect?.left ?? 0) + evt.renderedPosition.x;
+          const menuY = (rect?.top ?? 0) + evt.renderedPosition.y;
+
+          if (evt.target === net) {
+            setLabelMenu({
+              mode: "canvas",
+              labelId: "",
+              x: menuX,
+              y: menuY,
+            });
+            pendingLabelPositionRef.current = { ...evt.position };
+          } else if (evt.target !== net && evt.target.hasClass("label")) {
+            setLabelMenu({
+              mode: "label",
+              labelId: evt.target.id(),
+              x: menuX,
+              y: menuY,
+            });
+          } else {
+            setLabelMenu(HIDDEN_LABEL_MENU);
+          }
+        });
+        net.on("dbltap", "node.label", (evt: cytoscape.EventObject) => {
+          setLabelModal({
+            open: true,
+            mode: "edit",
+            id: evt.target.id(),
+            text: String(evt.target.data("text") ?? ""),
+            position: { ...evt.target.position() },
+          });
+        });
+        net.on("tap", () => {
+          setContextMenu({ ...contextMenu, nodeId: "", x: 0, y: 0 });
+          setLabelMenu(HIDDEN_LABEL_MENU);
+        });
         net.on("select", "edge", (evt: cytoscape.EventObject) => {
           onSelectEdge(evt.target.id())
         });
@@ -415,6 +513,35 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
     return null;
   };
 
+  const handleAddLabel = () => {
+    setLabelModal({
+      open: true,
+      mode: "add",
+      id: "",
+      text: "",
+      position: { ...pendingLabelPositionRef.current },
+    });
+    setLabelMenu(HIDDEN_LABEL_MENU);
+  };
+
+  const handleDeleteLabel = () => {
+    const cy = cyRef.current;
+    if (cy != null && !cy.destroyed())
+      cy.getElementById(labelMenu.labelId).remove();
+    setLabelMenu(HIDDEN_LABEL_MENU);
+  };
+
+  const handleHideLabelModal = () =>
+    setLabelModal({ ...labelModal, open: false });
+
+  const handleLabelModalConfirm = (rawText: string) => {
+    const cy = cyRef.current;
+    if (cy != null && !cy.destroyed())
+      applyLabelConfirm(cy, labelModal.mode, rawText, labelModal.id, labelModal.position);
+
+    handleHideLabelModal();
+  };
+
   const handleHideContextMenu = (update: boolean) => {
     if (update) updateState();
     setContextMenu({ ...contextMenu, nodeId: "", x: 0, y: 0 });
@@ -441,6 +568,17 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
           onHide={handleHideContextMenu}
         />
       )}
+      <LabelContextMenu
+        menu={labelMenu}
+        onAdd={handleAddLabel}
+        onDelete={handleDeleteLabel}
+      />
+      <LabelTextModal
+        isOpen={labelModal.open}
+        initialText={labelModal.text}
+        onClose={handleHideLabelModal}
+        onConfirm={handleLabelModalConfirm}
+      />
     </>
   );
 });

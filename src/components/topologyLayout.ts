@@ -2,6 +2,7 @@ export type GraphLayoutKind = "force" | "grid" | "concentric" | "hierarchical";
 
 interface PositionedTopologyNode {
   ui?: {
+    icon?: string;
     position?: { x: number; y: number };
   } | null;
 }
