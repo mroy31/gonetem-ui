@@ -14,7 +14,7 @@ The system SHALL fetch the project's topology file content from the server as te
 - **THEN** the current server-side content is returned as editable text
 
 ### Requirement: Write topology definition
-The system SHALL send user-provided topology content to the server as the project's new topology definition.
+In the full edition, the system SHALL send user-provided topology content to the server as the project's new topology definition. The student edition SHALL provide no action that writes the topology definition.
 
 #### Scenario: Save from editor
 - **WHEN** the user saves the topology from the YAML editor
@@ -24,8 +24,12 @@ The system SHALL send user-provided topology content to the server as the projec
 - **WHEN** the user moves a node in the topology graph
 - **THEN** the updated positions are written back as the project's topology definition
 
+#### Scenario: Student edition has no write action
+- **WHEN** a student build renders an open project
+- **THEN** neither the graph toolbar nor any other surface offers a topology save action
+
 ### Requirement: Topology content validation
-The YAML editor SHALL diagnose invalid YAML in the buffer, and the system SHALL additionally ask the server to check a topology definition and surface the server's error message when the check fails.
+In the full edition, the YAML editor SHALL diagnose invalid YAML in the buffer, and the system SHALL additionally ask the server to check a topology definition and surface the server's error message when the check fails. The student edition has no topology editor and performs no topology check.
 
 #### Scenario: Invalid YAML in editor
 - **WHEN** the edited buffer is not parseable YAML

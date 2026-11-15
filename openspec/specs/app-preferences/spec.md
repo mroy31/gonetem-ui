@@ -7,7 +7,7 @@ Keeps user options and window geometry across application launches so the app st
 ## Requirements
 
 ### Requirement: Persisted user options
-The system SHALL persist the server URI, autoconnect flag, TLS settings (enabled flag and certificate paths), and external console command template in local storage, and return the current values on request.
+In the full edition, the system SHALL persist the server URI, autoconnect flag, TLS settings (enabled flag and certificate paths), and external console command template in local storage, and return the current values on request. The student edition provides no options dialog, SHALL return the build-time configuration on request without reading persisted user options, and SHALL NOT accept option writes.
 
 #### Scenario: Save options
 - **WHEN** the user saves new options from the options dialog

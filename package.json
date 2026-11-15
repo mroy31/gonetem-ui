@@ -5,6 +5,7 @@
   "main": ".webpack/main/index.cjs",
   "scripts": {
     "start": "electron-forge start",
+    "start-student": "GONETEM_EDITION=student GONETEM_SERVER_URI='192.168.64.5:10110' electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",

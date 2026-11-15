@@ -3,6 +3,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const mocks = vi.hoisted(() => ({
   values: new Map<string, unknown>(),
   configs: [] as { schema?: Record<string, unknown>; defaults?: Record<string, unknown> }[],
+  getCalls: [] as string[],
+}));
+
+const editionMock = vi.hoisted(() => ({
+  edition: "full" as "full" | "student",
+  studentServerUri: "",
 }));
 
 vi.mock("electron-store", () => ({
@@ -13,6 +19,7 @@ vi.mock("electron-store", () => ({
       mocks.configs.push(config ?? {});
     }
     get(key: string): unknown {
+      mocks.getCalls.push(key);
       return mocks.values.get(key) ?? this.defaults[key];
     }
     set(key: string, value: unknown): void {
@@ -21,11 +28,25 @@ vi.mock("electron-store", () => ({
   },
 }));
 
+vi.mock("../edition", () => ({
+  get edition() {
+    return editionMock.edition;
+  },
+  get studentServerUri() {
+    return editionMock.studentServerUri;
+  },
+}));
+
 import {
   getAppState,
   setLastProjectDir,
   setLastImageExportDir,
+  getOptions,
+  handleGetOptions,
+  DEFAULT_CONSOLE_CMD,
 } from "./options";
+
+const EVENT = undefined as never;
 
 describe("last dialog directories app state", () => {
   beforeEach(() => {
@@ -57,5 +78,44 @@ describe("last dialog directories app state", () => {
     expect(getAppState().lastImageExportDir).toBe("");
     setLastImageExportDir("/tmp/img");
     expect(getAppState().lastProjectDir).toBe("/tmp/prj");
+  });
+});
+
+describe("getOptions per edition", () => {
+  beforeEach(() => {
+    mocks.values.clear();
+    mocks.getCalls.length = 0;
+    editionMock.edition = "full";
+    editionMock.studentServerUri = "";
+  });
+
+  it("student edition returns baked values without consulting the store", async () => {
+    editionMock.edition = "student";
+    editionMock.studentServerUri = "tcp://teacher:10110";
+
+    const res = await handleGetOptions(EVENT);
+
+    expect(res).toEqual({
+      status: true,
+      result: {
+        server: "tcp://teacher:10110",
+        autoconnect: true,
+        tls: { enabled: false },
+        consoleExternalCmd: DEFAULT_CONSOLE_CMD,
+      },
+    });
+    expect(mocks.getCalls).toEqual([]);
+  });
+
+  it("full edition reads the stored (default) options", () => {
+    expect(getOptions()).toEqual({
+      server: "",
+      autoconnect: true,
+      tls: { enabled: false },
+      consoleExternalCmd: DEFAULT_CONSOLE_CMD,
+    });
+    expect(mocks.getCalls).toEqual(
+      expect.arrayContaining(["server", "autoconnect", "tls", "consoleExternalCmd"])
+    );
   });
 });

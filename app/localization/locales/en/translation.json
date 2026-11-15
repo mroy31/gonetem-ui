@@ -78,5 +78,6 @@
     "AddLabelMenu": "Add label",
     "DeleteLabelMenu": "Delete label",
     "LabelTextModalHeader": "Label text",
-    "LabelTextLabel": "Text"
+    "LabelTextLabel": "Text",
+    "StudentEditionBadge": "Student edition"
 }

@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useTranslation } from "react-i18next";
+import { features } from "../edition";
 
 export type LabelContextMenuT = {
   mode: "" | "canvas" | "label";
@@ -26,7 +27,7 @@ const LabelContextMenu = ({
 }): React.JSX.Element | null => {
   const {t} = useTranslation();
 
-  if (menu.mode == "") return null;
+  if (!features.topologyWrite || menu.mode == "") return null;
 
   return (
     <div

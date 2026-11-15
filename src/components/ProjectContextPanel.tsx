@@ -6,6 +6,7 @@ import ConfigurationViewerPanel from "./ConfigurationViewerPanel";
 import { IProjectState } from "../api/interface";
 import { IPrjAction } from "./ProjectPanel";
 import ConsolePanel from "./ConsolePanel";
+import { features } from "../edition";
 
 export default function ProjectContextPanel({
   prjStatus,
@@ -18,7 +19,9 @@ export default function ProjectContextPanel({
 }): React.JSX.Element {
   const {t} = useTranslation();
   const [width, setWidth] = useState(450);
-  const [selectedTab, setSelectedTab] = useState<"topo" | "config" | "console">("config");
+  const [selectedTab, setSelectedTab] = useState<"topo" | "config" | "console">(
+    features.nodeConfigRead ? "config" : "console"
+  );
   const isResized = useRef(false);
 
   const tabClasses = (tabId: string) => {
@@ -54,20 +57,24 @@ export default function ProjectContextPanel({
         style={{ width: `${width / 16}rem` }}
       >
         <div role="tablist flex-none" className="tabs tabs-border">
-          <a
-            role="tab"
-            className={tabClasses("config")}
-            onClick={() => setSelectedTab("config")}
-          >
-            {t("Configuration")}
-          </a>
-          <a
-            role="tab"
-            className={tabClasses("topo")}
-            onClick={() => setSelectedTab("topo")}
-          >
-            {t("Topology")}
-          </a>
+          {features.nodeConfigRead && (
+            <a
+              role="tab"
+              className={tabClasses("config")}
+              onClick={() => setSelectedTab("config")}
+            >
+              {t("Configuration")}
+            </a>
+          )}
+          {features.topologyWrite && (
+            <a
+              role="tab"
+              className={tabClasses("topo")}
+              onClick={() => setSelectedTab("topo")}
+            >
+              {t("Topology")}
+            </a>
+          )}
           <a
             role="tab"
             className={tabClasses("console")}
@@ -78,10 +85,10 @@ export default function ProjectContextPanel({
         </div>
 
         <div className="flex-1 w-full mt-1 min-h-0">
-          {selectedTab == "config" && (
+          {features.nodeConfigRead && selectedTab == "config" && (
             <ConfigurationViewerPanel prjStatus={prjStatus} />
           )}
-          {selectedTab == "topo" && (
+          {features.topologyWrite && selectedTab == "topo" && (
             <TopologyEditorPanel
               topology={topology}
               prjId={prjStatus.id}

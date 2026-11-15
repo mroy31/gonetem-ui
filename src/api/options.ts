@@ -1,6 +1,7 @@
 
 import { IpcMainInvokeEvent, Rectangle } from "electron";
 import Store from "electron-store";
+import { edition, studentServerUri } from "../edition";
 
 export interface ITLSOptions {
     enabled: boolean;
@@ -26,6 +27,9 @@ export interface IAppState {
     lastProjectDir: string;
     lastImageExportDir: string;
 }
+
+export const DEFAULT_CONSOLE_CMD =
+    "xterm -xrm 'XTerm.vt100.allowTitleOps: false' -title '${name}' -e ${cmd}";
 
 const store = new Store<IOptions & IAppState>({
     schema: { 
@@ -60,7 +64,7 @@ const store = new Store<IOptions & IAppState>({
         tls: {
             enabled: false,
         },
-        consoleExternalCmd: "xterm -xrm 'XTerm.vt100.allowTitleOps: false' -title '${name}' -e ${cmd}",
+        consoleExternalCmd: DEFAULT_CONSOLE_CMD,
         winBounds: {
             height: 800,
             width: 1200,
@@ -91,6 +95,15 @@ export const setLastImageExportDir = (dir: string): void => {
 }
 
 export const getOptions = (): IOptions => {
+    if (edition === "student") {
+        return {
+            server: studentServerUri,
+            autoconnect: true,
+            tls: { enabled: false },
+            consoleExternalCmd: DEFAULT_CONSOLE_CMD,
+        };
+    }
+
     return {
         server: store.get("server"),
         autoconnect: store.get("autoconnect"),

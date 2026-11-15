@@ -1,5 +1,11 @@
+const { readEditionEnv } = require("./scripts/edition-env");
+
+const { edition } = readEditionEnv();
+const appName = edition === "student" ? "gonetem-ui-student" : "gonetem-ui";
+
 module.exports = {
     packagerConfig: {
+        name: appName,
         icon: "icon/gonetem-ui.icns",
         extraResource: [
             "./app",
@@ -9,7 +15,7 @@ module.exports = {
         {
             name: "@electron-forge/maker-squirrel",
             config: {
-                name: "gonetem-ui"
+                name: appName
             }
         },
         {
@@ -22,6 +28,7 @@ module.exports = {
             name: "@electron-forge/maker-deb",
             config: {
                 options: {
+                    name: appName,
                     icon: 'icon/gonetem-ui_512x512.png'
                 }
             }

@@ -1,3 +1,4 @@
+import "./app-edition-identity";
 import { app, BrowserWindow, ipcMain, Menu } from "electron";
 import IsDev from "electron-is-dev";
 import {initMainI18n} from "./i18n/main";
@@ -33,6 +34,7 @@ import {
 import { handleListOpenConsoles, handleResizeInternalConsole, handleRunNodeInternalConsole, handleSaveConsoleState, handleWriteInternalConsole } from "./api/console";
 import { handlePullImages } from "./api/server";
 import { handleI18nRead, handleI18nCreate } from "./api/i18n";
+import { registerIpcHandlers, IpcHandlers } from "./ipc";
 import { t } from "i18next";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const MAIN_WINDOW_WEBPACK_ENTRY: any;
@@ -99,41 +101,45 @@ const createWindow = (): void => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", () => {
-  ipcMain.handle("server:isConnected", handleIsConnected);
-  ipcMain.handle("server:connect", handleConnect);
-  ipcMain.handle("client:getOptions", handleGetOptions);
-  ipcMain.handle("client:setOptions", handleSetOptions);
-  ipcMain.handle("server:openProject", handleOpenProject);
-  ipcMain.handle("server:createProject", handleCreateProject);
-  ipcMain.handle("server:saveProject", handleSaveProject);
-  ipcMain.handle("server:connectProject", handleConnectProject);
-  ipcMain.handle("server:listProjects", handleListProjects);
-  ipcMain.handle("server:getProjectState", handleGetProjectState);
-  ipcMain.handle("server:readTopology", handleReadTopologyFile);
-  ipcMain.handle("server:writeTopology", handleWriteTopologyFile);
-  ipcMain.handle("server:checkTopology", handleCheckTopologyFile);
-  ipcMain.handle("server:runTopology", handleRunTopology);
-  ipcMain.handle("server:reloadTopology", handleReloadTopology);
-  ipcMain.handle("server:recordTopologyImg", handleRecordTopologyImg);
-  ipcMain.handle("server:runAllConsoles", handleRunAllConsoles);
-  ipcMain.handle("server:readNodeConfigFiles", handleReadNodeConfigFiles);
-  ipcMain.handle("server:runNodeConsole", handleRunNodeConsole);
-  ipcMain.handle("server:runNodeStart", handleNodeStart);
-  ipcMain.handle("server:runNodeStop", handleNodeStop);
-  ipcMain.handle("server:runNodeRestart", handleNodeRestart);
-  ipcMain.handle("server:runNodeCapture", handleNodeCapture);
-  ipcMain.handle("server:runNodeSetIfState", handleNodeSetIfState);
-  ipcMain.handle("server:close", handleCloseProject);
-  ipcMain.handle("server:pullImages", handlePullImages);
-  // internal console
-  ipcMain.handle("console:run", handleRunNodeInternalConsole);
-  ipcMain.handle("console:write", handleWriteInternalConsole);
-  ipcMain.handle("console:resize", handleResizeInternalConsole);
-  ipcMain.handle("console:listOpen", handleListOpenConsoles);
-  ipcMain.handle("console:saveState", handleSaveConsoleState);
-  // i18n
-  ipcMain.handle("i18n:read", handleI18nRead);
-  ipcMain.handle("i18n:write", handleI18nCreate);
+  const handlers: IpcHandlers = {
+    "server:isConnected": handleIsConnected,
+    "server:connect": handleConnect,
+    "client:getOptions": handleGetOptions,
+    "client:setOptions": handleSetOptions,
+    "server:openProject": handleOpenProject,
+    "server:createProject": handleCreateProject,
+    "server:saveProject": handleSaveProject,
+    "server:connectProject": handleConnectProject,
+    "server:listProjects": handleListProjects,
+    "server:getProjectState": handleGetProjectState,
+    "server:readTopology": handleReadTopologyFile,
+    "server:writeTopology": handleWriteTopologyFile,
+    "server:checkTopology": handleCheckTopologyFile,
+    "server:runTopology": handleRunTopology,
+    "server:reloadTopology": handleReloadTopology,
+    "server:recordTopologyImg": handleRecordTopologyImg,
+    "server:runAllConsoles": handleRunAllConsoles,
+    "server:readNodeConfigFiles": handleReadNodeConfigFiles,
+    "server:runNodeConsole": handleRunNodeConsole,
+    "server:runNodeStart": handleNodeStart,
+    "server:runNodeStop": handleNodeStop,
+    "server:runNodeRestart": handleNodeRestart,
+    "server:runNodeCapture": handleNodeCapture,
+    "server:runNodeSetIfState": handleNodeSetIfState,
+    "server:close": handleCloseProject,
+    "server:pullImages": handlePullImages,
+    // internal console
+    "console:run": handleRunNodeInternalConsole,
+    "console:write": handleWriteInternalConsole,
+    "console:resize": handleResizeInternalConsole,
+    "console:listOpen": handleListOpenConsoles,
+    "console:saveState": handleSaveConsoleState,
+    // i18n
+    "i18n:read": handleI18nRead,
+    "i18n:write": handleI18nCreate,
+  };
+
+  registerIpcHandlers(ipcMain, handlers);
 
   const options = getOptions();
   if (options.autoconnect && options.server != "") {

@@ -11,6 +11,7 @@ import {
 import i18n from './i18n/renderer';
 import OptionsModal from "./components/OptionsModal";
 import { IOptions } from "./api/options";
+import { features, edition } from "./edition";
 import MsgToast from "./components/MsgToast";
 import ProjectPanel from "./components/ProjectPanel";
 import ProjectListModal from "./components/ProjectListModal";
@@ -21,7 +22,7 @@ import ProgressProjectSave from "./components/ProgressProjectSave";
 import NodeMessagesToast, { INodeMessages } from "./components/NodeMessagesToast";
 import ProgressServerPull from "./components/ProgressServerPull";
 
-function App(): React.JSX.Element {
+export default function App(): React.JSX.Element {
   const { t } = useTranslation();
   const [version, setVersion] = useState("");
   const [optionsModalOpen, setOptionsModalOpen] = useState(false);
@@ -111,20 +112,27 @@ function App(): React.JSX.Element {
       <div className="navbar bg-base-200 flex-none">
         <div className="flex-1">
           <span className="btn btn-ghost text-xl">GONETEM UI</span>
+          {edition === "student" && (
+            <span className="badge badge-secondary align-middle">
+              {t("StudentEditionBadge")}
+            </span>
+          )}
         </div>
 
         <div className="flex-none flex">
-          <div className="flex gap-1 align-middle">
-            <div className="join px-1">
-              <button
-                onClick={() => setOptionsModalOpen(true)}
-                className="btn btn-outline btn-sm join-item"
-              >
-                <WrenchScrewdriverIcon className="w-5" />
-                <span>{ t("Options") }</span>
-              </button>
+          {features.optionsWrite && (
+            <div className="flex gap-1 align-middle">
+              <div className="join px-1">
+                <button
+                  onClick={() => setOptionsModalOpen(true)}
+                  className="btn btn-outline btn-sm join-item"
+                >
+                  <WrenchScrewdriverIcon className="w-5" />
+                  <span>{ t("Options") }</span>
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="divider divider-horizontal bg-base-content w-1"></div>
 
@@ -193,7 +201,7 @@ function App(): React.JSX.Element {
         />
       )}
 
-      {options && (
+      {features.optionsWrite && options && (
         <OptionsModal
           options={options}
           isOpen={optionsModalOpen}

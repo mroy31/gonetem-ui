@@ -11,6 +11,7 @@ import NodeContextMenu, { NodeContextMenuT } from "./NodeContextMenu";
 import LabelContextMenu, { HIDDEN_LABEL_MENU, LabelContextMenuT } from "./LabelContextMenu";
 import LabelTextModal from "./LabelTextModal";
 import { applyLabelConfirm, mergeLabelsIntoTopology, parseTopologyLabels, serializeLabels } from "./topologyLabels";
+import { features } from "../edition";
 import router from "../../img/router.svg";
 import routerRunning from "../../img/router-running.svg";
 import host from "../../img/host.svg";
@@ -441,41 +442,43 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
             }
           }
         );
-        net.on("cxttap", (evt: cytoscape.EventObject) => {
-          // renderedPosition is relative to the graph container; the menu is
-          // position:fixed, so offset by the container's viewport rect.
-          const rect = net.container()?.getBoundingClientRect();
-          const menuX = (rect?.left ?? 0) + evt.renderedPosition.x;
-          const menuY = (rect?.top ?? 0) + evt.renderedPosition.y;
+        if (features.topologyWrite) {
+          net.on("cxttap", (evt: cytoscape.EventObject) => {
+            // renderedPosition is relative to the graph container; the menu is
+            // position:fixed, so offset by the container's viewport rect.
+            const rect = net.container()?.getBoundingClientRect();
+            const menuX = (rect?.left ?? 0) + evt.renderedPosition.x;
+            const menuY = (rect?.top ?? 0) + evt.renderedPosition.y;
 
-          if (evt.target === net) {
-            setLabelMenu({
-              mode: "canvas",
-              labelId: "",
-              x: menuX,
-              y: menuY,
-            });
-            pendingLabelPositionRef.current = { ...evt.position };
-          } else if (evt.target !== net && evt.target.hasClass("label")) {
-            setLabelMenu({
-              mode: "label",
-              labelId: evt.target.id(),
-              x: menuX,
-              y: menuY,
-            });
-          } else {
-            setLabelMenu(HIDDEN_LABEL_MENU);
-          }
-        });
-        net.on("dbltap", "node.label", (evt: cytoscape.EventObject) => {
-          setLabelModal({
-            open: true,
-            mode: "edit",
-            id: evt.target.id(),
-            text: String(evt.target.data("text") ?? ""),
-            position: { ...evt.target.position() },
+            if (evt.target === net) {
+              setLabelMenu({
+                mode: "canvas",
+                labelId: "",
+                x: menuX,
+                y: menuY,
+              });
+              pendingLabelPositionRef.current = { ...evt.position };
+            } else if (evt.target !== net && evt.target.hasClass("label")) {
+              setLabelMenu({
+                mode: "label",
+                labelId: evt.target.id(),
+                x: menuX,
+                y: menuY,
+              });
+            } else {
+              setLabelMenu(HIDDEN_LABEL_MENU);
+            }
           });
-        });
+          net.on("dbltap", "node.label", (evt: cytoscape.EventObject) => {
+            setLabelModal({
+              open: true,
+              mode: "edit",
+              id: evt.target.id(),
+              text: String(evt.target.data("text") ?? ""),
+              position: { ...evt.target.position() },
+            });
+          });
+        }
         net.on("tap", () => {
           setContextMenu({ ...contextMenu, nodeId: "", x: 0, y: 0 });
           setLabelMenu(HIDDEN_LABEL_MENU);
@@ -568,17 +571,21 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
           onHide={handleHideContextMenu}
         />
       )}
-      <LabelContextMenu
-        menu={labelMenu}
-        onAdd={handleAddLabel}
-        onDelete={handleDeleteLabel}
-      />
-      <LabelTextModal
-        isOpen={labelModal.open}
-        initialText={labelModal.text}
-        onClose={handleHideLabelModal}
-        onConfirm={handleLabelModalConfirm}
-      />
+      {features.topologyWrite && (
+        <>
+          <LabelContextMenu
+            menu={labelMenu}
+            onAdd={handleAddLabel}
+            onDelete={handleDeleteLabel}
+          />
+          <LabelTextModal
+            isOpen={labelModal.open}
+            initialText={labelModal.text}
+            onClose={handleHideLabelModal}
+            onConfirm={handleLabelModalConfirm}
+          />
+        </>
+      )}
     </>
   );
 });

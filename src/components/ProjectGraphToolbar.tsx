@@ -2,6 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { PhotoIcon, ArrowsPointingInIcon, DocumentCheckIcon, Squares2X2Icon, ChevronUpIcon } from "@heroicons/react/24/solid";
 import { GraphLayoutKind } from "./topologyLayout";
+import { features } from "../edition";
 
 
 export default function ProjectGraphToolbar({
@@ -15,7 +16,7 @@ export default function ProjectGraphToolbar({
   dwImgHandle: () => void;
   fitHandle: () => void;
   layoutHandle: (kind: GraphLayoutKind) => void;
-  saveTopologyHandle: () => void;
+  saveTopologyHandle?: () => void;
 }): React.JSX.Element {
   const {t} = useTranslation();
 
@@ -69,13 +70,15 @@ export default function ProjectGraphToolbar({
           <PhotoIcon className="w-5" />
           <span>{t("Image")}</span>
         </button>
-        <button 
-            className="btn btn-outline btn-sm join-item btn-primary" 
-            onClick={saveTopologyHandle}
-        >
-          <DocumentCheckIcon className="w-5" />
-          <span>{t("Save")}</span>
-        </button>
+        {features.topologyWrite && (
+          <button 
+              className="btn btn-outline btn-sm join-item btn-primary" 
+              onClick={saveTopologyHandle}
+          >
+            <DocumentCheckIcon className="w-5" />
+            <span>{t("Save")}</span>
+          </button>
+        )}
       </div>
     </div>
   );

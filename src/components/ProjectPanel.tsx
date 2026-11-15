@@ -7,6 +7,7 @@ import { IProjectState } from '../api/interface';
 import ProjectGraph, {ProjectGrahHandle} from './ProjectGraph';
 import ProjectGraphToolbar from './ProjectGraphToolbar';
 import { useAppContext } from '../context';
+import { features } from '../edition';
 
 export enum PrjActionKing {
     INIT = 'INIT',
@@ -197,7 +198,7 @@ export default function ProjectPanel({
                     </div>
 
                     <ProjectGraphToolbar
-                        saveTopologyHandle={saveTopologyHandle}
+                        saveTopologyHandle={features.topologyWrite ? saveTopologyHandle : undefined}
                         dwImgHandle={dwImgHandle}
                         fitHandle={() => graphRef.current?.fit()}
                         layoutHandle={(kind) => graphRef.current?.applyLayout(kind)}

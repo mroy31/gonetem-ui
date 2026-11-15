@@ -1,13 +1,13 @@
 
 import { contextBridge, ipcRenderer } from 'electron';
-import { IOptions } from './api/options';
-import { TopologyRunMsg, ProjectCloseMsg, ProjectSaveMsg, PullSrvMsg } from './proto/netem_pb';
+import { features } from './edition';
+import type { IOptions } from './api/options';
+import type { TopologyRunMsg, ProjectCloseMsg, ProjectSaveMsg, PullSrvMsg } from './proto/netem_pb';
 
-const exposedApi: ContextBridgeApi = {
+const baseApi = {
   isConnected: (): Promise<IsConnectedApiResponse> => ipcRenderer.invoke("server:isConnected"),
   connect: (): Promise<StringApiResponse> => ipcRenderer.invoke("server:connect"),
   getOptions: (): Promise<OptionsApiResponse> => ipcRenderer.invoke("client:getOptions"),
-  setOptions: (options: IOptions):Promise<ApiResponse> => ipcRenderer.invoke("client:setOptions", options),
   openProject: ():Promise<StringApiResponse> => ipcRenderer.invoke("server:openProject"),
   createProject: ():Promise<StringApiResponse> => ipcRenderer.invoke("server:createProject"),
   saveProject: (prjId: string):Promise<ApiResponse> => ipcRenderer.invoke("server:saveProject", prjId),
@@ -15,13 +15,10 @@ const exposedApi: ContextBridgeApi = {
   listProjects: ():Promise<PrjListApiResponse> => ipcRenderer.invoke("server:listProjects"),
   getProjectState: (prjId: string):Promise<PrjStateApiResponse> => ipcRenderer.invoke("server:getProjectState", prjId),
   readTopologyFile: (prjId: string):Promise<FileApiResponse> => ipcRenderer.invoke("server:readTopology", prjId),
-  writeTopologyFile: (prjId: string, data: string):Promise<ApiResponse> => ipcRenderer.invoke("server:writeTopology", prjId, data),
-  checkTopologyFile: (prjId: string):Promise<ApiResponse> => ipcRenderer.invoke("server:checkTopology", prjId),
   runTopology: (prjId: string):Promise<ApiResponse> => ipcRenderer.invoke("server:runTopology", prjId),
   reloadTopology: (prjId: string):Promise<ApiResponse> => ipcRenderer.invoke("server:reloadTopology", prjId),
   recordTopologyImg: (data: Buffer): Promise<ApiResponse> => ipcRenderer.invoke("server:recordTopologyImg", data),
   runAllConsoles: (prjId: string, shell: boolean):Promise<ApiResponse> => ipcRenderer.invoke("server:runAllConsoles", prjId, shell),
-  readNodeConfigFiles: (prjId: string, nodeId: string):Promise<ConfigFilesApiResponse> => ipcRenderer.invoke("server:readNodeConfigFiles", prjId, nodeId),
   runNodeConsole: (prjId: string, nodeId: string, shell: boolean):Promise<ApiResponse> => ipcRenderer.invoke("server:runNodeConsole", prjId, nodeId, shell),
   runNodeStart: (prjId: string, nodeId: string):Promise<ApiResponse> => ipcRenderer.invoke("server:runNodeStart", prjId, nodeId),
   runNodeStop: (prjId: string, nodeId: string):Promise<ApiResponse> => ipcRenderer.invoke("server:runNodeStop", prjId, nodeId),
@@ -61,6 +58,25 @@ const exposedApi: ContextBridgeApi = {
   // i18n commands
   i18nRead: (language: string, namespace: string): Promise<I18nApiResponse> => ipcRenderer.invoke("i18n:read", language, namespace),
   i18nCreate: (languages: string[], namespace: string, key: string, fallbackValue: string): Promise<ApiResponse> => ipcRenderer.invoke("i18n:write", languages, namespace, key, fallbackValue),
+} as unknown as ContextBridgeApi;
+
+export const buildExposedApi = (): ContextBridgeApi => {
+  const exposedApi: ContextBridgeApi = { ...baseApi };
+
+  if (features.optionsWrite) {
+    exposedApi.setOptions = (options: IOptions):Promise<ApiResponse> => ipcRenderer.invoke("client:setOptions", options);
+  }
+  if (features.topologyWrite) {
+    exposedApi.writeTopologyFile = (prjId: string, data: string):Promise<ApiResponse> => ipcRenderer.invoke("server:writeTopology", prjId, data);
+  }
+  if (features.topologyValidation) {
+    exposedApi.checkTopologyFile = (prjId: string):Promise<ApiResponse> => ipcRenderer.invoke("server:checkTopology", prjId);
+  }
+  if (features.nodeConfigRead) {
+    exposedApi.readNodeConfigFiles = (prjId: string, nodeId: string):Promise<ConfigFilesApiResponse> => ipcRenderer.invoke("server:readNodeConfigFiles", prjId, nodeId);
+  }
+
+  return exposedApi;
 }
 
-contextBridge.exposeInMainWorld('api', exposedApi);
+contextBridge.exposeInMainWorld('api', buildExposedApi());

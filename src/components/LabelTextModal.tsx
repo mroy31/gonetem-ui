@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { features } from "../edition";
 
 export default function LabelTextModal({
   isOpen,
@@ -20,7 +21,7 @@ export default function LabelTextModal({
   }, [isOpen, initialText]);
 
   return (
-    <dialog open={isOpen} className="modal">
+    <dialog open={isOpen && features.topologyWrite} className="modal">
       <div className="modal-box">
         <h2 className="text-2xl font-bold">{t("LabelTextModalHeader")}</h2>
 
