@@ -5,7 +5,6 @@ import { FitAddon } from "@xterm/addon-fit";
 import { SerializeAddon } from "@xterm/addon-serialize";
 import classNames from "classnames";
 import { INodeState, IProjectState } from "../api/interface";
-// @ts-expect-error CSS side-effect imports are handled by the bundler.
 import "@xterm/xterm/css/xterm.css";
 import { useTranslation } from "react-i18next";
 

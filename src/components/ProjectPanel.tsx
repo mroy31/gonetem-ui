@@ -147,7 +147,7 @@ export default function ProjectPanel({
             } catch (err) {
                 return {
                     type: PrjActionKing.ERROR,
-                    error: t("ProjectPanelErrMsg", {error: err.message})
+                    error: t("ProjectPanelErrMsg", {error: err instanceof Error ? err.message : String(err)})
                 }
             }
         };

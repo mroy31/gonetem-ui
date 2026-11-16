@@ -31,7 +31,7 @@ async function createClientCredentials(
       clientCertData
     );
   } catch (err) {
-    throw new Error(`Unable to read a certificate or a key: ${err.message}`);
+    throw new Error(`Unable to read a certificate or a key: ${err instanceof Error ? err.message : String(err)}`);
   }
 }
 
@@ -85,7 +85,7 @@ export const connectToServer = async (): Promise<StringApiResponse> => {
     CLIENT = new services.NetemClient(options.server, creds);
     return await getVersion(CLIENT);
   } catch (err) {
-    return { status: false, error: err.message };
+    return { status: false, error: err instanceof Error ? err.message : String(err) };
   }
 }
 

@@ -195,6 +195,6 @@ export const handleRecordTopologyImg = async (_event: IpcMainInvokeEvent, data: 
     await writeFile(filePath, data, 'binary');
     return {status: true};
   } catch (err) {
-    return {status: false, error: err.message};
+    return {status: false, error: err instanceof Error ? err.message : String(err)};
   }
 }

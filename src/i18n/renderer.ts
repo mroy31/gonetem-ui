@@ -1,4 +1,4 @@
-import i18n, { BackendModule } from "i18next";
+import i18n, { BackendModule, type Services } from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 
@@ -6,7 +6,7 @@ const IPCBackend = (): BackendModule => {
   return {
     type: "backend",
 
-    init: function (services, _backendOptions, _i18nextOptions) {
+    init: function (this: BackendModule & { services?: Services }, services, _backendOptions, _i18nextOptions) {
       this.services = services;
     },
 

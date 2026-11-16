@@ -11,6 +11,15 @@ import { useAppContext } from "../context";
 
 const yaml = StreamLanguage.define(yamlMode.yaml);
 
+type YamlThrowShape = { message: string; mark?: { position: number } };
+
+function isYamlThrowShape(e: unknown): e is YamlThrowShape {
+  return typeof e === "object"
+    && e !== null
+    && "message" in e
+    && typeof (e as { message: unknown }).message === "string";
+}
+
 export default function TopologyEditorPanel({
   prjId,
   topology,
@@ -63,7 +72,8 @@ export default function TopologyEditorPanel({
     try {
       parser.load(view.state.doc.toString());
     } catch (e) {
-      const loc = e.mark;
+      const yamlError: YamlThrowShape = isYamlThrowShape(e) ? e : { message: String(e) };
+      const loc = yamlError.mark;
       const from = loc ? loc.position : 0;
       const to = from;
       const severity = "error";
@@ -71,7 +81,7 @@ export default function TopologyEditorPanel({
       diagnostics.push({
         from,
         to,
-        message: e.message,
+        message: yamlError.message,
         severity
       });
     }

@@ -148,7 +148,7 @@ export const handleCreateProject = async (
   } catch (err) {
     return {
       status: false,
-      error: "Unable to create empty project: " + err.message,
+      error: "Unable to create empty project: " + (err instanceof Error ? err.message : String(err)),
     };
   }
 };

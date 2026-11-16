@@ -52,10 +52,19 @@ for UI behavior).
 ## Gotchas
 
 - Frozen dependency set (do not upgrade, see
-  `openspec/changes/upgrade-dependencies-with-tests/design.md`): `google-protobuf` 3.21.x,
-  TypeScript 5.x. `package.json` `resolutions` keep a
+  `openspec/changes/archive/2026-11-06-upgrade-dependencies-with-tests/design.md`):
+  `google-protobuf` 3.21.x. `package.json` `resolutions` keep a
   single copy of `@codemirror/*` + `@lezer/common` (yarn v1 does not dedupe
   them; duplicates break CodeMirror's instanceof checks at runtime).
+- TypeScript is pinned to exactly `6.0.3` in devDependencies and is the single
+  compiler behind every TS-API tool: `yarn typecheck` (tsc resolves from the
+  project's node_modules), typescript-eslint (peer range admits 6.0.x), and the
+  editor — in VSCode run "TypeScript: Select TypeScript Version" → "Use
+  Workspace Version" so editor diagnostics match the gate. The archived
+  freeze's former 5.x pin was reversed by `upgrade-typescript-6` (its
+  rationale — native rewrite, webpack loaders not ready — was mooted by the
+  Vite migration). TS 7 stays deferred until typescript-eslint's peer range
+  admits it.
 - TypeScript config: `tsconfig.json` with `jsx: react` (classic runtime; test
   files need `import React`), `moduleResolution: bundler` (ESM-only deps like
   electron-store v12). Global API types are ambient via `include` of `types/`.
