@@ -5,6 +5,7 @@ import { FitAddon } from "@xterm/addon-fit";
 import { SerializeAddon } from "@xterm/addon-serialize";
 import classNames from "classnames";
 import { INodeState, IProjectState } from "../api/interface";
+// @ts-expect-error CSS side-effect imports are handled by the bundler.
 import "@xterm/xterm/css/xterm.css";
 import { useTranslation } from "react-i18next";
 
@@ -186,12 +187,12 @@ export default function ConsolePanel({
   if (selectedConsole == null) {
     return (
       <div className="flex flex-col w-full h-full min-h-0">
-        <div className="join join-vertical px-6 py-4">
+        <div className="join join-vertical px-6 py-4 mx-auto w-50">
           {nodes.map((node) => (
             <button
               key={node.name}
               onClick={() => openConsole(node)}
-              className="btn btn-outline btn-neutral btn-sm join-item"
+              className="btn btn-outline join-item"
             >
               <span>{node.name}</span>
             </button>
