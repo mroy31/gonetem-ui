@@ -11,7 +11,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-var jspb = require('google-protobuf');
+import jspb from 'google-protobuf';
 var goog = jspb;
 var global = (function() {
   if (this) { return this; }
@@ -21,7 +21,7 @@ var global = (function() {
   return Function('return this')();
 }.call(null));
 
-var google_protobuf_empty_pb = require('google-protobuf/google/protobuf/empty_pb.js');
+import google_protobuf_empty_pb from 'google-protobuf/google/protobuf/empty_pb.js';
 goog.object.extend(proto, google_protobuf_empty_pb);
 goog.exportSymbol('proto.netem.AckResponse', null, global);
 goog.exportSymbol('proto.netem.CaptureSrvMsg', null, global);
@@ -8030,4 +8030,33 @@ proto.netem.IfState = {
   DOWN: 1
 };
 
-goog.object.extend(exports, proto.netem);
+export const AckResponse = proto.netem.AckResponse;
+export const CaptureSrvMsg = proto.netem.CaptureSrvMsg;
+export const ConfigFilesResponse = proto.netem.ConfigFilesResponse;
+export const ConsoleCmdRequest = proto.netem.ConsoleCmdRequest;
+export const ConsoleCmdResponse = proto.netem.ConsoleCmdResponse;
+export const CopyMsg = proto.netem.CopyMsg;
+export const ExecCltMsg = proto.netem.ExecCltMsg;
+export const ExecOnceResponse = proto.netem.ExecOnceResponse;
+export const ExecSrvMsg = proto.netem.ExecSrvMsg;
+export const FileResponse = proto.netem.FileResponse;
+export const IfState = proto.netem.IfState;
+export const LinkConfig = proto.netem.LinkConfig;
+export const LinkRequest = proto.netem.LinkRequest;
+export const NodeExecOnceRequest = proto.netem.NodeExecOnceRequest;
+export const NodeIfStateRequest = proto.netem.NodeIfStateRequest;
+export const NodeInterfaceRequest = proto.netem.NodeInterfaceRequest;
+export const NodeRequest = proto.netem.NodeRequest;
+export const OpenRequest = proto.netem.OpenRequest;
+export const PrjListResponse = proto.netem.PrjListResponse;
+export const PrjOpenResponse = proto.netem.PrjOpenResponse;
+export const ProjectCloseMsg = proto.netem.ProjectCloseMsg;
+export const ProjectRequest = proto.netem.ProjectRequest;
+export const ProjectSaveMsg = proto.netem.ProjectSaveMsg;
+export const PullSrvMsg = proto.netem.PullSrvMsg;
+export const Status = proto.netem.Status;
+export const StatusCode = proto.netem.StatusCode;
+export const StatusResponse = proto.netem.StatusResponse;
+export const TopologyRunMsg = proto.netem.TopologyRunMsg;
+export const VersionResponse = proto.netem.VersionResponse;
+export const WNetworkRequest = proto.netem.WNetworkRequest;

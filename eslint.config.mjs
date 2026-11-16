@@ -8,7 +8,7 @@ export default defineConfig(
     ignores: [
       "node_modules/",
       "out/",
-      ".webpack/",
+      ".vite/",
       "dist/",
       "src/proto/",
       "app/",
@@ -17,7 +17,6 @@ export default defineConfig(
       "scripts/",
       "dev/",
       "forge.config.js",
-      "webpack.*.js",
       "postcss.config.js",
       "tailwind.config.ts",
     ],

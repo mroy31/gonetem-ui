@@ -1,5 +1,5 @@
 /**
- * This file will automatically be loaded by webpack and run in the "renderer" context.
+ * This file is the renderer entry point loaded by the root index.html and runs in the "renderer" context.
  * To learn more about the differences between the "main" and the "renderer" context in
  * Electron, visit:
  *

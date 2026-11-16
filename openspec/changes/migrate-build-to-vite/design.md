@@ -50,6 +50,8 @@ See proposal.md - Why. Current build state relevant to the approach:
 - [Student-edition build failures must still happen at config load, not at runtime] → covered by reuse of `readEditionEnv()`; tasks include running the two failing env combinations and asserting non-zero exit.
 - [Trade-off accepted: three small configs duplicate the `define` block] → Extract a tiny shared helper module if duplication feels wrong; not required.
 
+8. **Generated protobuf message modules are converted to ESM at generation time** (`scripts/proto-to-esm.mjs`, run by `build-proto.sh`). protoc emits `netem_pb.js` as CommonJS whose exports appear only through `goog.object.extend(exports, proto.netem)`; webpack tolerated this via runtime interop, but browser-native ESM (Vite dev) and Rollup cannot statically see those exports. The script rewrites the two `require()` lines to imports and the exports merge to explicit `export const` lines harvested from `goog.exportSymbol` names. `netem_grpc_pb.js` stays CommonJS (main-process only, bundled by the commonjs plugin).
+
 ## Migration Plan
 
 1. Add Vite configs + plugin swap in `forge.config.js`; adapt `src/index.ts` and `package.json` (`main`, `typecheck` script) while webpack files still exist (webpack plugin removed in the same commit set, so no intermediate state needs to build).

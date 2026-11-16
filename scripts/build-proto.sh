@@ -19,3 +19,6 @@ PROTO_DEST=./src/proto
     --ts_out=${PROTO_DEST} \
     -I ./proto \
     proto/*.proto
+
+# Rewrite generated message modules from CommonJS to ESM (required by Vite)
+node scripts/proto-to-esm.mjs

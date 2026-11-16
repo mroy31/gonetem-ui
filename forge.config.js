@@ -36,22 +36,26 @@ module.exports = {
     ],
     plugins: [
         {
-            name: "@electron-forge/plugin-webpack",
+            name: "@electron-forge/plugin-vite",
             config: {
-                mainConfig: "./webpack.main.config.js",
-                renderer: {
-                    config: "./webpack.renderer.config.js",
-                    entryPoints: [
-                        {
-                            html: "./src/index.html",
-                            js: "./src/renderer.ts",
-                            name: "main_window",
-                            preload: {
-                                js: "./src/preload.ts"
-                            }
-                        }
-                    ]
-                }
+                build: [
+                    {
+                        entry: "src/index.ts",
+                        config: "vite.main.config.mts",
+                        target: "main"
+                    },
+                    {
+                        entry: "src/preload.ts",
+                        config: "vite.preload.config.mts",
+                        target: "preload"
+                    }
+                ],
+                renderer: [
+                    {
+                        name: "main_window",
+                        config: "vite.renderer.config.mts"
+                    }
+                ]
             }
         }
     ]
