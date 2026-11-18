@@ -5,7 +5,12 @@ import tar from "tar-stream";
 import { IpcMainInvokeEvent, dialog } from "electron";
 import { CLIENT } from "./client";
 import type { NetemClient } from "../proto/netem_grpc_pb";
-import { OpenRequest, ProjectCloseMsg, ProjectRequest, ProjectSaveMsg } from "../proto/netem_pb";
+import {
+  OpenRequest,
+  ProjectCloseMsg,
+  ProjectRequest,
+  ProjectSaveMsg,
+} from "../proto/netem_pb";
 import { readStatusError, existingDirOrHome } from "./utils";
 import { getAppState, setLastProjectDir } from "./options";
 import { Empty } from "google-protobuf/google/protobuf/empty_pb";
@@ -18,7 +23,7 @@ export let CURRENT_PROJECT_FILEPATH = "";
 function openProject(
   client: NetemClient,
   filename: string,
-  data: Buffer
+  data: Buffer,
 ): Promise<StringApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to open project '${filename}.gnet': ${err}`;
@@ -42,7 +47,7 @@ function openProject(
 }
 
 export const handleOpenProject = async (
-  _event: IpcMainInvokeEvent
+  _event: IpcMainInvokeEvent,
 ): Promise<StringApiResponse> => {
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
@@ -63,7 +68,7 @@ export const handleOpenProject = async (
   });
 
   if (canceled) {
-    return { status: false, error: "Open dialog canceled" };
+    return { status: false, error: "" };
   }
 
   const filepath = filePaths[0];
@@ -75,7 +80,11 @@ export const handleOpenProject = async (
 
   try {
     const data = await fs.promises.readFile(filepath);
-    const res = await openProject(CLIENT, path.basename(filepath, ".gnet"), data);
+    const res = await openProject(
+      CLIENT,
+      path.basename(filepath, ".gnet"),
+      data,
+    );
     if (res.status) {
       CURRENT_PROJECT_ID = res.result;
       CURRENT_PROJECT_FILEPATH = filepath;
@@ -92,19 +101,21 @@ const createEmptyProject = (filePath: string): Promise<void> => {
     const dest = fs.createWriteStream(filePath, { flags: "w" });
     const pack = tar.pack();
     pack.entry({ name: "network.yml" }, "nodes:\nlinks:\nbridges:\n", (_) =>
-      pack.finalize()
+      pack.finalize(),
     );
-    pack
-      .pipe(createGzip())
-      .pipe(dest);
+    pack.pipe(createGzip()).pipe(dest);
 
-    dest.on("error", (err) => { reject(err); });
-    dest.on("finish", () => { resolve(); });
+    dest.on("error", (err) => {
+      reject(err);
+    });
+    dest.on("finish", () => {
+      resolve();
+    });
   });
 };
 
 export const handleCreateProject = async (
-  _event: IpcMainInvokeEvent
+  _event: IpcMainInvokeEvent,
 ): Promise<StringApiResponse> => {
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
@@ -138,7 +149,11 @@ export const handleCreateProject = async (
     await createEmptyProject(filePath);
     // open created project
     const data = await fs.promises.readFile(filePath);
-    const res = await openProject(CLIENT, path.basename(filePath, ".gnet"), data);
+    const res = await openProject(
+      CLIENT,
+      path.basename(filePath, ".gnet"),
+      data,
+    );
     if (res.status) {
       CURRENT_PROJECT_ID = res.result;
       CURRENT_PROJECT_FILEPATH = filePath;
@@ -148,14 +163,16 @@ export const handleCreateProject = async (
   } catch (err) {
     return {
       status: false,
-      error: "Unable to create empty project: " + (err instanceof Error ? err.message : String(err)),
+      error:
+        "Unable to create empty project: " +
+        (err instanceof Error ? err.message : String(err)),
     };
   }
 };
 
 export const handleConnectProject = async (
   _event: IpcMainInvokeEvent,
-  prjId: string
+  prjId: string,
 ): Promise<ApiResponse> => {
   CURRENT_PROJECT_ID = prjId;
   return { status: true };
@@ -188,15 +205,18 @@ function listProjects(client: NetemClient): Promise<PrjListApiResponse> {
 }
 
 export const handleListProjects = async (
-  _event: IpcMainInvokeEvent
+  _event: IpcMainInvokeEvent,
 ): Promise<PrjListApiResponse> => {
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
-  return await listProjects(CLIENT, );
+  return await listProjects(CLIENT);
 };
 
-function getProjectState(client: NetemClient, prjId: string): Promise<PrjStateApiResponse> {
+function getProjectState(
+  client: NetemClient,
+  prjId: string,
+): Promise<PrjStateApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to get status of project '${prjId}': ${err}`;
 
@@ -239,7 +259,7 @@ function getProjectState(client: NetemClient, prjId: string): Promise<PrjStateAp
 
 export const handleGetProjectState = async (
   _event: IpcMainInvokeEvent,
-  prjId: string
+  prjId: string,
 ): Promise<PrjStateApiResponse> => {
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
@@ -247,46 +267,54 @@ export const handleGetProjectState = async (
   return await getProjectState(CLIENT, prjId);
 };
 
-function saveProject(client: NetemClient, prjId: string, filePath: string): Promise<ApiResponse> {
-  const errorFmt = (err: string) =>
-    `Unable to save project '${prjId}': ${err}`;
+function saveProject(
+  client: NetemClient,
+  prjId: string,
+  filePath: string,
+): Promise<ApiResponse> {
+  const errorFmt = (err: string) => `Unable to save project '${prjId}': ${err}`;
 
   return new Promise<ApiResponse>((resolve) => {
     const request = new ProjectRequest();
     request.setId(prjId);
 
     const stub = client.projectSave(request);
-    stub.on('status', () => { resolve({ status: true }); });
-    stub.on('data', (data: ProjectSaveMsg) => { 
+    stub.on("status", () => {
+      resolve({ status: true });
+    });
+    stub.on("data", (data: ProjectSaveMsg) => {
       if (data.getCode() == ProjectSaveMsg.Code.DATA) {
         fs.writeFileSync(filePath, data.getData());
         return;
       }
-      mainWindow.webContents.send("project:save:event", data.toObject()); 
+      mainWindow.webContents.send("project:save:event", data.toObject());
     });
-    stub.on('error', (e: Error) => {
+    stub.on("error", (e: Error) => {
       resolve({
         status: false,
-        error: errorFmt(e.message)
-      })
+        error: errorFmt(e.message),
+      });
     });
   });
 }
 
 export const handleSaveProject = async (
   _event: IpcMainInvokeEvent,
-  prjId: string
+  prjId: string,
 ): Promise<ApiResponse> => {
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };
 
-  if (CURRENT_PROJECT_FILEPATH == "") 
+  if (CURRENT_PROJECT_FILEPATH == "")
     return { status: false, error: "No filepath known for open project" };
 
   return await saveProject(CLIENT, prjId, CURRENT_PROJECT_FILEPATH);
 };
 
-function closeProject(client: NetemClient, prjId: string): Promise<ApiResponse> {
+function closeProject(
+  client: NetemClient,
+  prjId: string,
+): Promise<ApiResponse> {
   const errorFmt = (err: string) =>
     `Unable to close project '${prjId}': ${err}`;
 
@@ -296,20 +324,24 @@ function closeProject(client: NetemClient, prjId: string): Promise<ApiResponse> 
 
     closeRunningConsoles();
     const stub = client.projectClose(request);
-    stub.on('status', () => { resolve({ status: true }); });
-    stub.on('data', (data: ProjectCloseMsg) => { mainWindow.webContents.send("project:close:event", data.toObject()); });
-    stub.on('error', (e: Error) => {
+    stub.on("status", () => {
+      resolve({ status: true });
+    });
+    stub.on("data", (data: ProjectCloseMsg) => {
+      mainWindow.webContents.send("project:close:event", data.toObject());
+    });
+    stub.on("error", (e: Error) => {
       resolve({
         status: false,
-        error: errorFmt(e.message)
-      })
+        error: errorFmt(e.message),
+      });
     });
   });
 }
 
 export const handleCloseProject = async (
   _event: IpcMainInvokeEvent,
-  prjId: string
+  prjId: string,
 ): Promise<ApiResponse> => {
   if (CLIENT == null)
     return { status: false, error: "Not connected to the server" };

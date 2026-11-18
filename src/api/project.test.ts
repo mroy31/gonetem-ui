@@ -354,7 +354,7 @@ describe("open / save / close project flow", () => {
     } as Awaited<ReturnType<typeof dialog.showOpenDialog>>);
 
     const err = expectErr(await handleOpenProject(IPC_EVENT));
-    expect(err.error).toBe("Open dialog canceled");
+    expect(err.error).toBe("");
     expect(mocks.options.lastProjectDir).toBe("/pristine");
   });
 
