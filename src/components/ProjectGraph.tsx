@@ -509,6 +509,23 @@ export default forwardRef<ProjectGrahHandle, PropsT>(function ProjectGraph({
     };
   }, []);
 
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const observer = new ResizeObserver(() => {
+      const cy = cyRef.current;
+      if (cy != null && !cy.destroyed()) {
+        cy.resize();
+      }
+    });
+    observer.observe(container);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   const getNodeState = (nodeId: string): INodeState | null => {
     for (const nState of prjStatus.nodes) {
       if (nState.name == nodeId) return nState;

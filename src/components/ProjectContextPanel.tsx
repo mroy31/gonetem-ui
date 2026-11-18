@@ -8,6 +8,9 @@ import { IPrjAction } from "./ProjectPanel";
 import ConsolePanel from "./ConsolePanel";
 import { features } from "../edition";
 
+const MIN_PANEL_WIDTH = 250;
+const MIN_GRAPH_WIDTH = 300;
+
 export default function ProjectContextPanel({
   prjStatus,
   topology,
@@ -32,14 +35,26 @@ export default function ProjectContextPanel({
   };
 
   useEffect(() => {
-    window.addEventListener("mousemove", (e) => {
+    const handleMouseMove = (e: MouseEvent) => {
       if (!isResized.current) return;
-      setWidth((previousWidth) => previousWidth - e.movementX);
-    });
+      setWidth((previousWidth) => {
+        const next = previousWidth - e.movementX;
+        const max = window.innerWidth - MIN_GRAPH_WIDTH;
+        return Math.max(MIN_PANEL_WIDTH, Math.min(next, max));
+      });
+    };
 
-    window.addEventListener("mouseup", () => {
+    const handleMouseUp = () => {
       isResized.current = false;
-    });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
   }, []);
 
   return (

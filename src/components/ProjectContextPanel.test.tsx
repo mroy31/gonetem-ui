@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import ProjectContextPanel from "./ProjectContextPanel";
 import { IProjectState } from "../api/interface";
 
@@ -73,5 +73,58 @@ describe("project context panel tabs per edition", () => {
     expect(screen.queryByText("Topology")).toBeNull();
     expect(screen.getByText("Console")).toBeTruthy();
     expect(screen.getByTestId("console-panel")).toBeTruthy();
+  });
+});
+
+describe("project context panel resize", () => {
+  const renderPanel = () =>
+    render(
+      <ProjectContextPanel prjStatus={PRJ_STATE} topology="" dispatch={() => {}} />
+    );
+
+  const widthDiv = (container: HTMLElement) =>
+    container.querySelector<HTMLElement>("div[style*='width']");
+
+  const innerWidth = 1024;
+  const MIN_PANEL_WIDTH = 250;
+  const MIN_GRAPH_WIDTH = 300;
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("clamps the panel to its maximum when dragged far to the left", () => {
+    vi.spyOn(window, "innerWidth", "get").mockReturnValue(innerWidth);
+    const { container } = renderPanel();
+    const handle = container.querySelector(".cursor-col-resize") as HTMLElement;
+
+    fireEvent.mouseDown(handle);
+    fireEvent.mouseMove(window, { movementX: -9000 });
+
+    const maxWidth = innerWidth - MIN_GRAPH_WIDTH;
+    expect(widthDiv(container)?.style.width).toBe(`${maxWidth / 16}rem`);
+  });
+
+  it("clamps the panel to its minimum when dragged far to the right", () => {
+    vi.spyOn(window, "innerWidth", "get").mockReturnValue(innerWidth);
+    const { container } = renderPanel();
+    const handle = container.querySelector(".cursor-col-resize") as HTMLElement;
+
+    fireEvent.mouseDown(handle);
+    fireEvent.mouseMove(window, { movementX: 9000 });
+
+    expect(widthDiv(container)?.style.width).toBe(`${MIN_PANEL_WIDTH / 16}rem`);
+  });
+
+  it("removes the window mouse listeners on unmount", () => {
+    const removeSpy = vi.spyOn(window, "removeEventListener");
+    const { unmount } = renderPanel();
+
+    unmount();
+
+    const types = removeSpy.mock.calls.map((call) => call[0]);
+    expect(types).toContain("mousemove");
+    expect(types).toContain("mouseup");
+    removeSpy.mockRestore();
   });
 });

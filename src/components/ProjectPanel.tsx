@@ -176,7 +176,7 @@ export default function ProjectPanel({
                 <span className="loading loading-bars loading-lg"></span>
             </div>
         ) : (
-            <div className="flex-1 grid grid-cols-[auto_min-content] bg-base-100 min-h-0">
+            <div className="flex-1 grid grid-cols-[minmax(0,1fr)_auto] bg-base-100 min-h-0">
                 <div className='flex flex-col h-full min-h-0'>
                     <ProjectToolbar 
                         prjStatus={state.status}
