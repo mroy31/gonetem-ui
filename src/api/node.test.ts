@@ -1,7 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { ConfigFilesResponse, IfState, NodeIfStateRequest } from "../proto/netem_pb";
+import {
+  ConfigFilesResponse,
+  ExecOnceResponse,
+  IfState,
+  NodeExecOnceRequest,
+  NodeIfStateRequest,
+  Status,
+  StatusCode,
+} from "../proto/netem_pb";
 import {
   handleNodeCapture,
+  handleNodeExecOnce,
   handleNodeRestart,
   handleNodeSetIfState,
   handleNodeStart,
@@ -79,6 +88,70 @@ describe("handleReadNodeConfigFiles", () => {
 
   it("fails fast when not connected", async () => {
     const err = expectErr(await handleReadNodeConfigFiles(IPC_EVENT, "prj1", "r1"));
+    expect(err.error).toBe("Not connected to the server");
+  });
+});
+
+// Round-trips through the wire format so bytes fields come back exactly as
+// the grpc layer yields them (a Uint8Array in google-protobuf 3.21+):
+// decoding them with String(Uint8Array) would return comma-separated byte
+// values instead of the text.
+const wireExecRes = (stdout: string, exitCode = 0, stderr = "") => {
+  const res = new ExecOnceResponse();
+  const status = new Status();
+  status.setCode(StatusCode.OK);
+  res.setStatus(status);
+  res.setExitcode(exitCode);
+  res.setStdout(Buffer.from(stdout, "utf8"));
+  res.setStderr(Buffer.from(stderr, "utf8"));
+  return ExecOnceResponse.deserializeBinary(res.serializeBinary());
+};
+
+describe("handleNodeExecOnce", () => {
+  beforeEach(() => {
+    mocks.client.current = null;
+  });
+
+  it("decodes stdout as utf-8 text", async () => {
+    let captured: NodeExecOnceRequest | null = null;
+    mocks.client.current = {
+      nodeExecOnce: (req: NodeExecOnceRequest, cb: (e: Error | null, r: unknown) => void) => {
+        captured = req;
+        cb(null, wireExecRes(`{"routerId":"1.1.1.1"}\n`));
+      },
+    };
+
+    const ok = expectOk(
+      await handleNodeExecOnce(IPC_EVENT, "prj1", "r1", ["vtysh", "-c", "show ip ospf database router json"])
+    );
+    expect(JSON.parse(ok.result)).toEqual({ routerId: "1.1.1.1" });
+    expect(captured!.getPrjid()).toBe("prj1");
+    expect(captured!.getNode()).toBe("r1");
+    expect(captured!.getCmdList()).toEqual(["vtysh", "-c", "show ip ospf database router json"]);
+  });
+
+  it("decodes stderr as utf-8 text on a non-zero exit code", async () => {
+    mocks.client.current = {
+      nodeExecOnce: (_req: unknown, cb: (e: Error | null, r: unknown) => void) =>
+        cb(null, wireExecRes("", 1, "% Command invalid at this level.")),
+    };
+
+    const err = expectErr(await handleNodeExecOnce(IPC_EVENT, "prj1", "r1", ["vtysh"]));
+    expect(err.error).toContain("cmd returns code 1");
+    expect(err.error).toContain("% Command invalid at this level.");
+  });
+
+  it("maps a transport error", async () => {
+    mocks.client.current = {
+      nodeExecOnce: unary({ err: new Error("reset by peer") }),
+    };
+
+    const err = expectErr(await handleNodeExecOnce(IPC_EVENT, "prj1", "r1", ["vtysh"]));
+    expect(err.error).toContain("reset by peer");
+  });
+
+  it("fails fast when not connected", async () => {
+    const err = expectErr(await handleNodeExecOnce(IPC_EVENT, "prj1", "r1", ["vtysh"]));
     expect(err.error).toBe("Not connected to the server");
   });
 });

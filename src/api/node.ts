@@ -318,7 +318,7 @@ function nodeExecOnce(client: NetemClient, prjId: string, nodeId: string, cmd: s
 
         const exitCode = res.getExitcode()
         if (exitCode != 0) {
-          const stderr = res.getStderr().toString()
+          const stderr = decodeB64(res.getStderr_asB64())
           resolve({
             status: false,
             error: `cmd returns code ${exitCode} - ${stderr}`
@@ -326,7 +326,7 @@ function nodeExecOnce(client: NetemClient, prjId: string, nodeId: string, cmd: s
         } else {
           resolve({
             status: true,
-            result: res.getStdout().toString()
+            result: decodeB64(res.getStdout_asB64())
           })
         }
       }

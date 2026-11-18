@@ -16,6 +16,13 @@ vi.mock("./ProjectTopoGraph", async () => {
   };
 });
 
+vi.mock("./ProjectOspfGraph", async () => {
+  const React = await import("react");
+  return {
+    default: () => React.createElement("div", { "data-testid": "ospf" }),
+  };
+});
+
 vi.mock("./ProjectContextPanel", async () => {
   const React = await import("react");
   return {
@@ -74,6 +81,7 @@ describe("project panel", () => {
     fireEvent.click(screen.getByRole("tab", { name: "Ospf" }));
     await vi.waitFor(() => {
       expect(screen.queryByTestId("graph")).toBeNull();
+      expect(screen.getByTestId("ospf")).toBeTruthy();
     });
 
     fireEvent.click(screen.getByRole("tab", { name: "Topology" }));

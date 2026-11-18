@@ -5,6 +5,7 @@ import ProjectContextPanel from "./ProjectContextPanel";
 import ProjectToolbar from "./ProjectToolbar";
 import { IProjectState } from "../api/interface";
 import ProjectTopoGraphContainer from "./ProjectTopoGraphContainer";
+import ProjectOspfGraph from "./ProjectOspfGraph";
 
 type IView = "topo" | "ospf";
 
@@ -198,6 +199,13 @@ export default function ProjectPanel({
                   topology={state.topology}
                   prjId={prjId}
                   dispatch={dispatch}
+                />
+              )}
+              {state.view == "ospf" && (
+                <ProjectOspfGraph
+                  prjId={prjId}
+                  status={state.status}
+                  topology={state.topology}
                 />
               )}
             </div>
