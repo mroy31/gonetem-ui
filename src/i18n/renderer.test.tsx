@@ -4,9 +4,7 @@ import type i18next from "i18next";
 const i18nRead = vi.fn(async (language: string) => ({
   status: true,
   result:
-    language === "fr"
-      ? {}
-      : { HelloTest: "Hello", OtherTest: "Other value" },
+    language === "fr" ? {} : { HelloTest: "Hello", OtherTest: "Other value" },
 }));
 
 const i18nCreate = vi.fn(async () => ({ status: true }));

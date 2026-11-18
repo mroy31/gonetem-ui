@@ -1,5 +1,11 @@
 import React, { useMemo, useCallback } from "react";
-import { XMarkIcon, ArrowPathIcon, PlayIcon, DocumentCheckIcon, ComputerDesktopIcon } from "@heroicons/react/24/solid";
+import {
+  XMarkIcon,
+  ArrowPathIcon,
+  PlayIcon,
+  DocumentCheckIcon,
+  ComputerDesktopIcon,
+} from "@heroicons/react/24/solid";
 import { IProjectState } from "../api/interface";
 import { IPrjAction, PrjActionKing } from "./ProjectPanel";
 import { ProgressOperation, useAppContext } from "../context";
@@ -15,8 +21,9 @@ export default function ProjectToolbar({
   onClose: () => void;
   dispatch: React.Dispatch<IPrjAction>;
 }): React.JSX.Element {
-  const {t} = useTranslation();
-  const {setError, currentPrgOperation, setCurrentPrgOperation} = useAppContext();
+  const { t } = useTranslation();
+  const { setError, currentPrgOperation, setCurrentPrgOperation } =
+    useAppContext();
 
   const runAllConsoles = useCallback(() => {
     window.api.runAllConsoles(prjStatus.id, false).then((res) => {
@@ -27,19 +34,17 @@ export default function ProjectToolbar({
   const updateState = useCallback(() => {
     window.api.getProjectState(prjStatus.id).then((res) => {
       res.status
-        ? dispatch({type: PrjActionKing.STATE, state: res.result})
+        ? dispatch({ type: PrjActionKing.STATE, state: res.result })
         : setError(res.error);
     });
-  }, [prjStatus.id])
+  }, [prjStatus.id]);
 
   const handleRun = () => {
     if (prjStatus.running) return;
 
     setCurrentPrgOperation(ProgressOperation.TopologyRun);
     window.api.runTopology(prjStatus.id).then((res) => {
-      res.status
-        ? updateState()
-        : setError(res.error);
+      res.status ? updateState() : setError(res.error);
       setCurrentPrgOperation(ProgressOperation.None);
     });
   };
@@ -48,30 +53,30 @@ export default function ProjectToolbar({
     setCurrentPrgOperation(ProgressOperation.TopologyReload);
     window.api.reloadTopology(prjStatus.id).then((res) => {
       setCurrentPrgOperation(ProgressOperation.None);
-      res.status
-        ? updateState()
-        : setError(res.error);
+      res.status ? updateState() : setError(res.error);
     });
-  }
+  };
 
   const handleSave = () => {
     setCurrentPrgOperation(ProgressOperation.ProjectSave);
     window.api.saveProject(prjStatus.id).then((res) => {
       setCurrentPrgOperation(ProgressOperation.None);
-      res.status
-        ? updateState()
-        : setError(res.error);
+      res.status ? updateState() : setError(res.error);
     });
-  }
+  };
 
-  const runBtnClasses = useMemo(() => classNames({
-    btn: true,
-    "btn-outline": true,
-    "btn-sm": true,
-    "join-item": true,
-    "btn-accent": !prjStatus.running,
-    "btn-success": prjStatus.running
-  }), [prjStatus]);
+  const runBtnClasses = useMemo(
+    () =>
+      classNames({
+        btn: true,
+        "btn-outline": true,
+        "btn-sm": true,
+        "join-item": true,
+        "btn-accent": !prjStatus.running,
+        "btn-success": prjStatus.running,
+      }),
+    [prjStatus],
+  );
 
   return (
     <div className="flex-none flex bg-base-200">
@@ -80,12 +85,14 @@ export default function ProjectToolbar({
       </div>
 
       <div className="flex-none join">
-        <button 
+        <button
           onClick={handleRun}
-          disabled={prjStatus.running || currentPrgOperation != ProgressOperation.None}
+          disabled={
+            prjStatus.running || currentPrgOperation != ProgressOperation.None
+          }
           className={runBtnClasses}
         >
-          { prjStatus.running ? (
+          {prjStatus.running ? (
             <span>{t("Running")}</span>
           ) : (
             <>
@@ -93,9 +100,8 @@ export default function ProjectToolbar({
               <span>{t("Run")}</span>
             </>
           )}
-
         </button>
-        <button 
+        <button
           onClick={handleSave}
           disabled={currentPrgOperation != ProgressOperation.None}
           className="btn btn-outline btn-sm join-item"
@@ -103,7 +109,7 @@ export default function ProjectToolbar({
           <DocumentCheckIcon className="w-5" />
           <span>{t("Save")}</span>
         </button>
-        <button 
+        <button
           onClick={handleReload}
           disabled={currentPrgOperation != ProgressOperation.None}
           className="btn btn-outline btn-sm join-item"
@@ -111,10 +117,10 @@ export default function ProjectToolbar({
           <ArrowPathIcon className="w-5" />
           <span>{t("Reload")}</span>
         </button>
-        <button 
-            className="btn btn-outline btn-sm join-item" 
-            disabled={!prjStatus.running}
-            onClick={runAllConsoles}
+        <button
+          className="btn btn-outline btn-sm join-item"
+          disabled={!prjStatus.running}
+          onClick={runAllConsoles}
         >
           <ComputerDesktopIcon className="w-5" />
           <span>{t("Consoles")}</span>

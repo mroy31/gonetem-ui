@@ -1,6 +1,5 @@
-import { createContext, useContext } from "react"
+import { createContext, useContext } from "react";
 import { IOptions } from "./api/options";
-
 
 export enum ProgressOperation {
   None = 1,
@@ -18,15 +17,15 @@ export type AppContent = {
   currentPrgOperation: ProgressOperation;
   setCurrentPrgOperation: (operation: ProgressOperation) => void;
   options: IOptions | null;
-}
+};
 
 export const AppContext = createContext<AppContent>({
-    error: '',
-    setError: (_: string) => {},
-    setInfoMsg: (_: string) => {},
-    currentPrgOperation: ProgressOperation.None,
-    setCurrentPrgOperation: (_: ProgressOperation) => {},
-    options: null,
+  error: "",
+  setError: (_: string) => {},
+  setInfoMsg: (_: string) => {},
+  currentPrgOperation: ProgressOperation.None,
+  setCurrentPrgOperation: (_: ProgressOperation) => {},
+  options: null,
 });
 
 export const useAppContext = () => useContext(AppContext);

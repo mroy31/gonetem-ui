@@ -13,7 +13,7 @@ export default function LabelTextModal({
   onClose: () => void;
   onConfirm: (text: string) => void;
 }): React.JSX.Element {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const [text, setText] = useState(initialText);
 
   useEffect(() => {

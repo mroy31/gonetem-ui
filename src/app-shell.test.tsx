@@ -2,9 +2,12 @@ import { describe, it, expect, vi, beforeAll } from "vitest";
 import { screen } from "@testing-library/react";
 
 vi.mock("cytoscape", () => ({
-  default: Object.assign(() => ({
-    on: () => {},
-  }), { use: () => {} }),
+  default: Object.assign(
+    () => ({
+      on: () => {},
+    }),
+    { use: () => {} },
+  ),
 }));
 
 const EN_FIXTURE: Record<string, string> = {

@@ -9,40 +9,40 @@ const PrjListTable = ({
   prjList: IProject[];
   onSelect: (prjId: string) => void;
 }): React.JSX.Element => {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   if (prjList.length > 0)
     return (
-            <table className="table table-zebra p-1">
-              <thead>
-                <tr>
-                  <th>{t("Name")}</th>
-                  <th>{t("OpenAt")}</th>
-                  <th></th>
-                </tr>
-              </thead>
+      <table className="table table-zebra p-1">
+        <thead>
+          <tr>
+            <th>{t("Name")}</th>
+            <th>{t("OpenAt")}</th>
+            <th></th>
+          </tr>
+        </thead>
 
-              <tbody>
-                {prjList.map((prj) => (
-                  <tr key={prj.id}>
-                    <td>{prj.name}</td>
-                    <td>{prj.openAt}</td>
-                    <td>
-                      <button
-                        onClick={() => onSelect(prj.id)} 
-                        className="btn btn-outline btn-primary btn-sm">
-                        {t("Select")}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <tbody>
+          {prjList.map((prj) => (
+            <tr key={prj.id}>
+              <td>{prj.name}</td>
+              <td>{prj.openAt}</td>
+              <td>
+                <button
+                  onClick={() => onSelect(prj.id)}
+                  className="btn btn-outline btn-primary btn-sm"
+                >
+                  {t("Select")}
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     );
 
-  return <p className="italic p-3">{t("NoProjectOpenMsg")}</p>
-}
-
+  return <p className="italic p-3">{t("NoProjectOpenMsg")}</p>;
+};
 
 export default function ProjectListModal({
   isOpen,
@@ -51,7 +51,7 @@ export default function ProjectListModal({
   isOpen: boolean;
   onClose: (selectedPrj: string) => void;
 }): React.JSX.Element {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const [prjList, setPrjList] = useState<IProject[]>([]);
   const [error, setError] = useState("");
 
@@ -64,7 +64,7 @@ export default function ProjectListModal({
 
       setError("");
       setPrjList(res.result);
-    })
+    });
   }, [isOpen]);
 
   return (
@@ -72,18 +72,13 @@ export default function ProjectListModal({
       <div className="modal-box">
         <h3>{t("SelectProjectHeader")}</h3>
 
-        {
-          error ? (
-            <div className="alert alert-error">
-              <span>{error}</span>
-            </div>
-          ) : (
-            <PrjListTable 
-              prjList={prjList}
-              onSelect={onClose}
-            />
-          )
-        }
+        {error ? (
+          <div className="alert alert-error">
+            <span>{error}</span>
+          </div>
+        ) : (
+          <PrjListTable prjList={prjList} onSelect={onClose} />
+        )}
 
         <div className="modal-action">
           <button onClick={() => onClose("")} className="btn">

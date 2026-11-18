@@ -31,6 +31,7 @@
     "LayoutHierarchical": "Hiérarchique",
     "Configuration": "Configuration",
     "Topology": "Topologie",
+    "Ospf": "OSPF",
     "Console": "Console",
     "TopoPositionSavedMsg": "La position des noeuds a été sauvegardées dans le fichier de topo. N'oublier pas de sauvegarder le projet",
     "ProjectPanelErrMsg": "Impossible d'initialiser le panneau: {{error}}",

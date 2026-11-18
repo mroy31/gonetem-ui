@@ -20,10 +20,10 @@ export default function ProjectContextPanel({
   topology: string;
   dispatch: React.Dispatch<IPrjAction>;
 }): React.JSX.Element {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const [width, setWidth] = useState(450);
   const [selectedTab, setSelectedTab] = useState<"topo" | "config" | "console">(
-    features.nodeConfigRead ? "config" : "console"
+    features.nodeConfigRead ? "config" : "console",
   );
   const isResized = useRef(false);
 
@@ -110,9 +110,7 @@ export default function ProjectContextPanel({
               dispatch={dispatch}
             />
           )}
-          {selectedTab == "console" && (
-            <ConsolePanel prjStatus={prjStatus} />
-          )}
+          {selectedTab == "console" && <ConsolePanel prjStatus={prjStatus} />}
         </div>
       </div>
     </div>

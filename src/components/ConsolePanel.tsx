@@ -25,11 +25,11 @@ const TermPanel = ({
   nodeName: string;
   onClose: () => void;
 }): React.JSX.Element => {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const previousNodeName = usePrevious(nodeName);
   const [isTermInit, setTermInit] = useState<boolean>(false);
   const [resizeListener, setResizeListener] = useState<IDisposable | null>(
-    null
+    null,
   );
   const [dataListener, setDataListener] = useState<IDisposable | null>(null);
 
@@ -78,7 +78,9 @@ const TermPanel = ({
               .consoleSaveState(nodeName, serializeAddon.current.serialize())
               .then((res) => {
                 if (!res.status)
-                  console.log(t("ConsoleSaveStateErrorMsg", {name: nodeName}));
+                  console.log(
+                    t("ConsoleSaveStateErrorMsg", { name: nodeName }),
+                  );
               });
           });
           break;
@@ -100,16 +102,22 @@ const TermPanel = ({
         return;
       }
 
-      setDataListener(term.current.onData((data: string) => {
-        window.api.consoleWrite(nodeName, data).then((res) => {
-          if (!res.status) console.log(res.error);
-        });
-      }));
-      setResizeListener(term.current.onResize((size) => {
-        window.api.consoleResize(nodeName, size.cols, size.rows).then((res) => {
-          if (!res.status) console.log(res.error);
-        });
-      }));
+      setDataListener(
+        term.current.onData((data: string) => {
+          window.api.consoleWrite(nodeName, data).then((res) => {
+            if (!res.status) console.log(res.error);
+          });
+        }),
+      );
+      setResizeListener(
+        term.current.onResize((size) => {
+          window.api
+            .consoleResize(nodeName, size.cols, size.rows)
+            .then((res) => {
+              if (!res.status) console.log(res.error);
+            });
+        }),
+      );
 
       if (res.result != "") {
         term.current.write(res.result);
@@ -134,14 +142,14 @@ export default function ConsolePanel({
 }: {
   prjStatus: IProjectState;
 }): React.JSX.Element {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const [nodes, setNodes] = useState<INodeState[]>([]);
   const [selectedConsole, setSelectedConsole] = useState<string | null>(null);
   const [runningConsoles, setRunningConsoles] = useState<string[]>([]);
 
   const closeConsole = useCallback(() => {
     const newRunningConsoles = runningConsoles.filter(
-      (n) => n != selectedConsole
+      (n) => n != selectedConsole,
     );
     setRunningConsoles(newRunningConsoles);
 
@@ -163,7 +171,7 @@ export default function ConsolePanel({
         setRunningConsoles(
           newNodes
             .filter((n) => res.result?.includes(n.name))
-            .map((n) => n.name)
+            .map((n) => n.name),
         );
         if (res.result.length > 0) {
           const name = res.result[0];

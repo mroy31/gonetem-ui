@@ -30,16 +30,20 @@ afterEach(() => {
 describe("options modal", () => {
   it("maps isOpen to the dialog open attribute", () => {
     const { container, rerender } = render(
-      <OptionsModal options={OPTIONS} isOpen={false} setIsOpen={() => {}} />
+      <OptionsModal options={OPTIONS} isOpen={false} setIsOpen={() => {}} />,
     );
     expect(container.querySelector("dialog")?.open).toBe(false);
 
-    rerender(<OptionsModal options={OPTIONS} isOpen={true} setIsOpen={() => {}} />);
+    rerender(
+      <OptionsModal options={OPTIONS} isOpen={true} setIsOpen={() => {}} />,
+    );
     expect(container.querySelector("dialog")?.open).toBe(true);
   });
 
   it("renders all five labeled fields as fieldsets with labelable inputs", () => {
-    render(<OptionsModal options={OPTIONS} isOpen={true} setIsOpen={() => {}} />);
+    render(
+      <OptionsModal options={OPTIONS} isOpen={true} setIsOpen={() => {}} />,
+    );
 
     for (const label of [
       "ServerURILabel",
@@ -53,7 +57,9 @@ describe("options modal", () => {
   });
 
   it("toggles both checkboxes on click", () => {
-    render(<OptionsModal options={OPTIONS} isOpen={true} setIsOpen={() => {}} />);
+    render(
+      <OptionsModal options={OPTIONS} isOpen={true} setIsOpen={() => {}} />,
+    );
 
     const boxes = screen.getAllByRole("checkbox");
     expect(boxes.length).toBe(2);
@@ -67,15 +73,19 @@ describe("options modal", () => {
 
   it("saves edited values and closes on success", () => {
     const setIsOpen = vi.fn();
-    render(<OptionsModal options={OPTIONS} isOpen={true} setIsOpen={setIsOpen} />);
+    render(
+      <OptionsModal options={OPTIONS} isOpen={true} setIsOpen={setIsOpen} />,
+    );
 
-    const serverInput = screen.getByLabelText("ServerURILabel") as HTMLInputElement;
+    const serverInput = screen.getByLabelText(
+      "ServerURILabel",
+    ) as HTMLInputElement;
     fireEvent.change(serverInput, { target: { value: "remote:9999" } });
 
     fireEvent.click(screen.getByText("Save"));
 
     expect(setOptions).toHaveBeenCalledWith(
-      expect.objectContaining({ server: "remote:9999" })
+      expect.objectContaining({ server: "remote:9999" }),
     );
     return vi.waitFor(() => {
       expect(setIsOpen).toHaveBeenCalledWith(false);
@@ -84,7 +94,9 @@ describe("options modal", () => {
 
   it("closes via the Close button", () => {
     const setIsOpen = vi.fn();
-    render(<OptionsModal options={OPTIONS} isOpen={true} setIsOpen={setIsOpen} />);
+    render(
+      <OptionsModal options={OPTIONS} isOpen={true} setIsOpen={setIsOpen} />,
+    );
 
     fireEvent.click(screen.getByText("Close"));
     expect(setIsOpen).toHaveBeenCalledWith(false);

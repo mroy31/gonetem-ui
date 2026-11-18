@@ -5,7 +5,7 @@ import { type Diagnostic, linter, lintGutter } from "@codemirror/lint";
 import { StreamLanguage } from "@codemirror/language";
 import { oneDark } from "@codemirror/theme-one-dark";
 import * as yamlMode from "@codemirror/legacy-modes/mode/yaml";
-import parser from 'js-yaml';
+import parser from "js-yaml";
 import { IPrjAction, PrjActionKing } from "./ProjectPanel";
 import { useAppContext } from "../context";
 
@@ -14,10 +14,12 @@ const yaml = StreamLanguage.define(yamlMode.yaml);
 type YamlThrowShape = { message: string; mark?: { position: number } };
 
 function isYamlThrowShape(e: unknown): e is YamlThrowShape {
-  return typeof e === "object"
-    && e !== null
-    && "message" in e
-    && typeof (e as { message: unknown }).message === "string";
+  return (
+    typeof e === "object" &&
+    e !== null &&
+    "message" in e &&
+    typeof (e as { message: unknown }).message === "string"
+  );
 }
 
 export default function TopologyEditorPanel({
@@ -25,14 +27,14 @@ export default function TopologyEditorPanel({
   topology,
   dispatch,
 }: {
-  prjId: string,
+  prjId: string;
   topology: string;
   dispatch: React.Dispatch<IPrjAction>;
 }): React.JSX.Element {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const { setError } = useAppContext();
   const [content, setContent] = useState(topology);
-  const [ showCheckMsg, setShowCheckMsg ] = useState(false);
+  const [showCheckMsg, setShowCheckMsg] = useState(false);
   const [height, setHeight] = useState("200px");
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -51,41 +53,40 @@ export default function TopologyEditorPanel({
 
   const handleWrite = () => {
     window.api.writeTopologyFile(prjId, content).then((res) => {
-      res.status 
-        ? dispatch({type: PrjActionKing.TOPOLOGY, topology: content}) 
+      res.status
+        ? dispatch({ type: PrjActionKing.TOPOLOGY, topology: content })
         : setError(res.error);
     });
-  }
+  };
 
   const handleCheck = () => {
     window.api.checkTopologyFile(prjId).then((res) => {
-      res.status 
-        ? setShowCheckMsg(true)
-        : setError(res.error);
+      res.status ? setShowCheckMsg(true) : setError(res.error);
     });
-  }
-
+  };
 
   const yamlLinter = linter((view) => {
     const diagnostics: Diagnostic[] = [];
-  
+
     try {
       parser.load(view.state.doc.toString());
     } catch (e) {
-      const yamlError: YamlThrowShape = isYamlThrowShape(e) ? e : { message: String(e) };
+      const yamlError: YamlThrowShape = isYamlThrowShape(e)
+        ? e
+        : { message: String(e) };
       const loc = yamlError.mark;
       const from = loc ? loc.position : 0;
       const to = from;
       const severity = "error";
-  
+
       diagnostics.push({
         from,
         to,
         message: yamlError.message,
-        severity
+        severity,
       });
     }
-  
+
     return diagnostics;
   });
 
@@ -93,7 +94,7 @@ export default function TopologyEditorPanel({
     <div className="flex flex-col w-full h-full min-h-0">
       <div className="bg-base-200 flex-none flex justify-between align-middle p-2">
         <div>
-          { content != topology ? (
+          {content != topology ? (
             <span className="font-semibold">{t("Modified")}</span>
           ) : (
             <span className="italic">{t("NotModified")}</span>
@@ -101,10 +102,11 @@ export default function TopologyEditorPanel({
         </div>
 
         <div className="join">
-          <button 
+          <button
             onClick={handleCheck}
             disabled={content != topology}
-            className="btn btn-sm join-item">
+            className="btn btn-sm join-item"
+          >
             {t("Check")}
           </button>
           <button
@@ -118,26 +120,25 @@ export default function TopologyEditorPanel({
       </div>
 
       <div className="flex-1 min-h-0" ref={containerRef}>
-          <CodeMirror
-            theme={oneDark}
-            height={height}
-            maxHeight={height}
-            value={content}
-            extensions={[yaml, lintGutter(), yamlLinter]}
-            onChange={(value) => setContent(value)}
-          />
+        <CodeMirror
+          theme={oneDark}
+          height={height}
+          maxHeight={height}
+          value={content}
+          extensions={[yaml, lintGutter(), yamlLinter]}
+          onChange={(value) => setContent(value)}
+        />
       </div>
 
-
-      { showCheckMsg && (
+      {showCheckMsg && (
         <div className="toast">
           <div className="alert alert-success flex gap-2 align-middle">
             <span>{t("TopologyOK")}</span>
             <button
-                className='btn btn-outline btn-neutral'
-                onClick={() => setShowCheckMsg(false)}
+              className="btn btn-outline btn-neutral"
+              onClick={() => setShowCheckMsg(false)}
             >
-                X
+              X
             </button>
           </div>
         </div>

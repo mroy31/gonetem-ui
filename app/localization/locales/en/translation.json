@@ -31,6 +31,7 @@
     "LayoutHierarchical": "Hierarchical",
     "Configuration": "Configuration",
     "Topology": "Topology",
+    "Ospf": "OSPF",
     "Console": "Console",
     "TopoPositionSavedMsg": "Node positions saved in the topology file, do not forget to save the project",
     "ProjectPanelErrMsg": "Unable to init panel {{error}}",

@@ -25,7 +25,7 @@ const LabelContextMenu = ({
   onAdd: () => void;
   onDelete: () => void;
 }): React.JSX.Element | null => {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   if (!features.topologyWrite || menu.mode == "") return null;
 

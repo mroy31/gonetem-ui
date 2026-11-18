@@ -4,6 +4,7 @@ import {
   CaptureSrvMsg,
   ConfigFilesResponse,
   IfState,
+  NodeExecOnceRequest,
   NodeIfStateRequest,
   NodeInterfaceRequest,
   NodeRequest,
@@ -13,7 +14,6 @@ import { CLIENT } from "./client";
 import type { NetemClient } from "../proto/netem_grpc_pb";
 import { getOptions } from "./options";
 import { decodeB64, findExecutable, readStatusError } from "./utils";
-import { NodeExecOnceRequest } from "../proto/netem_pb";
 
 const consoleCmd = async (
   prjId: string,

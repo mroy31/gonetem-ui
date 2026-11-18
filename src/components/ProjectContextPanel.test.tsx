@@ -25,15 +25,23 @@ vi.mock("react-i18next", () => ({
 
 vi.mock("./TopologyEditorPanel", async () => {
   const React = await import("react");
-  return { default: () => React.createElement("div", { "data-testid": "topo-panel" }) };
+  return {
+    default: () => React.createElement("div", { "data-testid": "topo-panel" }),
+  };
 });
 vi.mock("./ConfigurationViewerPanel", async () => {
   const React = await import("react");
-  return { default: () => React.createElement("div", { "data-testid": "config-panel" }) };
+  return {
+    default: () =>
+      React.createElement("div", { "data-testid": "config-panel" }),
+  };
 });
 vi.mock("./ConsolePanel", async () => {
   const React = await import("react");
-  return { default: () => React.createElement("div", { "data-testid": "console-panel" }) };
+  return {
+    default: () =>
+      React.createElement("div", { "data-testid": "console-panel" }),
+  };
 });
 
 const PRJ_STATE = {
@@ -54,7 +62,11 @@ describe("project context panel tabs per edition", () => {
   it("full edition shows Configuration, Topology and Console tabs", () => {
     setFeatures(true);
     render(
-      <ProjectContextPanel prjStatus={PRJ_STATE} topology="" dispatch={() => {}} />
+      <ProjectContextPanel
+        prjStatus={PRJ_STATE}
+        topology=""
+        dispatch={() => {}}
+      />,
     );
 
     expect(screen.getByText("Configuration")).toBeTruthy();
@@ -66,7 +78,11 @@ describe("project context panel tabs per edition", () => {
   it("student edition shows only the Console tab", () => {
     setFeatures(false);
     render(
-      <ProjectContextPanel prjStatus={PRJ_STATE} topology="" dispatch={() => {}} />
+      <ProjectContextPanel
+        prjStatus={PRJ_STATE}
+        topology=""
+        dispatch={() => {}}
+      />,
     );
 
     expect(screen.queryByText("Configuration")).toBeNull();
@@ -79,7 +95,11 @@ describe("project context panel tabs per edition", () => {
 describe("project context panel resize", () => {
   const renderPanel = () =>
     render(
-      <ProjectContextPanel prjStatus={PRJ_STATE} topology="" dispatch={() => {}} />
+      <ProjectContextPanel
+        prjStatus={PRJ_STATE}
+        topology=""
+        dispatch={() => {}}
+      />,
     );
 
   const widthDiv = (container: HTMLElement) =>

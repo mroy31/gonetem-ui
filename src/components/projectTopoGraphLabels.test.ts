@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import cytoscape from "cytoscape";
 import YAML from "yaml";
-import { getElements, cyStyle } from "./ProjectGraph";
+import { getElements, cyStyle } from "./ProjectTopoGraph";
 import { applyLabelConfirm, mergeLabelsIntoTopology, serializeLabels } from "./topologyLabels";
 import { IProjectState } from "../api/interface";
 

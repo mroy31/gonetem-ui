@@ -21,19 +21,22 @@ const NodeContextMenu = ({
   state: INodeState | null;
   onHide: (state: boolean) => void;
 }): React.JSX.Element | null => {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const { setError } = useAppContext();
   const [loading, setLoading] = useState("");
 
-  const handleRunConsole = useCallback((shell: boolean) => {
-    if (state?.running && loading == "") {
-      window.api
-        .runNodeConsole(contextMenu.prjId, contextMenu.nodeId, shell)
-        .then((res) => {
-          res.status ? onHide(false) : setError(res.error);
-        });
-    }
-  }, [contextMenu, state?.running]);
+  const handleRunConsole = useCallback(
+    (shell: boolean) => {
+      if (state?.running && loading == "") {
+        window.api
+          .runNodeConsole(contextMenu.prjId, contextMenu.nodeId, shell)
+          .then((res) => {
+            res.status ? onHide(false) : setError(res.error);
+          });
+      }
+    },
+    [contextMenu, state?.running],
+  );
 
   const handleStart = useCallback(() => {
     if (!state?.running && loading == "") {
@@ -89,7 +92,7 @@ const NodeContextMenu = ({
         }
       }
     },
-    [contextMenu, state?.running]
+    [contextMenu, state?.running],
   );
 
   const handleIfState = useCallback(
@@ -100,7 +103,12 @@ const NodeContextMenu = ({
         if (match != null && match.length > 1) {
           const ifIndex = parseInt(match[1]);
           window.api
-            .runNodeSetIfState(contextMenu.prjId, contextMenu.nodeId, ifIndex, up)
+            .runNodeSetIfState(
+              contextMenu.prjId,
+              contextMenu.nodeId,
+              ifIndex,
+              up,
+            )
             .then((res) => {
               setLoading("");
               res.status ? onHide(true) : setError(res.error);
@@ -108,7 +116,7 @@ const NodeContextMenu = ({
         }
       }
     },
-    [contextMenu, state?.running]
+    [contextMenu, state?.running],
   );
 
   const actionClasses = classNames({ "menu-disabled": loading != "" });
@@ -123,7 +131,8 @@ const NodeContextMenu = ({
     >
       <ul className="menu p-1">
         <li className="menu-title">
-          {contextMenu.nodeId} ({state.running ? t("Running") : t("NotRunning")})
+          {contextMenu.nodeId} ({state.running ? t("Running") : t("NotRunning")}
+          )
         </li>
         {!state.running && (
           <li className={actionClasses}>
@@ -136,13 +145,11 @@ const NodeContextMenu = ({
           <>
             <li className={actionClasses}>
               <a onClick={() => handleRunConsole(false)}>
-                { t("ExternalConsole") }
+                {t("ExternalConsole")}
               </a>
             </li>
             <li className={actionClasses}>
-              <a onClick={() => handleRunConsole(true)}>
-                { t("DebugShell") }
-              </a>
+              <a onClick={() => handleRunConsole(true)}>{t("DebugShell")}</a>
             </li>
             <li className={actionClasses}>
               <a onClick={handleStop}>
@@ -157,7 +164,9 @@ const NodeContextMenu = ({
             <li>
               <details>
                 <summary>
-                  {loading == "capture" ? t("CaptureProgressMsg") : t("Capture")}
+                  {loading == "capture"
+                    ? t("CaptureProgressMsg")
+                    : t("Capture")}
                 </summary>
                 <ul>
                   {state.interfaces
@@ -172,48 +181,44 @@ const NodeContextMenu = ({
                 </ul>
               </details>
             </li>
-            {
-              state.interfaces
-                .filter((int) => int.state == IfState.UP).length > 0 && (
-                  <li>
-                    <details>
-                      <summary>{ t("ShutdownInterface") }</summary>
-                      <ul>
-                        {state.interfaces
-                          .filter((int) => int.state == IfState.UP)
-                          .map((int) => (
-                            <li key={int.name}>
-                              <a onClick={() => handleIfState(int.name, false)}>
-                                {int.name}
-                              </a>
-                            </li>
-                          ))}
-                      </ul>
-                    </details>
-                  </li>
-              )
-            }
-            {
-              state.interfaces
-                .filter((int) => int.state == IfState.DOWN).length > 0 && (
-                  <li>
-                    <details>
-                      <summary>{ t("EnableInterface") }</summary>
-                      <ul>
-                        {state.interfaces
-                          .filter((int) => int.state == IfState.DOWN)
-                          .map((int) => (
-                            <li key={int.name}>
-                              <a onClick={() => handleIfState(int.name, true)}>
-                                {int.name}
-                              </a>
-                            </li>
-                          ))}
-                      </ul>
-                    </details>
-                  </li>
-              )
-            }
+            {state.interfaces.filter((int) => int.state == IfState.UP).length >
+              0 && (
+              <li>
+                <details>
+                  <summary>{t("ShutdownInterface")}</summary>
+                  <ul>
+                    {state.interfaces
+                      .filter((int) => int.state == IfState.UP)
+                      .map((int) => (
+                        <li key={int.name}>
+                          <a onClick={() => handleIfState(int.name, false)}>
+                            {int.name}
+                          </a>
+                        </li>
+                      ))}
+                  </ul>
+                </details>
+              </li>
+            )}
+            {state.interfaces.filter((int) => int.state == IfState.DOWN)
+              .length > 0 && (
+              <li>
+                <details>
+                  <summary>{t("EnableInterface")}</summary>
+                  <ul>
+                    {state.interfaces
+                      .filter((int) => int.state == IfState.DOWN)
+                      .map((int) => (
+                        <li key={int.name}>
+                          <a onClick={() => handleIfState(int.name, true)}>
+                            {int.name}
+                          </a>
+                        </li>
+                      ))}
+                  </ul>
+                </details>
+              </li>
+            )}
           </>
         )}
       </ul>

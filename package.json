@@ -12,7 +12,9 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "format": "prettier --write \"**/*.tsx\"",
+    "format:check": "prettier --check \"**/*.tsx\""
   },
   "keywords": [],
   "author": {
@@ -51,6 +53,7 @@
     "grpc_tools_node_protoc_ts": "~5.3.3",
     "jsdom": "^31.0.0",
     "postcss": "^8.5.32",
+    "prettier": "^3.10.1",
     "tailwindcss": "^4.3.4",
     "typescript": "6.0.3",
     "typescript-eslint": "^8.72.0",

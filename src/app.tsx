@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { I18nextProvider, useTranslation } from 'react-i18next';
+import { I18nextProvider, useTranslation } from "react-i18next";
 import {
   FolderOpenIcon,
   WrenchScrewdriverIcon,
@@ -8,7 +8,7 @@ import {
   BoltIcon,
   CloudArrowDownIcon,
 } from "@heroicons/react/24/solid";
-import i18n from './i18n/renderer';
+import i18n from "./i18n/renderer";
 import OptionsModal from "./components/OptionsModal";
 import { IOptions } from "./api/options";
 import { features, edition } from "./edition";
@@ -19,7 +19,9 @@ import { AppContext, ProgressOperation } from "./context";
 import ProgressTopologyRun from "./components/ProgressTopologyRun";
 import ProgressProjectClose from "./components/ProgressProjectClose";
 import ProgressProjectSave from "./components/ProgressProjectSave";
-import NodeMessagesToast, { INodeMessages } from "./components/NodeMessagesToast";
+import NodeMessagesToast, {
+  INodeMessages,
+} from "./components/NodeMessagesToast";
 import ProgressServerPull from "./components/ProgressServerPull";
 
 export default function App(): React.JSX.Element {
@@ -29,7 +31,8 @@ export default function App(): React.JSX.Element {
   const [prjListModalOpen, setprjListModalOpen] = useState(false);
   const [options, setOptions] = useState<IOptions | null>(null);
   const [currentPrj, setCurrentPrj] = useState("");
-  const [currentPrgOperation, setCurrentPrgOperation] = useState<ProgressOperation>(ProgressOperation.None);
+  const [currentPrgOperation, setCurrentPrgOperation] =
+    useState<ProgressOperation>(ProgressOperation.None);
   const [nodeMessages, setNodeMessages] = useState<INodeMessages[]>([]);
   const [error, setError] = useState("");
   const [infoMsg, setInfoMsg] = useState("");
@@ -98,149 +101,156 @@ export default function App(): React.JSX.Element {
     setCurrentPrgOperation(ProgressOperation.None);
 
     if (!res.status) setError(res.error);
-  }
+  };
 
   const connected = version != "";
   return (
-    <AppContext.Provider 
+    <AppContext.Provider
       value={{
-        error, setError, 
-        options, setInfoMsg,
-        currentPrgOperation, setCurrentPrgOperation}}>
+        error,
+        setError,
+        options,
+        setInfoMsg,
+        currentPrgOperation,
+        setCurrentPrgOperation,
+      }}
+    >
+      <div className="flex flex-col h-screen">
+        <div className="navbar bg-base-200 flex-none">
+          <div className="flex-1">
+            <span className="btn btn-ghost text-xl">GONETEM UI</span>
+            {edition === "student" && (
+              <span className="badge badge-secondary align-middle">
+                {t("StudentEditionBadge")}
+              </span>
+            )}
+          </div>
 
-    <div className="flex flex-col h-screen">
-      <div className="navbar bg-base-200 flex-none">
-        <div className="flex-1">
-          <span className="btn btn-ghost text-xl">GONETEM UI</span>
-          {edition === "student" && (
-            <span className="badge badge-secondary align-middle">
-              {t("StudentEditionBadge")}
-            </span>
-          )}
+          <div className="flex-none flex">
+            {features.optionsWrite && (
+              <div className="flex gap-1 align-middle">
+                <div className="join px-1">
+                  <button
+                    onClick={() => setOptionsModalOpen(true)}
+                    className="btn btn-outline btn-sm join-item"
+                  >
+                    <WrenchScrewdriverIcon className="w-5" />
+                    <span>{t("Options")}</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="divider divider-horizontal bg-base-content w-1"></div>
+
+            <div>
+              {version ? (
+                <span className="italic">
+                  {t("ConnectedHeader", { version })}
+                </span>
+              ) : (
+                <button
+                  className="btn btn-ghost btn-primary btn-sm"
+                  onClick={handleConnect}
+                >
+                  {t("ConnectServerHeader")}
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
-        <div className="flex-none flex">
-          {features.optionsWrite && (
-            <div className="flex gap-1 align-middle">
-              <div className="join px-1">
+        {currentPrj != "" ? (
+          <ProjectPanel prjId={currentPrj} onClose={handleCloseProject} />
+        ) : (
+          <div className="flex-1 mt-10 flex justify-center align-middle h-full min-h-0">
+            <div className="flex gap-2">
+              <div className="join join-vertical px-2">
                 <button
-                  onClick={() => setOptionsModalOpen(true)}
+                  disabled={!connected || currentPrj != ""}
+                  onClick={handleOpenProject}
+                  className="btn btn-outline btn-accent btn-sm join-item"
+                >
+                  <FolderOpenIcon className="w-5" />
+                  <span>{t("OpenProjectLabel")}</span>
+                </button>
+                <button
+                  disabled={!connected || currentPrj != ""}
+                  onClick={handleCreateProject}
                   className="btn btn-outline btn-sm join-item"
                 >
-                  <WrenchScrewdriverIcon className="w-5" />
-                  <span>{ t("Options") }</span>
+                  <PlusIcon className="w-5" />
+                  <span>{t("CreateProjectLabel")}</span>
+                </button>
+                <button
+                  disabled={!connected || currentPrj != ""}
+                  onClick={() => setprjListModalOpen(true)}
+                  className="btn btn-outline btn-sm join-item"
+                >
+                  <BoltIcon className="w-5" />
+                  <span>{t("ConnectToProjectLabel")}</span>
+                </button>
+                <button
+                  disabled={!connected || currentPrj != ""}
+                  onClick={handleServerPullImages}
+                  className="btn btn-outline btn-sm join-item"
+                >
+                  <CloudArrowDownIcon className="w-5" />
+                  <span>{t("PullDockerImgLabel")}</span>
                 </button>
               </div>
             </div>
-          )}
-
-          <div className="divider divider-horizontal bg-base-content w-1"></div>
-
-          <div>
-            {version ? (
-              <span className="italic">{t("ConnectedHeader", {version})}</span>
-            ) : (
-              <button
-                className="btn btn-ghost btn-primary btn-sm"
-                onClick={handleConnect}
-              >
-                {t("ConnectServerHeader")}
-              </button>
-            )}
           </div>
-        </div>
+        )}
+
+        {connected && (
+          <ProjectListModal
+            isOpen={prjListModalOpen}
+            onClose={handleConnectProject}
+          />
+        )}
+
+        {features.optionsWrite && options && (
+          <OptionsModal
+            options={options}
+            isOpen={optionsModalOpen}
+            setIsOpen={setOptionsModalOpen}
+          />
+        )}
+
+        {error != "" && (
+          <MsgToast type="error" msg={error} clearMsg={() => setError("")} />
+        )}
+
+        {infoMsg != "" && (
+          <MsgToast
+            type="success"
+            msg={infoMsg}
+            clearMsg={() => setInfoMsg("")}
+          />
+        )}
+
+        {nodeMessages.length > 0 && (
+          <NodeMessagesToast
+            nodeMessages={nodeMessages}
+            clearNodeMessages={() => setNodeMessages([])}
+          />
+        )}
+
+        {(currentPrgOperation == ProgressOperation.TopologyRun ||
+          currentPrgOperation == ProgressOperation.TopologyReload) && (
+          <ProgressTopologyRun setNodeMessages={setNodeMessages} />
+        )}
+        {currentPrgOperation == ProgressOperation.ProjectClose && (
+          <ProgressProjectClose />
+        )}
+        {currentPrgOperation == ProgressOperation.ProjectSave && (
+          <ProgressProjectSave />
+        )}
+        {currentPrgOperation == ProgressOperation.ServerPullImages && (
+          <ProgressServerPull />
+        )}
       </div>
-
-      {currentPrj != "" ? (
-        <ProjectPanel prjId={currentPrj} onClose={handleCloseProject} />
-      ) : (
-        <div className="flex-1 mt-10 flex justify-center align-middle h-full min-h-0">
-          <div className="flex gap-2">
-            <div className="join join-vertical px-2">
-              <button
-                disabled={!connected || currentPrj != ""}
-                onClick={handleOpenProject}
-                className="btn btn-outline btn-accent btn-sm join-item"
-              >
-                <FolderOpenIcon className="w-5" />
-                <span>{t("OpenProjectLabel")}</span>
-              </button>
-              <button
-                disabled={!connected || currentPrj != ""}
-                onClick={handleCreateProject}
-                className="btn btn-outline btn-sm join-item"
-              >
-                <PlusIcon className="w-5" />
-                <span>{t("CreateProjectLabel")}</span>
-              </button>
-              <button
-                disabled={!connected || currentPrj != ""}
-                onClick={() => setprjListModalOpen(true)}
-                className="btn btn-outline btn-sm join-item"
-              >
-                <BoltIcon className="w-5" />
-                <span>{t("ConnectToProjectLabel")}</span>
-              </button>
-              <button
-                disabled={!connected || currentPrj != ""}
-                onClick={handleServerPullImages}
-                className="btn btn-outline btn-sm join-item"
-              >
-                <CloudArrowDownIcon className="w-5" />
-                <span>{t("PullDockerImgLabel")}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {connected && (
-        <ProjectListModal
-          isOpen={prjListModalOpen}
-          onClose={handleConnectProject}
-        />
-      )}
-
-      {features.optionsWrite && options && (
-        <OptionsModal
-          options={options}
-          isOpen={optionsModalOpen}
-          setIsOpen={setOptionsModalOpen}
-        />
-      )}
-
-      {error != "" && (
-        <MsgToast type="error" msg={error} clearMsg={() => setError("")} />
-      )}
-      
-      {infoMsg != "" && (
-        <MsgToast type="success" msg={infoMsg} clearMsg={() => setInfoMsg("")} />
-      )}
-
-      {nodeMessages.length > 0 && (
-        <NodeMessagesToast
-          nodeMessages={nodeMessages}
-          clearNodeMessages={() => setNodeMessages([])}
-        />
-      )}
-
-      { (currentPrgOperation == ProgressOperation.TopologyRun || 
-         currentPrgOperation == ProgressOperation.TopologyReload) && (
-        <ProgressTopologyRun
-          setNodeMessages={setNodeMessages}
-        />
-      )}
-      { currentPrgOperation == ProgressOperation.ProjectClose && (
-        <ProgressProjectClose/>
-      )}
-      { currentPrgOperation == ProgressOperation.ProjectSave && (
-        <ProgressProjectSave/>
-      )}
-      { currentPrgOperation == ProgressOperation.ServerPullImages && (
-        <ProgressServerPull/>
-      )}
-    </div>
-
     </AppContext.Provider>
   );
 }
@@ -251,6 +261,6 @@ if (container != null) {
   root.render(
     <I18nextProvider i18n={i18n}>
       <App />
-    </I18nextProvider>
+    </I18nextProvider>,
   );
 }

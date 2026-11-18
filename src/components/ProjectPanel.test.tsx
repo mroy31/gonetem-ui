@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent } from "@testing-library/react";
 import ProjectPanel from "./ProjectPanel";
 
 vi.mock("cytoscape", () => ({
@@ -9,7 +9,7 @@ vi.mock("cytoscape", () => ({
   }),
 }));
 
-vi.mock("./ProjectGraph", async () => {
+vi.mock("./ProjectTopoGraph", async () => {
   const React = await import("react");
   return {
     default: () => React.createElement("div", { "data-testid": "graph" }),
@@ -32,15 +32,16 @@ const PROJECT_STATE = {
   name: "lab",
   openAt: "2026-01-01",
   running: false,
-  nodes: [
-    { name: "r1", running: false, interfaces: [] },
-  ],
+  nodes: [{ name: "r1", running: false, interfaces: [] }],
 };
 
 Object.defineProperty(window, "api", {
   value: {
     getProjectState: async () => ({ status: true, result: PROJECT_STATE }),
-    readTopologyFile: async () => ({ status: true, result: "nodes:\nlinks:\n" }),
+    readTopologyFile: async () => ({
+      status: true,
+      result: "nodes:\nlinks:\n",
+    }),
   },
   configurable: true,
 });
@@ -58,6 +59,27 @@ describe("project panel", () => {
     expect(screen.getAllByText("Save").length).toBeGreaterThan(0);
     expect(screen.getByText("Close")).toBeTruthy();
     expect(screen.getByTestId("context")).toBeTruthy();
+  });
+
+  it("switches the view through the vertical tabs", async () => {
+    render(<ProjectPanel prjId="p1" onClose={() => {}} />);
+
+    await vi.waitFor(() => {
+      expect(screen.getByTestId("graph")).toBeTruthy();
+    });
+    expect(screen.getByRole("tab", { name: "Topology" }).className).toContain(
+      "menu-active",
+    );
+
+    fireEvent.click(screen.getByRole("tab", { name: "Ospf" }));
+    await vi.waitFor(() => {
+      expect(screen.queryByTestId("graph")).toBeNull();
+    });
+
+    fireEvent.click(screen.getByRole("tab", { name: "Topology" }));
+    await vi.waitFor(() => {
+      expect(screen.getByTestId("graph")).toBeTruthy();
+    });
   });
 
   it("surfaces a failed project load as an alert", async () => {

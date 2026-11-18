@@ -41,7 +41,12 @@ beforeEach(async () => {
       isConnected: async () => ({ status: true, result: { connected: false } }),
       getOptions: async () => ({
         status: true,
-        result: { server: "s", autoconnect: true, tls: { enabled: false }, consoleExternalCmd: "xterm" },
+        result: {
+          server: "s",
+          autoconnect: true,
+          tls: { enabled: false },
+          consoleExternalCmd: "xterm",
+        },
       }),
     },
     configurable: true,

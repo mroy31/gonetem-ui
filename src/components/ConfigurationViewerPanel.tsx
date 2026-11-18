@@ -90,7 +90,7 @@ export default function ConfigurationViewerPanel({
 }: {
   prjStatus: IProjectState;
 }): React.JSX.Element {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const [state, dispatch] = useReducer(reducer, {
     error: "",
     loading: true,

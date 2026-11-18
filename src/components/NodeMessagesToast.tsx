@@ -13,7 +13,7 @@ export default function NodeMessagesToast({
   nodeMessages: INodeMessages[];
   clearNodeMessages: () => void;
 }): React.JSX.Element | null {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const hasNodeMessages = React.useCallback((): boolean => {
     for (const nMessages of nodeMessages) {
       if (nMessages.messagesList.length > 0) return true;
@@ -43,7 +43,7 @@ export default function NodeMessagesToast({
             className="btn btn-neutral btn-sm"
             onClick={clearNodeMessages}
           >
-            { t("Close") }
+            {t("Close")}
           </button>
         </div>
       </div>

@@ -12,28 +12,54 @@ afterEach(cleanup);
 describe("label text modal", () => {
   it("maps isOpen to the dialog open attribute", () => {
     const { container, rerender } = render(
-      <LabelTextModal isOpen={false} initialText="" onClose={() => {}} onConfirm={() => {}} />
+      <LabelTextModal
+        isOpen={false}
+        initialText=""
+        onClose={() => {}}
+        onConfirm={() => {}}
+      />,
     );
     expect(container.querySelector("dialog")?.open).toBe(false);
 
-    rerender(<LabelTextModal isOpen={true} initialText="" onClose={() => {}} onConfirm={() => {}} />);
+    rerender(
+      <LabelTextModal
+        isOpen={true}
+        initialText=""
+        onClose={() => {}}
+        onConfirm={() => {}}
+      />,
+    );
     expect(container.querySelector("dialog")?.open).toBe(true);
   });
 
   it("prefills the input with the initial text", () => {
     render(
-      <LabelTextModal isOpen={true} initialText="WAN link" onClose={() => {}} onConfirm={() => {}} />
+      <LabelTextModal
+        isOpen={true}
+        initialText="WAN link"
+        onClose={() => {}}
+        onConfirm={() => {}}
+      />,
     );
-    expect((screen.getByLabelText("LabelTextLabel") as HTMLInputElement).value).toBe("WAN link");
+    expect(
+      (screen.getByLabelText("LabelTextLabel") as HTMLInputElement).value,
+    ).toBe("WAN link");
   });
 
   it("confirms the edited text", () => {
     const onConfirm = vi.fn();
     render(
-      <LabelTextModal isOpen={true} initialText="old" onClose={() => {}} onConfirm={onConfirm} />
+      <LabelTextModal
+        isOpen={true}
+        initialText="old"
+        onClose={() => {}}
+        onConfirm={onConfirm}
+      />,
     );
 
-    fireEvent.change(screen.getByLabelText("LabelTextLabel"), { target: { value: "new text" } });
+    fireEvent.change(screen.getByLabelText("LabelTextLabel"), {
+      target: { value: "new text" },
+    });
     fireEvent.click(screen.getByText("Save"));
 
     expect(onConfirm).toHaveBeenCalledWith("new text");
@@ -42,10 +68,17 @@ describe("label text modal", () => {
   it("confirms an empty text on confirm", () => {
     const onConfirm = vi.fn();
     render(
-      <LabelTextModal isOpen={true} initialText="to delete" onClose={() => {}} onConfirm={onConfirm} />
+      <LabelTextModal
+        isOpen={true}
+        initialText="to delete"
+        onClose={() => {}}
+        onConfirm={onConfirm}
+      />,
     );
 
-    fireEvent.change(screen.getByLabelText("LabelTextLabel"), { target: { value: "" } });
+    fireEvent.change(screen.getByLabelText("LabelTextLabel"), {
+      target: { value: "" },
+    });
     fireEvent.click(screen.getByText("Save"));
 
     expect(onConfirm).toHaveBeenCalledWith("");
@@ -55,10 +88,17 @@ describe("label text modal", () => {
     const onConfirm = vi.fn();
     const onClose = vi.fn();
     render(
-      <LabelTextModal isOpen={true} initialText="x" onClose={onClose} onConfirm={onConfirm} />
+      <LabelTextModal
+        isOpen={true}
+        initialText="x"
+        onClose={onClose}
+        onConfirm={onConfirm}
+      />,
     );
 
-    fireEvent.change(screen.getByLabelText("LabelTextLabel"), { target: { value: "edited but canceled" } });
+    fireEvent.change(screen.getByLabelText("LabelTextLabel"), {
+      target: { value: "edited but canceled" },
+    });
     fireEvent.click(screen.getByText("Cancel"));
 
     expect(onClose).toHaveBeenCalled();
@@ -67,10 +107,24 @@ describe("label text modal", () => {
 
   it("re-prefills when reopened with a different initial text", () => {
     const { rerender } = render(
-      <LabelTextModal isOpen={false} initialText="first" onClose={() => {}} onConfirm={() => {}} />
+      <LabelTextModal
+        isOpen={false}
+        initialText="first"
+        onClose={() => {}}
+        onConfirm={() => {}}
+      />,
     );
 
-    rerender(<LabelTextModal isOpen={true} initialText="second" onClose={() => {}} onConfirm={() => {}} />);
-    expect((screen.getByLabelText("LabelTextLabel") as HTMLInputElement).value).toBe("second");
+    rerender(
+      <LabelTextModal
+        isOpen={true}
+        initialText="second"
+        onClose={() => {}}
+        onConfirm={() => {}}
+      />,
+    );
+    expect(
+      (screen.getByLabelText("LabelTextLabel") as HTMLInputElement).value,
+    ).toBe("second");
   });
 });

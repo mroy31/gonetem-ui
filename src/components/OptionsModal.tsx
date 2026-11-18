@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 import { IOptions } from "../api/options";
 
 export default function OptionsModal({
@@ -11,7 +11,7 @@ export default function OptionsModal({
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
 }): React.JSX.Element {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const [server, setServer] = useState(options?.server || "localhost:10110");
   const [autoconnect, setAutoconnect] = useState<boolean>(options?.autoconnect);
   const [tls, setTls] = useState(options?.tls);
@@ -55,15 +55,17 @@ export default function OptionsModal({
               type="checkbox"
               checked={autoconnect}
               onChange={(e) => setAutoconnect(e.target.checked)}
-              className="checkbox"/>
+              className="checkbox"
+            />
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
             <span>{t("TLSEnabledLabel")}</span>
             <input
               type="checkbox"
               checked={tls.enabled}
-              onChange={(e) => setTls({...tls, enabled: e.target.checked})}
-              className="checkbox"/>
+              onChange={(e) => setTls({ ...tls, enabled: e.target.checked })}
+              className="checkbox"
+            />
           </label>
           <fieldset className="fieldset">
             <label className="fieldset-legend" htmlFor="optCaCert">
@@ -73,7 +75,7 @@ export default function OptionsModal({
               id="optCaCert"
               type="text"
               value={tls.ca ?? ""}
-              onChange={(e) => setTls({...tls, ca: e.target.value})}
+              onChange={(e) => setTls({ ...tls, ca: e.target.value })}
               className="input"
             />
           </fieldset>
@@ -85,7 +87,7 @@ export default function OptionsModal({
               id="optClientCert"
               type="text"
               value={tls.cert ?? ""}
-              onChange={(e) => setTls({...tls, cert: e.target.value})}
+              onChange={(e) => setTls({ ...tls, cert: e.target.value })}
               className="input"
             />
           </fieldset>
@@ -97,7 +99,7 @@ export default function OptionsModal({
               id="optClientKey"
               type="text"
               value={tls.key ?? ""}
-              onChange={(e) => setTls({...tls, key: e.target.value})}
+              onChange={(e) => setTls({ ...tls, key: e.target.value })}
               className="input"
             />
           </fieldset>
