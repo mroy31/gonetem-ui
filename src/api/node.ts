@@ -13,6 +13,7 @@ import { CLIENT } from "./client";
 import type { NetemClient } from "../proto/netem_grpc_pb";
 import { getOptions } from "./options";
 import { decodeB64, findExecutable, readStatusError } from "./utils";
+import { NodeExecOnceRequest } from "../proto/netem_pb";
 
 const consoleCmd = async (
   prjId: string,
@@ -296,6 +297,53 @@ export const handleNodeRestart = async (
     return { status: false, error: "Not connected to the server" };
 
   return await nodeRestart(CLIENT, prjId, nodeId);
+};
+
+function nodeExecOnce(client: NetemClient, prjId: string, nodeId: string, cmd: string[]): Promise<StringApiResponse> {
+  const errorFmt = (err: string) =>
+    `${prjId}.${nodeId} - unable to exec cmd '${cmd}': ${err}`;
+
+  return new Promise<StringApiResponse>((resolve) => {
+    const request = new NodeExecOnceRequest();
+    request.setPrjid(prjId);
+    request.setNode(nodeId);
+    request.setCmdList(cmd)
+
+    client.nodeExecOnce(request, (err, res) => {
+      if (err) {
+        resolve({ status: false, error: errorFmt(err) });
+      } else {
+        const statusErr = readStatusError(res);
+        if (statusErr != null) resolve({ status: false, error: errorFmt(statusErr) })
+
+        const exitCode = res.getExitcode()
+        if (exitCode != 0) {
+          const stderr = res.getStderr().toString()
+          resolve({
+            status: false,
+            error: `cmd returns code ${exitCode} - ${stderr}`
+          })
+        } else {
+          resolve({
+            status: true,
+            result: res.getStdout().toString()
+          })
+        }
+      }
+    });
+  });
+}
+
+export const handleNodeExecOnce = async (
+  _event: IpcMainInvokeEvent,
+  prjId: string,
+  nodeId: string,
+  cmd: string[]
+): Promise<StringApiResponse> => {
+  if (CLIENT == null)
+    return { status: false, error: "Not connected to the server" };
+
+  return await nodeExecOnce(CLIENT, prjId, nodeId, cmd);
 };
 
 function nodeSetIfState(

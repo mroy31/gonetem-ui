@@ -230,7 +230,7 @@ export default function ConsolePanel({
             </div>
             <ul
               tabIndex={0}
-              className="p-2 shadow-sm menu dropdown-content z-[1] bg-base-100 rounded-box"
+              className="p-2 shadow-sm menu dropdown-content z-1 bg-base-100 rounded-box"
             >
               {nodes
                 .filter((n) => !runningConsoles.includes(n.name))

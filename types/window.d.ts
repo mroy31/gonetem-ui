@@ -103,6 +103,7 @@ declare global {
     runNodeStart: (prjId: string, nodeId: string) => Promise<ApiResponse>,
     runNodeStop: (prjId: string, nodeId: string) => Promise<ApiResponse>,
     runNodeRestart: (prjId: string, nodeId: string) => Promise<ApiResponse>,
+    runNodeExecOnce: (prjId: string, nodeId: string, cmd: string[]) => Promise<StringApiResponse>,
     runNodeCapture: (prjId: string, nodeId: string, ifIndex: number) => Promise<ApiResponse>,
     runNodeSetIfState: (prjId: string, nodeId: string, ifIndex: number, up: boolean) => Promise<ApiResponse>,
     closeProject: (prjId: string) => Promise<ApiResponse>,

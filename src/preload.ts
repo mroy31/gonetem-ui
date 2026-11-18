@@ -23,6 +23,7 @@ const baseApi = {
   runNodeStart: (prjId: string, nodeId: string):Promise<ApiResponse> => ipcRenderer.invoke("server:runNodeStart", prjId, nodeId),
   runNodeStop: (prjId: string, nodeId: string):Promise<ApiResponse> => ipcRenderer.invoke("server:runNodeStop", prjId, nodeId),
   runNodeRestart: (prjId: string, nodeId: string):Promise<ApiResponse> => ipcRenderer.invoke("server:runNodeRestart", prjId, nodeId),
+  runNodeExecOnce: (prjId: string, nodeId: string, cmd: string[]):Promise<StringApiResponse> => ipcRenderer.invoke("server:runNodeExecOnce", prjId, nodeId, cmd),
   runNodeCapture: (prjId: string, nodeId: string, ifIndex: number):Promise<ApiResponse> => ipcRenderer.invoke("server:runNodeCapture", prjId, nodeId, ifIndex),
   runNodeSetIfState: (prjId: string, nodeId: string, ifIndex: number, up: boolean):Promise<ApiResponse> => ipcRenderer.invoke("server:runNodeSetIfState", prjId, nodeId, ifIndex, up),
   closeProject: (prjId: string):Promise<ApiResponse> => ipcRenderer.invoke("server:close", prjId),
