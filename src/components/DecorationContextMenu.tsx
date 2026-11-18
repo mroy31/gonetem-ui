@@ -2,27 +2,29 @@ import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { features } from "../edition";
 
-export type LabelContextMenuT = {
-  mode: "" | "canvas" | "label";
+export type DecorationContextMenuT = {
+  mode: "" | "canvas" | "label" | "rect";
   labelId: string;
   x: number;
   y: number;
 };
 
-export const HIDDEN_LABEL_MENU: LabelContextMenuT = {
+export const HIDDEN_DECORATION_MENU: DecorationContextMenuT = {
   mode: "",
   labelId: "",
   x: 0,
   y: 0,
 };
 
-const LabelContextMenu = ({
+const DecorationContextMenu = ({
   menu,
   onAdd,
+  onAddRect,
   onDelete,
 }: {
-  menu: LabelContextMenuT;
+  menu: DecorationContextMenuT;
   onAdd: () => void;
+  onAddRect: () => void;
   onDelete: () => void;
 }): React.JSX.Element | null => {
   const { t } = useTranslation();
@@ -43,9 +45,19 @@ const LabelContextMenu = ({
             <a onClick={onAdd}>{t("AddLabelMenu")}</a>
           </li>
         )}
+        {menu.mode == "canvas" && (
+          <li>
+            <a onClick={onAddRect}>{t("AddRectMenu")}</a>
+          </li>
+        )}
         {menu.mode == "label" && (
           <li>
             <a onClick={onDelete}>{t("DeleteLabelMenu")}</a>
+          </li>
+        )}
+        {menu.mode == "rect" && (
+          <li>
+            <a onClick={onDelete}>{t("DeleteRectMenu")}</a>
           </li>
         )}
       </ul>
@@ -53,4 +65,4 @@ const LabelContextMenu = ({
   );
 };
 
-export default LabelContextMenu;
+export default DecorationContextMenu;

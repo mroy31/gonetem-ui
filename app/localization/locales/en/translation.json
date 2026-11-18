@@ -85,6 +85,8 @@
     "Cancel": "Cancel",
     "AddLabelMenu": "Add label",
     "DeleteLabelMenu": "Delete label",
+    "AddRectMenu": "Add rectangle",
+    "DeleteRectMenu": "Delete rectangle",
     "LabelTextModalHeader": "Label text",
     "LabelTextLabel": "Text",
     "StudentEditionBadge": "Student edition"

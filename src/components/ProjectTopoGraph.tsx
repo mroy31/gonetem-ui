@@ -14,17 +14,24 @@ import { GraphLayoutKind, hasSavedPositions } from "./topologyLayout";
 import { Buffer } from "buffer";
 import { INodeState, IProjectState, IfState } from "../api/interface";
 import NodeContextMenu, { NodeContextMenuT } from "./NodeContextMenu";
-import LabelContextMenu, {
-  HIDDEN_LABEL_MENU,
-  LabelContextMenuT,
-} from "./LabelContextMenu";
+import DecorationContextMenu, {
+  HIDDEN_DECORATION_MENU,
+  DecorationContextMenuT,
+} from "./DecorationContextMenu";
 import LabelTextModal from "./LabelTextModal";
+import RectResizeHandles from "./RectResizeHandles";
 import {
   applyLabelConfirm,
   mergeLabelsIntoTopology,
   parseTopologyLabels,
   serializeLabels,
 } from "./topologyLabels";
+import {
+  createRect,
+  mergeRectsIntoTopology,
+  parseTopologyRects,
+  serializeRects,
+} from "./topologyRects";
 import { features } from "../edition";
 import router from "../../img/router.svg";
 import routerRunning from "../../img/router-running.svg";
@@ -57,7 +64,12 @@ interface ITopology {
 }
 
 const NODE_SIZE = 50;
-const ALL_CLASSES = "icon-router icon-host icon-switch up down inactive label";
+const ALL_CLASSES =
+  "icon-router icon-host icon-switch up down inactive label rect";
+
+// Canvas decorations (labels, rectangles): never laid out nor saved as node
+// positions; geometry lives in the topology's top-level ui section instead.
+export const DECORATION_SELECTOR = ".label, .rect";
 
 const LAYOUT_OPTIONS: { [kind in GraphLayoutKind]: cytoscape.LayoutOptions } = {
   force: { name: "fcose" },
@@ -110,6 +122,24 @@ export const cyStyle: cytoscape.StylesheetJson = [
       "text-margin-y": 0,
       "text-max-width": "180",
       color: "#333333",
+    } as cytoscape.Css.Node,
+  },
+  {
+    // .rect nodes are free-floating decorative regions from the topology's
+    // top-level ui section: excluded from layouts and node-position saves,
+    // painted behind nodes and links.
+    selector: "node.rect",
+    style: {
+      shape: "rectangle",
+      width: "data(w)",
+      height: "data(h)",
+      "background-opacity": 0,
+      "background-image": "none",
+      "border-width": 3,
+      "border-style": "dotted",
+      "border-color": "#999999",
+      label: "",
+      "z-index": -1,
     } as cytoscape.Css.Node,
   },
   {
@@ -279,6 +309,16 @@ export const getElements = (
     });
   });
 
+  const rects = parseTopologyRects(topology);
+  Object.keys(rects).forEach((id) => {
+    elements.push({
+      group: "nodes",
+      data: { id, w: rects[id].w, h: rects[id].h },
+      position: { ...rects[id].position },
+      classes: "rect",
+    });
+  });
+
   return elements;
 };
 
@@ -333,8 +373,8 @@ export default forwardRef<ProjectTopoGrahHandle, PropsT>(
       x: 0,
       y: 0,
     });
-    const [labelMenu, setLabelMenu] =
-      useState<LabelContextMenuT>(HIDDEN_LABEL_MENU);
+    const [decorationMenu, setDecorationMenu] =
+      useState<DecorationContextMenuT>(HIDDEN_DECORATION_MENU);
     const [labelModal, setLabelModal] = useState<{
       open: boolean;
       mode: "add" | "edit";
@@ -348,6 +388,7 @@ export default forwardRef<ProjectTopoGrahHandle, PropsT>(
       text: "",
       position: { x: 0, y: 0 },
     });
+    const [rectSelId, setRectSelId] = useState("");
     const containerRef = useRef<HTMLDivElement>(null);
     const cyRef = useRef<cytoscape.Core | null>(null);
     const pendingLabelPositionRef = useRef<cytoscape.Position>({ x: 0, y: 0 });
@@ -382,7 +423,7 @@ export default forwardRef<ProjectTopoGrahHandle, PropsT>(
 
           const layout = cy
             .elements()
-            .not(".label")
+            .not(DECORATION_SELECTOR)
             .layout(LAYOUT_OPTIONS[kind]);
           layout.one("stop", () => cy.fit());
           layout.run();
@@ -397,7 +438,7 @@ export default forwardRef<ProjectTopoGrahHandle, PropsT>(
 
           const positions: { [id: string]: cytoscape.Position } = {};
           cy.nodes()
-            .not(".label")
+            .not(DECORATION_SELECTOR)
             .forEach((n) => {
               positions[n.id()] = n.position();
             });
@@ -433,7 +474,23 @@ export default forwardRef<ProjectTopoGrahHandle, PropsT>(
           });
           topo.nodes = nodes;
 
+          const rectEntries: {
+            id: string;
+            position: cytoscape.Position;
+            w: number;
+            h: number;
+          }[] = [];
+          cy.nodes(".rect").forEach((n) => {
+            rectEntries.push({
+              id: n.id(),
+              position: n.position(),
+              w: Number(n.data("w")),
+              h: Number(n.data("h")),
+            });
+          });
+
           mergeLabelsIntoTopology(topo, serializeLabels(labelEntries));
+          mergeRectsIntoTopology(topo, serializeRects(rectEntries));
 
           return window.api.writeTopologyFile(
             prjStatus.id,
@@ -463,7 +520,7 @@ export default forwardRef<ProjectTopoGrahHandle, PropsT>(
           if (!hasSavedPositions(topo.nodes)) {
             const autoLayout = net
               .nodes()
-              .not(".label")
+              .not(DECORATION_SELECTOR)
               .layout(LAYOUT_OPTIONS.force);
             autoLayout.one("stop layoutstop", () => net.fit());
             autoLayout.run();
@@ -471,7 +528,7 @@ export default forwardRef<ProjectTopoGrahHandle, PropsT>(
 
           net.on("cxttap", "node", (evt: cytoscape.EventObject) => {
             const nodeId = evt.target.id();
-            if (nodeId && !evt.target.hasClass("label")) {
+            if (nodeId && !evt.target.matches(DECORATION_SELECTOR)) {
               const rect = net.container()?.getBoundingClientRect();
               setContextMenu({
                 prjId: prjStatus.id,
@@ -490,7 +547,7 @@ export default forwardRef<ProjectTopoGrahHandle, PropsT>(
               const menuY = (rect?.top ?? 0) + evt.renderedPosition.y;
 
               if (evt.target === net) {
-                setLabelMenu({
+                setDecorationMenu({
                   mode: "canvas",
                   labelId: "",
                   x: menuX,
@@ -498,14 +555,21 @@ export default forwardRef<ProjectTopoGrahHandle, PropsT>(
                 });
                 pendingLabelPositionRef.current = { ...evt.position };
               } else if (evt.target !== net && evt.target.hasClass("label")) {
-                setLabelMenu({
+                setDecorationMenu({
                   mode: "label",
                   labelId: evt.target.id(),
                   x: menuX,
                   y: menuY,
                 });
+              } else if (evt.target !== net && evt.target.hasClass("rect")) {
+                setDecorationMenu({
+                  mode: "rect",
+                  labelId: evt.target.id(),
+                  x: menuX,
+                  y: menuY,
+                });
               } else {
-                setLabelMenu(HIDDEN_LABEL_MENU);
+                setDecorationMenu(HIDDEN_DECORATION_MENU);
               }
             });
             net.on("dbltap", "node.label", (evt: cytoscape.EventObject) => {
@@ -518,15 +582,28 @@ export default forwardRef<ProjectTopoGrahHandle, PropsT>(
               });
             });
           }
-          net.on("tap", () => {
+          net.on("tap", (evt: cytoscape.EventObject) => {
+            if (evt.target === net) setRectSelId("");
             setContextMenu({ ...contextMenu, nodeId: "", x: 0, y: 0 });
-            setLabelMenu(HIDDEN_LABEL_MENU);
+            setDecorationMenu(HIDDEN_DECORATION_MENU);
           });
           net.on("select", "edge", (evt: cytoscape.EventObject) => {
             onSelectEdge(evt.target.id());
           });
           net.on("unselect", "edge", (evt: cytoscape.EventObject) => {
             onSelectEdge(evt.target.id());
+          });
+          net.on("select", "node.rect", (evt: cytoscape.EventObject) => {
+            setRectSelId(evt.target.id());
+          });
+          net.on("unselect", "node.rect", (evt: cytoscape.EventObject) => {
+            setRectSelId((cur) => (cur == evt.target.id() ? "" : cur));
+          });
+          net.on("blur", "node.rect", () => {
+            setRectSelId("");
+          });
+          net.on("remove", "node.rect", (evt: cytoscape.EventObject) => {
+            setRectSelId((cur) => (cur == evt.target.id() ? "" : cur));
           });
 
           cyRef.current = net;
@@ -580,14 +657,21 @@ export default forwardRef<ProjectTopoGrahHandle, PropsT>(
         text: "",
         position: { ...pendingLabelPositionRef.current },
       });
-      setLabelMenu(HIDDEN_LABEL_MENU);
+      setDecorationMenu(HIDDEN_DECORATION_MENU);
     };
 
-    const handleDeleteLabel = () => {
+    const handleAddRect = () => {
       const cy = cyRef.current;
       if (cy != null && !cy.destroyed())
-        cy.getElementById(labelMenu.labelId).remove();
-      setLabelMenu(HIDDEN_LABEL_MENU);
+        createRect(cy, pendingLabelPositionRef.current);
+      setDecorationMenu(HIDDEN_DECORATION_MENU);
+    };
+
+    const handleDeleteDecoration = () => {
+      const cy = cyRef.current;
+      if (cy != null && !cy.destroyed())
+        cy.getElementById(decorationMenu.labelId).remove();
+      setDecorationMenu(HIDDEN_DECORATION_MENU);
     };
 
     const handleHideLabelModal = () =>
@@ -621,11 +705,24 @@ export default forwardRef<ProjectTopoGrahHandle, PropsT>(
 
     return (
       <>
-        <div
-          ref={containerRef}
-          data-theme="light"
-          className="w-full h-full min-h-0"
-        />
+        <div className="relative w-full h-full min-h-0">
+          <div
+            ref={containerRef}
+            data-theme="light"
+            className="w-full h-full min-h-0"
+          />
+          {features.topologyWrite &&
+            rectSelId != "" &&
+            cyRef.current != null &&
+            containerRef.current != null && (
+              <RectResizeHandles
+                key={rectSelId}
+                cy={cyRef.current}
+                container={containerRef.current}
+                rectId={rectSelId}
+              />
+            )}
+        </div>
         {prjStatus.running && contextMenu.nodeId != "" && (
           <NodeContextMenu
             contextMenu={contextMenu}
@@ -635,10 +732,11 @@ export default forwardRef<ProjectTopoGrahHandle, PropsT>(
         )}
         {features.topologyWrite && (
           <>
-            <LabelContextMenu
-              menu={labelMenu}
+            <DecorationContextMenu
+              menu={decorationMenu}
               onAdd={handleAddLabel}
-              onDelete={handleDeleteLabel}
+              onAddRect={handleAddRect}
+              onDelete={handleDeleteDecoration}
             />
             <LabelTextModal
               isOpen={labelModal.open}

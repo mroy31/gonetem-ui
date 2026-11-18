@@ -85,6 +85,8 @@
     "Cancel": "Annuler",
     "AddLabelMenu": "Ajouter une étiquette",
     "DeleteLabelMenu": "Supprimer l'étiquette",
+    "AddRectMenu": "Ajouter un rectangle",
+    "DeleteRectMenu": "Supprimer le rectangle",
     "LabelTextModalHeader": "Texte de l'étiquette",
     "LabelTextLabel": "Texte",
     "StudentEditionBadge": "Édition étudiante"
