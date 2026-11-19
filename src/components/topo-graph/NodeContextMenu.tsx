@@ -1,0 +1,229 @@
+import * as React from "react";
+import { useTranslation } from "react-i18next";
+import classNames from "classnames";
+import { INodeState, IfState } from "../../api/interface";
+import { useCallback, useState } from "react";
+import { useAppContext } from "../../context";
+
+export type NodeContextMenuT = {
+  prjId: string;
+  nodeId: string;
+  x: number;
+  y: number;
+};
+
+const NodeContextMenu = ({
+  contextMenu,
+  state,
+  onHide,
+}: {
+  contextMenu: NodeContextMenuT;
+  state: INodeState | null;
+  onHide: (state: boolean) => void;
+}): React.JSX.Element | null => {
+  const { t } = useTranslation();
+  const { setError } = useAppContext();
+  const [loading, setLoading] = useState("");
+
+  const handleRunConsole = useCallback(
+    (shell: boolean) => {
+      if (state?.running && loading == "") {
+        window.api
+          .runNodeConsole(contextMenu.prjId, contextMenu.nodeId, shell)
+          .then((res) => {
+            res.status ? onHide(false) : setError(res.error);
+          });
+      }
+    },
+    [contextMenu, state?.running],
+  );
+
+  const handleStart = useCallback(() => {
+    if (!state?.running && loading == "") {
+      setLoading("start");
+      window.api
+        .runNodeStart(contextMenu.prjId, contextMenu.nodeId)
+        .then((res) => {
+          setLoading("");
+          res.status ? onHide(true) : setError(res.error);
+        });
+    }
+  }, [contextMenu, state?.running]);
+
+  const handleStop = useCallback(() => {
+    if (state?.running && loading == "") {
+      setLoading("stop");
+      window.api
+        .runNodeStop(contextMenu.prjId, contextMenu.nodeId)
+        .then((res) => {
+          setLoading("");
+          res.status ? onHide(true) : setError(res.error);
+        });
+    }
+  }, [contextMenu, state?.running]);
+
+  const handleRestart = useCallback(() => {
+    if (state?.running && loading == "") {
+      setLoading("restart");
+      window.api
+        .runNodeRestart(contextMenu.prjId, contextMenu.nodeId)
+        .then((res) => {
+          setLoading("");
+          res.status ? onHide(true) : setError(res.error);
+        });
+    }
+  }, [contextMenu, state?.running]);
+
+  const handleCapture = useCallback(
+    (ifName: string) => {
+      if (state?.running && loading == "") {
+        const match = ifName.match(/eth([0-9]+)/);
+
+        if (match != null && match.length > 1) {
+          setLoading("capture");
+
+          const ifIndex = parseInt(match[1]);
+          window.api
+            .runNodeCapture(contextMenu.prjId, contextMenu.nodeId, ifIndex)
+            .then((res) => {
+              setLoading("");
+              res.status ? onHide(false) : setError(res.error);
+            });
+        }
+      }
+    },
+    [contextMenu, state?.running],
+  );
+
+  const handleIfState = useCallback(
+    (ifName: string, up: boolean) => {
+      if (state?.running && loading == "") {
+        const match = ifName.match(/eth([0-9]+)/);
+
+        if (match != null && match.length > 1) {
+          const ifIndex = parseInt(match[1]);
+          window.api
+            .runNodeSetIfState(
+              contextMenu.prjId,
+              contextMenu.nodeId,
+              ifIndex,
+              up,
+            )
+            .then((res) => {
+              setLoading("");
+              res.status ? onHide(true) : setError(res.error);
+            });
+        }
+      }
+    },
+    [contextMenu, state?.running],
+  );
+
+  const actionClasses = classNames({ "menu-disabled": loading != "" });
+  if (state == null) return null;
+  return (
+    <div
+      style={{
+        top: contextMenu.y,
+        left: contextMenu.x,
+      }}
+      className="fixed z-10 flex flex-col gap-1 bg-base-200 rounded-lg"
+    >
+      <ul className="menu p-1">
+        <li className="menu-title">
+          {contextMenu.nodeId} ({state.running ? t("Running") : t("NotRunning")}
+          )
+        </li>
+        {!state.running && (
+          <li className={actionClasses}>
+            <a onClick={handleStart}>
+              {loading == "start" ? t("StartProgressMsg") : t("Start")}
+            </a>
+          </li>
+        )}
+        {state.running && (
+          <>
+            <li className={actionClasses}>
+              <a onClick={() => handleRunConsole(false)}>
+                {t("ExternalConsole")}
+              </a>
+            </li>
+            <li className={actionClasses}>
+              <a onClick={() => handleRunConsole(true)}>{t("DebugShell")}</a>
+            </li>
+            <li className={actionClasses}>
+              <a onClick={handleStop}>
+                {loading == "stop" ? t("StopProgressMsg") : t("Stop")}
+              </a>
+            </li>
+            <li className={actionClasses}>
+              <a onClick={handleRestart}>
+                {loading == "restart" ? t("RestartProgressMsg") : t("Restart")}
+              </a>
+            </li>
+            <li>
+              <details>
+                <summary>
+                  {loading == "capture"
+                    ? t("CaptureProgressMsg")
+                    : t("Capture")}
+                </summary>
+                <ul>
+                  {state.interfaces
+                    .filter((int) => int.state == IfState.UP)
+                    .map((int) => (
+                      <li key={int.name}>
+                        <a onClick={() => handleCapture(int.name)}>
+                          {int.name}
+                        </a>
+                      </li>
+                    ))}
+                </ul>
+              </details>
+            </li>
+            {state.interfaces.filter((int) => int.state == IfState.UP).length >
+              0 && (
+              <li>
+                <details>
+                  <summary>{t("ShutdownInterface")}</summary>
+                  <ul>
+                    {state.interfaces
+                      .filter((int) => int.state == IfState.UP)
+                      .map((int) => (
+                        <li key={int.name}>
+                          <a onClick={() => handleIfState(int.name, false)}>
+                            {int.name}
+                          </a>
+                        </li>
+                      ))}
+                  </ul>
+                </details>
+              </li>
+            )}
+            {state.interfaces.filter((int) => int.state == IfState.DOWN)
+              .length > 0 && (
+              <li>
+                <details>
+                  <summary>{t("EnableInterface")}</summary>
+                  <ul>
+                    {state.interfaces
+                      .filter((int) => int.state == IfState.DOWN)
+                      .map((int) => (
+                        <li key={int.name}>
+                          <a onClick={() => handleIfState(int.name, true)}>
+                            {int.name}
+                          </a>
+                        </li>
+                      ))}
+                  </ul>
+                </details>
+              </li>
+            )}
+          </>
+        )}
+      </ul>
+    </div>
+  );
+};
+
+export default NodeContextMenu;

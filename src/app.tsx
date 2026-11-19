@@ -9,20 +9,20 @@ import {
   CloudArrowDownIcon,
 } from "@heroicons/react/24/solid";
 import i18n from "./i18n/renderer";
-import OptionsModal from "./components/OptionsModal";
+import OptionsModal from "./components/shell/OptionsModal";
 import { IOptions } from "./api/options";
 import { features, edition } from "./edition";
-import MsgToast from "./components/MsgToast";
-import ProjectPanel from "./components/ProjectPanel";
-import ProjectListModal from "./components/ProjectListModal";
+import MsgToast from "./components/shell/MsgToast";
+import ProjectPanel from "./components/project/ProjectPanel";
+import ProjectListModal from "./components/project/ProjectListModal";
 import { AppContext, ProgressOperation } from "./context";
-import ProgressTopologyRun from "./components/ProgressTopologyRun";
-import ProgressProjectClose from "./components/ProgressProjectClose";
-import ProgressProjectSave from "./components/ProgressProjectSave";
+import ProgressTopologyRun from "./components/topo-graph/ProgressTopologyRun";
+import ProgressProjectClose from "./components/project/ProgressProjectClose";
+import ProgressProjectSave from "./components/project/ProgressProjectSave";
 import NodeMessagesToast, {
   INodeMessages,
-} from "./components/NodeMessagesToast";
-import ProgressServerPull from "./components/ProgressServerPull";
+} from "./components/topo-graph/NodeMessagesToast";
+import ProgressServerPull from "./components/server/ProgressServerPull";
 
 export default function App(): React.JSX.Element {
   const { t } = useTranslation();
