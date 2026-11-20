@@ -89,5 +89,8 @@
     "DeleteRectMenu": "Supprimer le rectangle",
     "LabelTextModalHeader": "Texte de l'étiquette",
     "LabelTextLabel": "Texte",
+    "LabelKindLabel": "Type",
+    "LabelKindSubnet": "Sous-réseau",
+    "LabelKindAsNumber": "Numéro AS",
     "StudentEditionBadge": "Édition étudiante"
 }

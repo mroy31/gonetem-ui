@@ -1,7 +1,10 @@
 import type cytoscape from "cytoscape";
 
+export type LabelKind = "as" | "subnet";
+
 export interface TopologyLabel {
   text: string;
+  kind: LabelKind;
   position: { x: number; y: number };
 }
 
@@ -41,6 +44,7 @@ export function parseTopologyLabels(topo: unknown): TopologyLabelMap {
 
     labels[id] = {
       text: entry.text,
+      kind: entry.kind == "as" ? "as" : "subnet",
       position: { x: entry.position.x, y: entry.position.y },
     };
   });
@@ -67,12 +71,18 @@ export function nextLabelId(existingKeys: Iterable<string>): string {
 }
 
 export function serializeLabels(
-  entries: readonly { id: string; text: string; position: { x: number; y: number } }[]
+  entries: readonly {
+    id: string;
+    text: string;
+    kind: LabelKind;
+    position: { x: number; y: number };
+  }[]
 ): TopologyLabelMap {
   const labels: TopologyLabelMap = {};
   entries.forEach((entry) => {
     labels[entry.id] = {
       text: entry.text,
+      kind: entry.kind,
       position: { x: entry.position.x, y: entry.position.y },
     };
   });
@@ -85,12 +95,15 @@ export type LabelConfirmResult =
   | { action: "update"; text: string }
   | { action: "delete" };
 
+const KIND_CLASSES = "label-as label-subnet";
+
 export function applyLabelConfirm(
   cy: cytoscape.Core,
   mode: "add" | "edit",
   rawText: string,
   editId: string,
-  position: { x: number; y: number }
+  position: { x: number; y: number },
+  kind: LabelKind = "subnet"
 ): void {
   const result = resolveLabelConfirm(mode, rawText);
 
@@ -98,14 +111,22 @@ export function applyLabelConfirm(
     case "create":
       cy.add({
         group: "nodes",
-        data: { id: nextLabelId(cy.elements().map((el) => el.id())), text: result.text },
+        data: {
+          id: nextLabelId(cy.elements().map((el) => el.id())),
+          text: result.text,
+          kind,
+        },
         position: { ...position },
-        classes: "label",
+        classes: `label label-${kind}`,
       });
       break;
-    case "update":
-      cy.getElementById(editId).data("text", result.text);
+    case "update": {
+      const el = cy.getElementById(editId);
+      el.data("text", result.text);
+      el.data("kind", kind);
+      el.removeClass(KIND_CLASSES).addClass(`label-${kind}`);
       break;
+    }
     case "delete":
       cy.getElementById(editId).remove();
       break;

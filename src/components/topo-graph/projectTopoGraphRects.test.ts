@@ -156,7 +156,7 @@ describe("save round-trip through YAML", () => {
 
     const topo = YAML.parse(FILE);
     mergeLabelsIntoTopology(topo, serializeLabels([
-      { id: "lbl-0", text: "WAN", position: { x: 300, y: 90 } },
+      { id: "lbl-0", text: "WAN", kind: "subnet", position: { x: 300, y: 90 } },
     ]));
     mergeRectsIntoTopology(topo, serializeRects(collect(cy)));
 
@@ -165,7 +165,7 @@ describe("save round-trip through YAML", () => {
       "rect-0": { position: { x: 40, y: 40 }, w: 200, h: 120 },
     });
     expect(saved.ui.labels).toEqual({
-      "lbl-0": { text: "WAN", position: { x: 300, y: 90 } },
+      "lbl-0": { text: "WAN", kind: "subnet", position: { x: 300, y: 90 } },
     });
     expect(saved.nodes.r1).toEqual({
       type: "docker.router",

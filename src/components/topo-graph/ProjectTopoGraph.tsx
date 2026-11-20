@@ -26,6 +26,7 @@ import {
   parseTopologyLabels,
   serializeLabels,
 } from "./topologyLabels";
+import type { LabelKind } from "./topologyLabels";
 import {
   createRect,
   mergeRectsIntoTopology,
@@ -65,7 +66,7 @@ interface ITopology {
 
 const NODE_SIZE = 50;
 const ALL_CLASSES =
-  "icon-router icon-host icon-switch up down inactive label rect";
+  "icon-router icon-host icon-switch up down inactive label label-as label-subnet rect";
 
 // Canvas decorations (labels, rectangles): never laid out nor saved as node
 // positions; geometry lives in the topology's top-level ui section instead.
@@ -103,25 +104,44 @@ export const cyStyle: cytoscape.StylesheetJson = [
   },
   {
     // .label nodes are free-floating annotations from the topology's top-level
-    // ui section: excluded from layouts and node-position saves.
+    // ui section: excluded from layouts and node-position saves. Shared
+    // geometry only; the per-kind looks live in .label-subnet / .label-as.
     selector: "node.label",
     style: {
-      shape: "round-rectangle",
       width: "label",
       height: "label",
       padding: "3px",
-      "background-color": "#fffbe6",
       "background-image": "none",
-      "border-width": 1,
-      "border-color": "#d6c98a",
       label: "data(text)",
       "text-halign": "center",
       "text-valign": "center",
-      "font-size": 10,
       "text-wrap": "wrap",
       "text-margin-y": 0,
       "text-max-width": "180",
+    } as cytoscape.Css.Node,
+  },
+  {
+    // Subnet kind keeps the pre-kinds sticky-note look exactly.
+    selector: "node.label-subnet",
+    style: {
+      shape: "round-rectangle",
+      "background-color": "#fffbe6",
+      "border-width": 1,
+      "border-color": "#d6c98a",
+      "font-size": 10,
       color: "#333333",
+    } as cytoscape.Css.Node,
+  },
+  {
+    // AS number kind: borderless, background-free bold text, larger than the
+    // subnet sticky note. Rects stay behind via their own z-index: -1.
+    selector: "node.label-as",
+    style: {
+      "background-opacity": 0,
+      "border-width": 0,
+      "font-weight": "bold",
+      "font-size": 14,
+      color: "#0e7490",
     } as cytoscape.Css.Node,
   },
   {
@@ -303,9 +323,9 @@ export const getElements = (
   Object.keys(labels).forEach((id) => {
     elements.push({
       group: "nodes",
-      data: { id, text: labels[id].text },
+      data: { id, text: labels[id].text, kind: labels[id].kind },
       position: { ...labels[id].position },
-      classes: "label",
+      classes: `label label-${labels[id].kind}`,
     });
   });
 
@@ -380,12 +400,14 @@ export default forwardRef<ProjectTopoGrahHandle, PropsT>(
       mode: "add" | "edit";
       id: string;
       text: string;
+      kind: LabelKind;
       position: cytoscape.Position;
     }>({
       open: false,
       mode: "add",
       id: "",
       text: "",
+      kind: "subnet",
       position: { x: 0, y: 0 },
     });
     const [rectSelId, setRectSelId] = useState("");
@@ -446,12 +468,14 @@ export default forwardRef<ProjectTopoGrahHandle, PropsT>(
           const labelEntries: {
             id: string;
             text: string;
+            kind: LabelKind;
             position: cytoscape.Position;
           }[] = [];
           cy.nodes(".label").forEach((n) => {
             labelEntries.push({
               id: n.id(),
               text: String(n.data("text") ?? ""),
+              kind: String(n.data("kind")) == "as" ? "as" : "subnet",
               position: n.position(),
             });
           });
@@ -578,6 +602,7 @@ export default forwardRef<ProjectTopoGrahHandle, PropsT>(
                 mode: "edit",
                 id: evt.target.id(),
                 text: String(evt.target.data("text") ?? ""),
+                kind: String(evt.target.data("kind")) == "as" ? "as" : "subnet",
                 position: { ...evt.target.position() },
               });
             });
@@ -655,6 +680,7 @@ export default forwardRef<ProjectTopoGrahHandle, PropsT>(
         mode: "add",
         id: "",
         text: "",
+        kind: "subnet",
         position: { ...pendingLabelPositionRef.current },
       });
       setDecorationMenu(HIDDEN_DECORATION_MENU);
@@ -677,7 +703,7 @@ export default forwardRef<ProjectTopoGrahHandle, PropsT>(
     const handleHideLabelModal = () =>
       setLabelModal({ ...labelModal, open: false });
 
-    const handleLabelModalConfirm = (rawText: string) => {
+    const handleLabelModalConfirm = (rawText: string, kind: LabelKind) => {
       const cy = cyRef.current;
       if (cy != null && !cy.destroyed())
         applyLabelConfirm(
@@ -686,6 +712,7 @@ export default forwardRef<ProjectTopoGrahHandle, PropsT>(
           rawText,
           labelModal.id,
           labelModal.position,
+          kind,
         );
 
       handleHideLabelModal();
@@ -741,6 +768,7 @@ export default forwardRef<ProjectTopoGrahHandle, PropsT>(
             <LabelTextModal
               isOpen={labelModal.open}
               initialText={labelModal.text}
+              kind={labelModal.kind}
               onClose={handleHideLabelModal}
               onConfirm={handleLabelModalConfirm}
             />

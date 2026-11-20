@@ -62,7 +62,7 @@ describe("label text modal", () => {
     });
     fireEvent.click(screen.getByText("Save"));
 
-    expect(onConfirm).toHaveBeenCalledWith("new text");
+    expect(onConfirm).toHaveBeenCalledWith("new text", "subnet");
   });
 
   it("confirms an empty text on confirm", () => {
@@ -81,7 +81,7 @@ describe("label text modal", () => {
     });
     fireEvent.click(screen.getByText("Save"));
 
-    expect(onConfirm).toHaveBeenCalledWith("");
+    expect(onConfirm).toHaveBeenCalledWith("", "subnet");
   });
 
   it("cancels without confirming", () => {
@@ -126,5 +126,103 @@ describe("label text modal", () => {
     expect(
       (screen.getByLabelText("LabelTextLabel") as HTMLInputElement).value,
     ).toBe("second");
+  });
+
+  it("defaults the kind selection to subnet on add", () => {
+    render(
+      <LabelTextModal
+        isOpen={true}
+        initialText=""
+        kind="subnet"
+        onClose={() => {}}
+        onConfirm={() => {}}
+      />,
+    );
+    expect(
+      (screen.getByLabelText("LabelKindSubnet") as HTMLInputElement).checked,
+    ).toBe(true);
+    expect(
+      (screen.getByLabelText("LabelKindAsNumber") as HTMLInputElement).checked,
+    ).toBe(false);
+  });
+
+  it("prefills the kind on edit", () => {
+    render(
+      <LabelTextModal
+        isOpen={true}
+        initialText="AS 65001"
+        kind="as"
+        onClose={() => {}}
+        onConfirm={() => {}}
+      />,
+    );
+    expect(
+      (screen.getByLabelText("LabelKindAsNumber") as HTMLInputElement).checked,
+    ).toBe(true);
+    expect(
+      (screen.getByLabelText("LabelKindSubnet") as HTMLInputElement).checked,
+    ).toBe(false);
+  });
+
+  it("re-prefills the kind when reopened", () => {
+    const { rerender } = render(
+      <LabelTextModal
+        isOpen={false}
+        initialText=""
+        kind="as"
+        onClose={() => {}}
+        onConfirm={() => {}}
+      />,
+    );
+    rerender(
+      <LabelTextModal
+        isOpen={true}
+        initialText=""
+        kind="subnet"
+        onClose={() => {}}
+        onConfirm={() => {}}
+      />,
+    );
+    expect(
+      (screen.getByLabelText("LabelKindSubnet") as HTMLInputElement).checked,
+    ).toBe(true);
+  });
+
+  it("confirms the chosen kind", () => {
+    const onConfirm = vi.fn();
+    render(
+      <LabelTextModal
+        isOpen={true}
+        initialText="65001"
+        kind="subnet"
+        onClose={() => {}}
+        onConfirm={onConfirm}
+      />,
+    );
+
+    fireEvent.click(screen.getByLabelText("LabelKindAsNumber"));
+    fireEvent.click(screen.getByText("Save"));
+
+    expect(onConfirm).toHaveBeenCalledWith("65001", "as");
+  });
+
+  it("accepts any text for the as kind without validation", () => {
+    const onConfirm = vi.fn();
+    render(
+      <LabelTextModal
+        isOpen={true}
+        initialText=""
+        kind="as"
+        onClose={() => {}}
+        onConfirm={onConfirm}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("LabelTextLabel"), {
+      target: { value: "not a number at all" },
+    });
+    fireEvent.click(screen.getByText("Save"));
+
+    expect(onConfirm).toHaveBeenCalledWith("not a number at all", "as");
   });
 });
